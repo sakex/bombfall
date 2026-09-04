@@ -1,0 +1,40 @@
+[gd_scene load_steps=3 format=3]
+
+[sub_resource type="Environment" id="env"]
+background_mode = 1
+background_color = Color(0.03, 0.015, 0.045, 1)
+ambient_light_source = 1
+ambient_light_color = Color(0.55, 0.42, 0.75, 1)
+ambient_light_energy = 1.6
+tonemap_mode = 2
+tonemap_white = 6.0
+glow_enabled = true
+glow_intensity = 0.9
+glow_strength = 1.0
+glow_bloom = 0.15
+glow_blend_mode = 0
+glow_hdr_threshold = 1.1
+fog_enabled = true
+fog_light_color = Color(0.32, 0.08, 0.36, 1)
+fog_light_energy = 0.6
+fog_density = 0.006
+fog_aerial_perspective = 0.4
+fog_sky_affect = 0.0
+
+[sub_resource type="CameraAttributesPractical" id="attrs"]
+
+[node name="Environment" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+camera_attributes = SubResource("attrs")
+
+[node name="KeyLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.321394, 0.383022, 0, 0.766044, 0.642788, -0.5, -0.55667, 0.663414, 0, 0, 0)
+light_color = Color(1, 0.92, 0.9, 1)
+light_energy = 1.6
+
+[node name="FillLight" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, 0)
+light_color = Color(0.45, 0.6, 1, 1)
+light_energy = 0.7

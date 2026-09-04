@@ -1,0 +1,60 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/actors/explosion.gd" id="1"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/explosion.wav" id="2"]
+
+[sub_resource type="SphereShape3D" id="shape"]
+radius = 0.05
+
+[sub_resource type="SphereMesh" id="ball"]
+radius = 1.0
+height = 2.0
+radial_segments = 24
+rings = 12
+
+[sub_resource type="StandardMaterial3D" id="fire_mat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.45, 0.08, 0.85)
+emission_enabled = true
+emission = Color(1, 0.35, 0.05, 1)
+emission_energy_multiplier = 3.0
+
+[sub_resource type="StandardMaterial3D" id="core_mat"]
+transparency = 1
+blend_mode = 1
+shading_mode = 0
+albedo_color = Color(1, 0.95, 0.7, 1)
+emission_enabled = true
+emission = Color(1, 0.9, 0.6, 1)
+emission_energy_multiplier = 6.0
+
+[node name="Explosion" type="Area3D"]
+collision_layer = 4
+collision_mask = 1019
+monitorable = false
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+shape = SubResource("shape")
+
+[node name="Fireball" type="MeshInstance3D" parent="."]
+mesh = SubResource("ball")
+surface_material_override/0 = SubResource("fire_mat")
+
+[node name="Core" type="MeshInstance3D" parent="."]
+mesh = SubResource("ball")
+surface_material_override/0 = SubResource("core_mat")
+
+[node name="Light" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
+light_color = Color(1, 0.6, 0.25, 1)
+light_energy = 6.0
+omni_range = 8.0
+
+[node name="Sfx" type="AudioStreamPlayer3D" parent="."]
+stream = ExtResource("2")
+volume_db = 6.0
+max_distance = 80.0
+bus = &"sfx"

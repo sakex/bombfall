@@ -1,0 +1,117 @@
+[gd_scene load_steps=7 format=3]
+
+[ext_resource type="Script" path="res://src/main/main_menu.gd" id="1"]
+[ext_resource type="PackedScene" path="res://src/game/environment.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://src/world/city.tscn" id="city"]
+[ext_resource type="Script" path="res://src/world/world.gd" id="3"]
+[ext_resource type="PackedScene" path="res://src/game/camera_rig.tscn" id="4"]
+[ext_resource type="Theme" path="res://src/ui/theme.tres" id="5"]
+
+[node name="MainMenu" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Environment" parent="." instance=ExtResource("2")]
+
+[node name="City" parent="." instance=ExtResource("city")]
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("3")
+is_preview = true
+
+[node name="PreviewTarget" type="Node3D" parent="."]
+
+[node name="CameraRig" parent="." instance=ExtResource("4")]
+
+[node name="Ui" type="CanvasLayer" parent="."]
+
+[node name="Dim" type="ColorRect" parent="Ui"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.03, 0.01, 0.05, 0.35)
+
+[node name="Layout" type="MarginContainer" parent="Ui"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme = ExtResource("5")
+theme_override_constants/margin_left = 100
+theme_override_constants/margin_top = 140
+theme_override_constants/margin_right = 100
+theme_override_constants/margin_bottom = 100
+
+[node name="VBox" type="VBoxContainer" parent="Ui/Layout"]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="Title" type="Label" parent="Ui/Layout/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.35, 0.8, 1)
+theme_override_colors/font_outline_color = Color(0.2, 0.9, 1, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 150
+text = "BOMB"
+horizontal_alignment = 1
+
+[node name="Title2" type="Label" parent="Ui/Layout/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.2, 0.9, 1, 1)
+theme_override_colors/font_outline_color = Color(1, 0.35, 0.8, 1)
+theme_override_constants/outline_size = 10
+theme_override_font_sizes/font_size = 150
+text = "FALL"
+horizontal_alignment = 1
+
+[node name="Spacer" type="Control" parent="Ui/Layout/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="PlayButton" type="Button" parent="Ui/Layout/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 150)
+layout_mode = 2
+theme_override_font_sizes/font_size = 80
+text = "play"
+
+[node name="LeaderboardButton" type="Button" parent="Ui/Layout/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "leaderboard"
+
+[node name="StoreButton" type="Button" parent="Ui/Layout/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "store"
+
+[node name="SettingsButton" type="Button" parent="Ui/Layout/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+text = "settings"
+
+[node name="Row" type="HBoxContainer" parent="Ui/Layout/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 26
+
+[node name="TutorialButton" type="Button" parent="Ui/Layout/VBox/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "tutorial"
+
+[node name="CreditsButton" type="Button" parent="Ui/Layout/VBox/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 96)
+layout_mode = 2
+size_flags_horizontal = 3
+text = "credits"
+
+[node name="Popups" type="CanvasLayer" parent="."]
+layer = 5

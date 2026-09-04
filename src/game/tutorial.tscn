@@ -1,0 +1,78 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://src/game/tutorial.gd" id="1"]
+[ext_resource type="PackedScene" path="res://src/game/environment.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://src/world/city.tscn" id="city"]
+[ext_resource type="Script" path="res://src/world/world.gd" id="3"]
+[ext_resource type="PackedScene" path="res://src/actors/player.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://src/game/camera_rig.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://src/ui/death_screen.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://src/ui/pause_screen.tscn" id="8"]
+[ext_resource type="Theme" path="res://src/ui/theme.tres" id="9"]
+
+[node name="Tutorial" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Environment" parent="." instance=ExtResource("2")]
+
+[node name="City" parent="." instance=ExtResource("city")]
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("3")
+is_preview = true
+
+[node name="Player" parent="." instance=ExtResource("4")]
+
+[node name="CameraRig" parent="." instance=ExtResource("5")]
+
+[node name="Hud" parent="." instance=ExtResource("6")]
+
+[node name="Overlays" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="DeathScreen" parent="Overlays" instance=ExtResource("7")]
+
+[node name="PauseScreen" parent="Overlays" instance=ExtResource("8")]
+
+[node name="TutorialLayer" type="CanvasLayer" parent="."]
+layer = 4
+
+[node name="Margin" type="MarginContainer" parent="TutorialLayer"]
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = 150.0
+offset_bottom = 450.0
+grow_horizontal = 2
+theme = ExtResource("9")
+theme_override_constants/margin_left = 60
+theme_override_constants/margin_right = 60
+
+[node name="TutorialPopup" type="PanelContainer" parent="TutorialLayer/Margin"]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="VBox" type="VBoxContainer" parent="TutorialLayer/Margin/TutorialPopup"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="Title" type="Label" parent="TutorialLayer/Margin/TutorialPopup/VBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.6, 0.95, 1)
+theme_override_font_sizes/font_size = 52
+text = "welcome to bombfall"
+horizontal_alignment = 1
+
+[node name="Instruction" type="Label" parent="TutorialLayer/Margin/TutorialPopup/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 36
+text = "..."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="StartButton" type="Button" parent="TutorialLayer/Margin/TutorialPopup/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 84)
+layout_mode = 2
+text = "start"

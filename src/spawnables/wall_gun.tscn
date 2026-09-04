@@ -1,0 +1,36 @@
+[gd_scene load_steps=5 format=3]
+
+[ext_resource type="Script" path="res://src/spawnables/wall_gun.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/wall_gun.glb" id="2"]
+
+[sub_resource type="BoxShape3D" id="mount"]
+size = Vector3(1.4, 2.0, 1.4)
+
+[sub_resource type="SphereShape3D" id="detect"]
+radius = 14.5
+
+[node name="WallGun" type="RigidBody3D"]
+collision_layer = 32
+collision_mask = 2875
+mass = 30.0
+freeze = true
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.7, 1.0, 0)
+shape = SubResource("mount")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+
+[node name="Detection" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.0, 1.0, 0)
+collision_layer = 0
+collision_mask = 1
+monitorable = false
+
+[node name="Shape" type="CollisionShape3D" parent="Detection"]
+shape = SubResource("detect")
+
+[node name="Timer" type="Timer" parent="."]
+wait_time = 3.0
+autostart = true

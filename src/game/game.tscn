@@ -1,0 +1,34 @@
+[gd_scene load_steps=10 format=3]
+
+[ext_resource type="Script" path="res://src/game/game.gd" id="1"]
+[ext_resource type="PackedScene" path="res://src/game/environment.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://src/world/city.tscn" id="city"]
+[ext_resource type="Script" path="res://src/world/world.gd" id="3"]
+[ext_resource type="PackedScene" path="res://src/actors/player.tscn" id="4"]
+[ext_resource type="PackedScene" path="res://src/game/camera_rig.tscn" id="5"]
+[ext_resource type="PackedScene" path="res://src/ui/hud.tscn" id="6"]
+[ext_resource type="PackedScene" path="res://src/ui/death_screen.tscn" id="7"]
+[ext_resource type="PackedScene" path="res://src/ui/pause_screen.tscn" id="8"]
+
+[node name="Game" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Environment" parent="." instance=ExtResource("2")]
+
+[node name="City" parent="." instance=ExtResource("city")]
+
+[node name="World" type="Node3D" parent="."]
+script = ExtResource("3")
+
+[node name="Player" parent="." instance=ExtResource("4")]
+
+[node name="CameraRig" parent="." instance=ExtResource("5")]
+
+[node name="Hud" parent="." instance=ExtResource("6")]
+
+[node name="Overlays" type="CanvasLayer" parent="."]
+layer = 5
+
+[node name="DeathScreen" parent="Overlays" instance=ExtResource("7")]
+
+[node name="PauseScreen" parent="Overlays" instance=ExtResource("8")]

@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://c7aoytd80ixvu"
+path="res://.godot/imported/City of Drones.mp3-61c97748d5c15c7309faf7427a1603d9.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/music/City of Drones.mp3"
+dest_files=["res://.godot/imported/City of Drones.mp3-61c97748d5c15c7309faf7427a1603d9.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

@@ -1,0 +1,16 @@
+# Godot
+.godot/
+*.tmp
+export.cfg
+export_credentials.cfg
+# Editor / OS noise
+.vscode/
+.idea/
+.DS_Store
+__pycache__/
+*.pyc
+# Blender autosaves
+*.blend1
+# Local keystores never belong in the repository
+*.keystore
+*.jks

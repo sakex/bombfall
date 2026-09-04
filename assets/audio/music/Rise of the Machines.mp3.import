@@ -1,0 +1,19 @@
+[remap]
+
+importer="mp3"
+type="AudioStreamMP3"
+uid="uid://m3ye1jao2q5k"
+path="res://.godot/imported/Rise of the Machines.mp3-6cc1f23b86eb4694287e240a3025e821.mp3str"
+
+[deps]
+
+source_file="res://assets/audio/music/Rise of the Machines.mp3"
+dest_files=["res://.godot/imported/Rise of the Machines.mp3-6cc1f23b86eb4694287e240a3025e821.mp3str"]
+
+[params]
+
+loop=false
+loop_offset=0
+bpm=0
+beat_count=0
+bar_beats=4

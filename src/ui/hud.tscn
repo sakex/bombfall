@@ -1,0 +1,69 @@
+[gd_scene load_steps=8 format=3]
+
+[ext_resource type="Script" path="res://src/ui/hud.gd" id="1"]
+[ext_resource type="Theme" path="res://src/ui/theme.tres" id="2"]
+[ext_resource type="Script" path="res://src/ui/shield_bar.gd" id="3"]
+[ext_resource type="Texture2D" path="res://assets/ui/left_arrow.png" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/right_arrow.png" id="5"]
+[ext_resource type="Texture2D" path="res://assets/ui/jump_button.png" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/pause_button.png" id="7"]
+
+[node name="Hud" type="CanvasLayer"]
+script = ExtResource("1")
+
+[node name="Top" type="MarginContainer" parent="."]
+anchors_preset = 10
+anchor_right = 1.0
+offset_bottom = 140.0
+grow_horizontal = 2
+theme = ExtResource("2")
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+
+[node name="Row" type="HBoxContainer" parent="Top"]
+layout_mode = 2
+theme_override_constants/separation = 20
+
+[node name="ScorePanel" type="PanelContainer" parent="Top/Row"]
+layout_mode = 2
+size_flags_horizontal = 0
+
+[node name="Score" type="Label" parent="Top/Row/ScorePanel"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "SCORE 0"
+
+[node name="ShieldBar" type="HBoxContainer" parent="Top/Row"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 4
+script = ExtResource("3")
+
+[node name="PauseButton" type="Button" parent="Top/Row"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(96, 96)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 4
+icon = ExtResource("7")
+flat = true
+expand_icon = true
+
+[node name="Touch" type="Node2D" parent="."]
+
+[node name="Left" type="TouchScreenButton" parent="Touch"]
+texture_normal = ExtResource("4")
+action = "move_left"
+passby_press = true
+
+[node name="Right" type="TouchScreenButton" parent="Touch"]
+texture_normal = ExtResource("5")
+action = "move_right"
+passby_press = true
+
+[node name="Jump" type="TouchScreenButton" parent="Touch"]
+texture_normal = ExtResource("6")
+action = "jump"
+passby_press = true

@@ -1,0 +1,38 @@
+[gd_scene load_steps=6 format=3]
+
+[ext_resource type="Script" path="res://src/spawnables/pickup.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/pedestal.glb" id="2"]
+[ext_resource type="PackedScene" path="res://assets/models/shield_battery.glb" id="3"]
+
+[sub_resource type="BoxShape3D" id="base"]
+size = Vector3(1.5, 1.4, 1.2)
+
+[sub_resource type="SphereShape3D" id="item"]
+radius = 0.8
+
+[node name="Pickup" type="RigidBody3D"]
+collision_layer = 32
+collision_mask = 2875
+mass = 50.0
+can_sleep = false
+script = ExtResource("1")
+kind = 0
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.7, 0)
+shape = SubResource("base")
+
+[node name="Model" parent="." instance=ExtResource("2")]
+
+[node name="Item" type="Node3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.1, 0)
+
+[node name="Model" parent="Item" instance=ExtResource("3")]
+
+[node name="Area" type="Area3D" parent="Item"]
+collision_layer = 128
+collision_mask = 1
+monitorable = false
+
+[node name="Shape" type="CollisionShape3D" parent="Item/Area"]
+shape = SubResource("item")
