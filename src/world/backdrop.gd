@@ -56,9 +56,10 @@ static func build(theme: Dictionary, roof: int, height: int) -> Backdrop:
 	light.omni_attenuation = 1.2
 	light.position = Vector3(cx, mid + h * 0.15, DECOR_Z + 0.5)
 	b.add_child(light)
-	# Set dressing.
-	b._decor("res://assets/models/backdrop_%s.glb" % theme["id"], Vector3(1.0, bottom, DECOR_Z))
-	b._decor("res://assets/models/ceiling_%s.glb" % theme["id"], Vector3(1.0, top, DECOR_Z))
+	# Set dressing (skipped with --nodecor, a debugging aid).
+	if not OS.get_cmdline_user_args().has("--nodecor"):
+		b._decor("res://assets/models/backdrop_%s.glb" % theme["id"], Vector3(1.0, bottom, DECOR_Z))
+		b._decor("res://assets/models/ceiling_%s.glb" % theme["id"], Vector3(1.0, top, DECOR_Z))
 	return b
 
 
@@ -108,8 +109,9 @@ func _window(r: Rect2, bottom: float, theme: Dictionary) -> void:
 		_box(Vector3(0.06, r.size.y, 0.08), Vector3(x0 + r.size.x * i / columns, cy, WALL_Z - WALL_THICKNESS * 0.5), frame)
 	if r.size.y > 1.4:
 		_box(Vector3(r.size.x, 0.06, 0.08), Vector3(cx, y0 + r.size.y * 0.5, WALL_Z - WALL_THICKNESS * 0.5), frame)
-	# Glass.
-	_box(Vector3(r.size.x, r.size.y, 0.02), Vector3(cx, cy, WALL_Z - WALL_THICKNESS * 0.5), _glass())
+	# Glass (skipped with --noglass, a debugging aid).
+	if not OS.get_cmdline_user_args().has("--noglass"):
+		_box(Vector3(r.size.x, r.size.y, 0.02), Vector3(cx, cy, WALL_Z - WALL_THICKNESS * 0.5), _glass())
 	# A soft light spill from the city onto the sill.
 	_box(Vector3(r.size.x, 0.05, 0.3), Vector3(cx, y0 + 0.03, WALL_Z + 0.15), _glow(Color(0.5, 0.8, 1.0), 0.6))
 
@@ -157,12 +159,10 @@ static func _glow(color: Color, energy: float) -> StandardMaterial3D:
 static func _glass() -> StandardMaterial3D:
 	if not _materials.has("glass"):
 		var m := StandardMaterial3D.new()
+		# Unshaded: a lit, glossy pane picks up a specular sheen that ignores
+		# alpha and turns the whole window into a solid plate.
 		m.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-		m.albedo_color = Color(0.5, 0.85, 1.0, 0.12)
-		m.roughness = 0.05
-		m.metallic = 0.3
-		m.emission_enabled = true
-		m.emission = Color(0.3, 0.6, 0.9)
-		m.emission_energy_multiplier = 0.15
+		m.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		m.albedo_color = Color(0.6, 0.8, 1.0, 0.07)
 		_materials["glass"] = m
 	return _materials["glass"]

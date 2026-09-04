@@ -14,3 +14,4 @@ __pycache__/
 # Local keystores never belong in the repository
 *.keystore
 *.jks
+dist/*.idsig

@@ -1,7 +1,7 @@
 extends Node3D
 ## Title screen: a live preview of the hotel scrolls past behind the menu.
 
-const PREVIEW_SPEED := 1.56     ## 100 px/s
+const PREVIEW_SPEED := 1.1
 
 @onready var world: World = $World
 @onready var preview_target: Node3D = $PreviewTarget
@@ -20,8 +20,9 @@ func _ready() -> void:
 	world.is_preview = true
 	world.tracked = preview_target
 	rig.target = preview_target
-	rig.y_offset = 0.0
-	preview_target.position = Vector3(Grid.CENTER_X, -6.0, 0.0)
+	rig.y_offset = 14.0
+	rig.camera.rotation.x = deg_to_rad(-9.0)
+	preview_target.position = Vector3(Grid.CENTER_X, -4.0, 0.0)
 	rig.snap()
 	store = StorePopup.new()
 	settings = SettingsPopup.new()
