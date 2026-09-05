@@ -1,0 +1,23 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://src/spawnables/arcade_cabinet.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/arcade_cabinet.glb" id="2"]
+
+[sub_resource type="BoxShape3D" id="shape"]
+size = Vector3(1.3, 2.8, 1.2)
+
+[node name="ArcadeCabinet" type="RigidBody3D"]
+collision_layer = 32
+collision_mask = 2875
+mass = 45
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.63, 0)
+angular_damp = 1.5
+can_sleep = false
+script = ExtResource("1")
+
+[node name="Shape" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.4, 0)
+shape = SubResource("shape")
+
+[node name="Model" parent="." instance=ExtResource("2")]

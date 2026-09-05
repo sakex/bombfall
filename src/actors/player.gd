@@ -6,12 +6,16 @@ extends CharacterBody3D
 signal score_changed(score: int)
 signal shields_changed(active: int, maximum: int)
 signal magnets_changed(count: int)
+signal doubler_changed(active: bool)
+## Short text for the HUD when something is picked up.
+signal pickup_taken(text: String)
 ## Emitted once the death animation finished; the game shows the death screen.
 signal died(score: int)
 
 const GRAVITY := 47.0                 ## 3000 px/s²
 const SPEED := Vector2(12.5, 21.9)    ## 800 px/s run, 1400 px/s jump
-const IMPULSE_STRENGTH := 15.6        ## impulse handed to props we bump into
+const PUSH_SPEED := 5.5               ## props we walk into are shoved up to this speed
+const PUSH_GAIN := 0.35
 const DEATH_ANIMATION_TIME := 2.0
 const FALL_OUT_TIME := 2.0            ## seconds outside the shaft before dying
 const MAGNET_RADIUS_PER_LEVEL := 5.0  ## 320 px per magnet upgrade
@@ -26,6 +30,7 @@ var max_shields := 1
 var active_shields := 0
 var magnets := 0
 var is_immune := false
+var doubler_time := 0.0
 ## Lateral push accumulated from treadmills and trampolines; decays with gravity.
 var lateral_force := 0.0
 
@@ -35,6 +40,15 @@ var _death_progress := 0.0
 var _pulling_coins: Array[Coin] = []
 var _run_phase := 0.0
 var _facing := 1.0
+var _was_on_floor := true
+var _squash := 1.0
+var _blink_timer := 2.5
+var _blink := 0.0
+var _flip := 1.0
+var _antenna_spring := Vector2.ZERO
+var _antenna_vel := Vector2.ZERO
+var _last_velocity := Vector3.ZERO
+var _intent_x := 0.0
 
 @onready var model: Node3D = $Model
 @onready var shield_bubble: MeshInstance3D = $Shield
@@ -54,6 +68,10 @@ var _facing := 1.0
 	"arm_l": model.find_child("arm_l", true, false),
 	"arm_r": model.find_child("arm_r", true, false),
 }
+@onready var _eyes: Array[Node3D] = [model.find_child("eye_l", true, false), model.find_child("eye_r", true, false)]
+@onready var _antenna: Node3D = model.find_child("antenna", true, false)
+@onready var _scarf: Node3D = model.find_child("scarf", true, false)
+@onready var _jets: Array[Node3D] = [model.find_child("jet_l", true, false), model.find_child("jet_r", true, false)]
 
 
 func _ready() -> void:
@@ -83,6 +101,10 @@ func _process(delta: float) -> void:
 	if _death_progress > 0.0:
 		_advance_death(delta)
 		return
+	if doubler_time > 0.0:
+		doubler_time -= delta
+		if doubler_time <= 0.0:
+			doubler_changed.emit(false)
 	_animate(delta)
 
 
@@ -94,8 +116,11 @@ func _read_input() -> void:
 	if direction != 0.0:
 		_facing = signf(direction)
 	velocity.x = lateral_force + direction * SPEED.x
+	_intent_x = velocity.x
 	if Input.get_action_strength("jump") > 0.0 and _at_floor:
 		velocity.y = SPEED.y
+		_flip = 0.0
+		_squash = 1.25
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
 		velocity.y = 0.0
 
@@ -122,14 +147,21 @@ func _push_props() -> void:
 		var collision := get_slide_collision(i)
 		var collider := collision.get_collider()
 		if collider is RigidBody3D:
-			if collider.has_method("turn_off"):
-				collider.call_deferred("turn_off")
-			var normal := collision.get_normal()
-			# Standing on top of it: only a quarter of the shove.
-			var strength := IMPULSE_STRENGTH * (0.25 if normal.y > 0.9 else 1.0)
-			var impulse := -normal * strength
-			impulse.z = 0.0
-			collider.apply_central_impulse(impulse)
+			var body := collider as RigidBody3D
+			if body.has_method("turn_off"):
+				body.call_deferred("turn_off")
+			# Shove sideways only, and only up to a sensible speed, so furniture
+			# slides instead of being launched or flipped.
+			var direction := -collision.get_normal()
+			direction.y = 0.0
+			direction.z = 0.0
+			if direction.length() < 0.3:
+				continue
+			direction = direction.normalized()
+			var wanted := PUSH_SPEED * clampf(absf(_intent_x) / SPEED.x, 0.0, 1.0)
+			var current := body.linear_velocity.dot(direction)
+			if current < wanted:
+				body.apply_central_impulse(direction * (wanted - current) * body.mass * PUSH_GAIN)
 
 
 func _check_fall_out(delta: float) -> void:
@@ -157,10 +189,57 @@ func _animate(delta: float) -> void:
 	_set_limb("leg_r", -swing - airborne * 0.2)
 	_set_limb("arm_l", -swing * 0.8 - airborne * 1.2)
 	_set_limb("arm_r", swing * 0.8 - airborne * 1.2)
+	_animate_extras(delta, running)
 	if is_immune:
 		model.visible = fmod(Time.get_ticks_msec() / 1000.0 * 10.0, TAU) < PI
 	else:
 		model.visible = true
+
+
+## The little touches: landing squash, falling stretch, a somersault on
+## jumps, blinking, a springy antenna, a fluttering scarf and jet flames.
+func _animate_extras(delta: float, running: bool) -> void:
+	if _at_floor and not _was_on_floor:
+		_squash = 0.72
+	_was_on_floor = _at_floor
+	_squash = lerpf(_squash, 1.0, minf(1.0, delta * 9.0))
+	var stretch := 1.0 + clampf(-velocity.y / SPEED.y, 0.0, 1.0) * 0.12
+	var bob := absf(sin(_run_phase)) * 0.04 if running else 0.0
+	model.scale = Vector3(2.0 - _squash, _squash * stretch + bob, 2.0 - _squash)
+	# Somersault after a jump.
+	if _flip < 1.0:
+		_flip = minf(_flip + delta * 1.6, 1.0)
+		model.rotation.x = -TAU * smoothstep(0.0, 1.0, _flip)
+	else:
+		model.rotation.x = 0.0
+	# Blink.
+	_blink_timer -= delta
+	if _blink_timer <= 0.0:
+		_blink = 0.14
+		_blink_timer = randf_range(2.0, 5.0)
+	if _blink > 0.0:
+		_blink -= delta
+	for eye in _eyes:
+		if eye != null:
+			eye.scale.y = 0.08 if _blink > 0.0 else 1.0
+	# Antenna: a damped spring driven by acceleration.
+	var accel := (velocity - _last_velocity) / maxf(delta, 0.001)
+	_last_velocity = velocity
+	_antenna_vel += (-Vector2(accel.x, accel.y) * 0.004 - _antenna_spring * 60.0 - _antenna_vel * 6.0) * delta
+	_antenna_spring += _antenna_vel * delta
+	if _antenna != null:
+		_antenna.rotation = Vector3(clampf(_antenna_spring.y, -0.7, 0.7), 0.0, clampf(-_antenna_spring.x, -0.7, 0.7))
+	# Scarf trails the motion.
+	if _scarf != null:
+		var flutter := sin(Time.get_ticks_msec() / 1000.0 * 9.0) * 0.12
+		_scarf.rotation.x = clampf(velocity.y * 0.04, -0.9, 0.5) + flutter
+		_scarf.rotation.z = clampf(-velocity.x * _facing * 0.03, -0.6, 0.6)
+	# Jets burn while rising.
+	var thrust := clampf(velocity.y / SPEED.y, 0.0, 1.0) if not _at_floor else 0.0
+	for jet in _jets:
+		if jet != null:
+			jet.visible = thrust > 0.05
+			jet.scale = Vector3(1.0, 0.6 + thrust * 0.9 + randf() * 0.2, 1.0)
 
 
 func _set_limb(name: String, angle: float) -> void:
@@ -223,8 +302,10 @@ func revive() -> void:
 	_death_progress = 0.0
 	set_process(true)
 	model.position = Vector3.ZERO
-	model.rotation.z = 0.0
+	model.rotation = Vector3.ZERO
 	model.scale = Vector3.ONE
+	_flip = 1.0
+	_squash = 1.0
 	position.x = Grid.CENTER_X
 	velocity = Vector3.ZERO
 	set_active_shields(max_shields)
@@ -235,13 +316,23 @@ func revive() -> void:
 func increment_score(value: int) -> void:
 	if value > 0:
 		sfx_coin.play()
+		if doubler_time > 0.0:
+			value *= 2
 	score += value
 	score_changed.emit(score)
+
+
+func activate_doubler(seconds: float = 12.0) -> void:
+	sfx_core_up.play()
+	doubler_time = maxf(doubler_time, 0.0) + seconds
+	doubler_changed.emit(true)
+	pickup_taken.emit("coins x2!")
 
 
 func increment_shield(count: int = 1) -> void:
 	sfx_shield_up.play()
 	set_active_shields(active_shields + count)
+	pickup_taken.emit("shield up!")
 
 
 func set_shields_to_max() -> void:
@@ -252,6 +343,7 @@ func set_shields_to_max() -> void:
 func increment_max_shield() -> void:
 	sfx_core_up.play()
 	set_max_shields(max_shields + 1)
+	pickup_taken.emit("max shields +1")
 
 
 func set_active_shields(count: int) -> void:
@@ -277,6 +369,7 @@ func _update_shield_bubble() -> void:
 
 func increase_magnet() -> void:
 	set_magnets(magnets + 1)
+	pickup_taken.emit("magnet!")
 
 
 func set_magnets(count: int) -> void:

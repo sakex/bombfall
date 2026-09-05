@@ -19,6 +19,7 @@ PROPS = {
     "bed1": ("bed1", "box", (5.8, 1.6, 2.2), 0.8, 100),
     "bed2": ("bed2", "box", (5.8, 2.9, 2.4), 1.45, 100),
     "bed_rich": ("bed_rich", "box", (5.8, 2.8, 2.6), 1.4, 120),
+    "arcade_cabinet": ("arcade_cabinet", "box", (1.3, 2.8, 1.2), 1.4, 45),
 }
 
 SOLID = 1 | 2 | 8 | 16 | 32 | 256 | 512 | 2048
@@ -34,6 +35,9 @@ TEMPLATE = """[gd_scene load_steps=4 format=3]
 collision_layer = 32
 collision_mask = {mask}
 mass = {mass}
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, {com}, 0)
+angular_damp = 1.5
 can_sleep = false
 script = ExtResource("1")
 
@@ -57,7 +61,7 @@ def main():
     for name, (model, kind, params, cy, mass) in PROPS.items():
         path = os.path.join(OUT, name + ".tscn")
         with open(path, "w") as f:
-            f.write(TEMPLATE.format(model=model, name=name.title().replace("_", ""), mask=SOLID, mass=mass, cy=cy,
+            f.write(TEMPLATE.format(model=model, name=name.title().replace("_", ""), mask=SOLID, mass=mass, cy=cy, com=round(cy * 0.45, 2),
                                     shape_resource=shape_resource(kind, params)))
         print("wrote", os.path.relpath(path, ROOT))
 

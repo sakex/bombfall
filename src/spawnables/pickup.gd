@@ -2,7 +2,7 @@ class_name Pickup
 extends PlanarBody
 ## A pedestal with a floating upgrade above it. Touch the item to take it.
 
-enum Kind { SHIELD_BATTERY, SHIELD_CORE, MAGNET, CRATE }
+enum Kind { SHIELD_BATTERY, SHIELD_CORE, MAGNET, CRATE, DOUBLER }
 
 const COIN := preload("res://src/actors/coin.tscn")
 
@@ -42,6 +42,8 @@ func _on_body(body: Node) -> void:
 		Kind.CRATE:
 			body.increment_shield(2)
 			_spawn_coins()
+		Kind.DOUBLER:
+			body.activate_doubler()
 	item.queue_free()
 
 

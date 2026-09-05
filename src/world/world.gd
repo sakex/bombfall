@@ -59,6 +59,7 @@ func _ready() -> void:
 		WallBlockLevel.new(),
 		SceneLevel.new("res://src/special_levels/obstacle_course.tscn", 35, 37, 37),
 		SceneLevel.new("res://src/special_levels/boss_bat_arena.tscn", 22, 20),
+		SceneLevel.new("res://src/special_levels/vault.tscn", 19, 20, 19),
 	]:
 		if special.available():
 			_special_levels.append(special)

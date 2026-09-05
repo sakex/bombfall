@@ -10,7 +10,10 @@ game, same tuning, rebuilt on **Godot 4.7** with every asset modelled in
 **Blender** from scripts, a procedurally lit cyberpunk city behind the
 hotel's windows, and a single-language GDScript code base.
 
-![Gameplay](docs/screenshots/gameplay.png)
+| | | |
+|---|---|---|
+| ![Menu](docs/screenshots/menu.png) | ![Gameplay](docs/screenshots/gameplay.png) | ![Casino](docs/screenshots/casino.png) |
+| ![Arcade](docs/screenshots/arcade.png) | ![Vault](docs/screenshots/vault.png) | ![Player](docs/screenshots/player.png) |
 
 ## Play it
 
@@ -30,13 +33,13 @@ hotel's windows, and a single-language GDScript code base.
 | `src/autoload/` | Singletons: `SaveData` (profile JSON, same keys as the original save), `Music` (playlist that survives scene changes), `Services` (ads/backend interfaces), `Game` (scene routing). |
 | `src/actors/` | Player, bomb, explosion, coin and the `PlanarBody` base that pins rigid bodies to the XY plane. |
 | `src/world/` | The generator: `World` (storey ring buffer, bomb rain, garbage collection), `Level` (layout on a `BinaryGrid`), `SpawnRegistry` (every prop with footprint, difficulty and the room themes), `CellGrid` (destructible floors/walls as PhysicsServer bodies + one MultiMesh per cell kind), `Backdrop` (themed rooms with window openings), `City` (the parallax skyline). |
-| `src/spawnables/` | Hazards and furniture: drone, wall gun, light ring laser, trampoline, treadmill, pressure button, fire zone, ropes, pick-ups, pushable props. |
-| `src/special_levels/` | The junk wall, the obstacle course and the bat boss arena, inserted every ten storeys. |
+| `src/spawnables/` | Hazards and furniture: drone, wall gun, light ring laser, trampoline, treadmill, pressure button, fire zone, ropes, bumper, air fan, slot machine, arcade cabinet, pick-ups (shields, magnet, crate, coin doubler), pushable props. |
+| `src/special_levels/` | The junk wall, the obstacle course, the bat boss arena and the bank vault, inserted every ten storeys. |
 | `src/game/`, `src/main/`, `src/ui/` | Run scene, tutorial, camera rig, main menu with live preview, store, settings, leaderboard, credits, HUD. |
-| `src/dev/` | Headless smoke test, a sandbox and a harness that forces a special level (excluded from exports). |
+| `src/dev/` | Headless smoke test, the physics regression harness, a sandbox and a harness that forces a special level or theme (excluded from exports). |
 | `blender/` | One Python script per model plus `common.py` (primitives, neon materials, glTF export, preview render), `props.py` (set dressing kit) and `furniture.py` / `hazards.py` (prop builders). `blender/previews/` holds a render of each model. |
 | `assets/models/` | The exported `.glb` files, committed so the game builds without Blender. |
-| `assets/shaders/` | Facade, beacon, car-light, billboard and sky shaders of the city. |
+| `assets/shaders/` | Facade, beacon, car-light, billboard, searchlight, moon, sun, grid, mountain, haze and sky shaders of the city. |
 | `tools/` | `build_models.sh` (rebuild all models), `build_apk.sh` (headless Android export), `gen_prop_scenes.py`. |
 
 ## Rebuilding the models
@@ -77,9 +80,40 @@ The package name is `ch.senges.bombfall`; change `package/unique_name` in
 ```sh
 godot --headless --path . --import
 godot --headless --path . res://src/dev/smoke_test.tscn     # 40 s scripted run
-godot --path . res://src/dev/special_test.tscn -- --special=boss_bat_arena
+godot --headless --path . res://src/dev/physics_test.tscn   # 19 physics scenarios, prints PASS/FAIL
+godot --path . res://src/dev/special_test.tscn -- --special=vault
+godot --path . res://src/dev/special_test.tscn -- --theme=casino
 godot --path . -- --theme=gym --screenshot=shot.png:2       # any scene, saves a frame
 ```
+
+The physics harness spawns the player, bombs, ropes, props and hazards in
+isolation and asserts on positions after a fixed number of physics ticks
+(landing, wall clamps, bomb holes, rope length, trampoline height, prop
+pushing without tipping, drone hover, button presses, laser kills...). Run
+it after touching anything under `src/actors/` or `src/spawnables/`.
+
+## Version 2.1
+
+* **Physics pass.** Props no longer get launched or tipped by the player:
+  pushing is capped at a walking speed that scales with stick input, every
+  furniture body has a low centre of mass and angular damping, and bombs
+  damage steel cells once per blast. The regression harness above pins the
+  behaviour down.
+* **UI refurbish.** New neon theme with glowing panels, a HUD with a
+  popping score, depth meter, shield bar and doubler badge, toasts for
+  pick-ups, a death screen with depth and previous best, fades between
+  scenes, and a title screen with your stats and a skyline view.
+* **Backgrounds.** Two new room themes (arcade, casino) with windows on the
+  city, animated ceilings in every theme (fans, disco balls, swinging
+  lamps, lanterns and punching bags), and a busier skyline: airship, moon,
+  searchlights, sky bridges and more billboard traffic.
+* **Character.** The runner is a rounder chibi with a bigger helmet, a
+  scarf, eyes that blink, an antenna that springs, jet boots that flare
+  while airborne, landing squash and a somersault on long falls.
+* **New content.** Steel cells that take three blasts, bumpers that kick
+  you away, air fans that lift you, slot machines that pay out coins (or a
+  bomb) when hit, arcade cabinets, a coin doubler pick-up, and the bank
+  vault special level: crack the steel floor to reach the treasure.
 
 ## What changed from the original
 

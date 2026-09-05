@@ -73,6 +73,10 @@ func _ready() -> void:
 	_build_beacons()
 	_build_cars()
 	_build_billboards()
+	_build_moon()
+	_build_airship()
+	_build_searchlights()
+	_build_skybridges()
 
 
 func _camera_pos() -> Vector3:
@@ -393,9 +397,145 @@ func _place_billboards() -> void:
 		mi.position = Vector3(t.x, t.top - 25.0 - fmod(offset, 60.0), t.z + t.depth * 0.5 + 0.4)
 
 
+func _build_moon() -> void:
+	_quad(Vector2(120.0, 120.0), _shader_material("res://assets/shaders/moon.gdshader"), Vector3(-150.0, 120.0, SUN_Z + 5.0))
+
+
+var _airship: Node3D
+var _airship_x := 0.0
+
+
+func _build_airship() -> void:
+	# A blimp with an advert on its flank, drifting across the sky.
+	_airship = Node3D.new()
+	add_child(_airship)
+	var hull := MeshInstance3D.new()
+	var sph := SphereMesh.new()
+	sph.radius = 1.0
+	sph.height = 2.0
+	sph.radial_segments = 16
+	sph.rings = 8
+	hull.mesh = sph
+	hull.scale = Vector3(28.0, 9.0, 9.0)
+	var hm := StandardMaterial3D.new()
+	hm.albedo_color = Color(0.12, 0.05, 0.16)
+	hm.roughness = 0.6
+	hull.material_override = hm
+	_airship.add_child(hull)
+	var gondola := MeshInstance3D.new()
+	var gb := BoxMesh.new()
+	gb.size = Vector3(9.0, 3.0, 3.5)
+	gondola.mesh = gb
+	gondola.position = Vector3(0.0, -8.5, 0.0)
+	gondola.material_override = hm
+	_airship.add_child(gondola)
+	var ad := MeshInstance3D.new()
+	var quad := QuadMesh.new()
+	quad.size = Vector2(22.0, 7.0)
+	ad.mesh = quad
+	ad.position = Vector3(0.0, 0.0, 9.3)
+	ad.material_override = _shader_material("res://assets/shaders/billboard.gdshader", {"color_a": Color(1.0, 0.3, 0.6), "color_b": Color(0.3, 0.9, 1.0), "speed": 0.25, "bands": 4.0})
+	_airship.add_child(ad)
+	for x in [-11.0, 11.0]:
+		var fin := MeshInstance3D.new()
+		var fb := BoxMesh.new()
+		fb.size = Vector3(6.0, 7.0, 0.6)
+		fin.mesh = fb
+		fin.position = Vector3(-24.0, 0.0, 0.0)
+		fin.rotation.x = deg_to_rad(x * 8.0)
+		fin.material_override = hm
+		_airship.add_child(fin)
+	var light := MeshInstance3D.new()
+	var lb := BoxMesh.new()
+	lb.size = Vector3(1.5, 1.5, 1.5)
+	light.mesh = lb
+	light.position = Vector3(28.5, 0.0, 0.0)
+	var lm := StandardMaterial3D.new()
+	lm.emission_enabled = true
+	lm.emission = Color(1.0, 0.2, 0.2)
+	lm.emission_energy_multiplier = 5.0
+	light.material_override = lm
+	_airship.add_child(light)
+	_airship_x = -140.0
+
+
+var _searchlights: Array[Node3D] = []
+
+
+func _build_searchlights() -> void:
+	for i in 3:
+		var t := _towers[(i * 37 + 11) % _towers.size()]
+		var pivot := Node3D.new()
+		add_child(pivot)
+		var beam := MeshInstance3D.new()
+		var quad := QuadMesh.new()
+		quad.size = Vector2(14.0, 160.0)
+		beam.mesh = quad
+		beam.position = Vector3(0.0, 80.0, 0.0)
+		beam.material_override = _shader_material("res://assets/shaders/searchlight.gdshader", {"color": [Color(1.0, 0.5, 0.9), Color(0.5, 0.9, 1.0), Color(1.0, 0.8, 0.5)][i]})
+		pivot.add_child(beam)
+		pivot.set_meta("tower", t.index)
+		pivot.set_meta("phase", float(i) * 2.1)
+		_searchlights.append(pivot)
+
+
+var _bridge_mm: MultiMesh
+var _bridges: Array = []
+
+
+func _build_skybridges() -> void:
+	_bridge_mm = MultiMesh.new()
+	_bridge_mm.transform_format = MultiMesh.TRANSFORM_3D
+	_bridge_mm.use_colors = true
+	var box := BoxMesh.new()
+	box.size = Vector3.ONE
+	box.material = _shader_material("res://assets/shaders/neon_edge.gdshader", {"intensity": 1.6})
+	_bridge_mm.mesh = box
+	# Pair up towers that stand close together at a similar depth.
+	for i in _towers.size():
+		for j in range(i + 1, _towers.size()):
+			var a := _towers[i]
+			var b := _towers[j]
+			if absf(a.z - b.z) < 12.0 and absf(a.x - b.x) > (a.width + b.width) * 0.5 + 4.0 and absf(a.x - b.x) < 45.0:
+				_bridges.append([i, j, _rng.randf_range(20.0, 90.0)])
+				break
+		if _bridges.size() >= 16:
+			break
+	_bridge_mm.instance_count = _bridges.size()
+	for k in _bridges.size():
+		_bridge_mm.set_instance_color(k, [Color(0.4, 0.9, 1.0), Color(1.0, 0.4, 0.8)][k % 2])
+	var mmi := MultiMeshInstance3D.new()
+	mmi.multimesh = _bridge_mm
+	mmi.name = "Skybridges"
+	add_child(mmi)
+	_place_bridges()
+
+
+func _place_bridges() -> void:
+	for k in _bridges.size():
+		var a := _towers[_bridges[k][0]]
+		var b := _towers[_bridges[k][1]]
+		var drop: float = _bridges[k][2]
+		var y := minf(a.top, b.top) - drop
+		var mid := Vector3((a.x + b.x) * 0.5, y, (a.z + b.z) * 0.5)
+		var length := absf(a.x - b.x)
+		_bridge_mm.set_instance_transform(k, Transform3D(Basis().scaled(Vector3(length, 1.2, 3.0)), mid))
+
+
 # ----------------------------------------------------------------- update --
 func _process(delta: float) -> void:
 	var cam := _camera_pos()
+	_airship_x += delta * 4.0
+	if _airship_x > 220.0:
+		_airship_x = -160.0
+	if _airship != null:
+		_airship.position = Vector3(cam.x + _airship_x, cam.y + 55.0, -190.0)
+	var now := Time.get_ticks_msec() / 1000.0
+	for pivot in _searchlights:
+		var tower := _towers[pivot.get_meta("tower")]
+		pivot.position = Vector3(tower.x, tower.top + (tower.crown_size.y if tower.crown >= 0 else 0.0), tower.z)
+		pivot.rotation = Vector3(0.0, 0.0, sin(now * 0.35 + pivot.get_meta("phase")) * 0.5)
+	_place_bridges()
 	var anchor := Vector3(cam.x, cam.y, 0.0)
 	for node in _follow:
 		node.position = anchor + node.get_meta("offset")

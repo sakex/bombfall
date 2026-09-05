@@ -1,0 +1,10 @@
+[gd_scene load_steps=3 format=3]
+
+[ext_resource type="Script" path="res://src/special_levels/vault.gd" id="1"]
+[ext_resource type="PackedScene" path="res://assets/models/vault_door.glb" id="2"]
+
+[node name="Vault" type="Node3D"]
+script = ExtResource("1")
+
+[node name="Door" parent="." instance=ExtResource("2")]
+transform = Transform3D(1.4, 0, 0, 0, 1.4, 0, 0, 0, 1.4, 8.5, -5.0, -2.2)

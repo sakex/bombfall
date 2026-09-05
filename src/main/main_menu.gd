@@ -20,8 +20,8 @@ func _ready() -> void:
 	world.is_preview = true
 	world.tracked = preview_target
 	rig.target = preview_target
-	rig.y_offset = 14.0
-	rig.camera.rotation.x = deg_to_rad(-9.0)
+	rig.y_offset = 8.5
+	rig.camera.rotation.x = deg_to_rad(-2.5)
 	preview_target.position = Vector3(Grid.CENTER_X, -4.0, 0.0)
 	rig.snap()
 	store = StorePopup.new()
@@ -41,6 +41,16 @@ func _ready() -> void:
 	store._refresh()
 	if not SaveData.data["offered_tutorial"]:
 		tutorial_modal.open()
+	_refresh_stats()
+	SaveData.changed.connect(func(_d): _refresh_stats())
+	for label in [$Ui/Layout/VBox/Title, $Ui/Layout/VBox/Title2]:
+		var t := create_tween().set_loops()
+		t.tween_property(label, "scale", Vector2(1.04, 1.04), 1.1).set_trans(Tween.TRANS_SINE)
+		t.tween_property(label, "scale", Vector2.ONE, 1.1).set_trans(Tween.TRANS_SINE)
+
+
+func _refresh_stats() -> void:
+	%Stats.text = "best %d   -   %d coins" % [int(SaveData.data["max_score"]["score"]), int(SaveData.data["coins"])]
 
 
 func _process(delta: float) -> void:

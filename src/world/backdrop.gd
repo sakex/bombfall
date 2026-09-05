@@ -126,12 +126,31 @@ func _box(size: Vector3, at: Vector3, material: Material) -> void:
 	add_child(mi)
 
 
+var _spinners: Array[Node3D] = []
+var _swayers: Array[Node3D] = []
+
+
 func _decor(path: String, at: Vector3) -> void:
 	if not ResourceLoader.exists(path):
 		return
 	var decor: Node3D = (load(path) as PackedScene).instantiate()
 	decor.position = at
 	add_child(decor)
+	# Named pivots the Blender scripts left for us to animate.
+	for node in decor.find_children("spin_*", "Node3D", true, false):
+		_spinners.append(node)
+	for node in decor.find_children("sway_*", "Node3D", true, false):
+		_swayers.append(node)
+	set_process(not _spinners.is_empty() or not _swayers.is_empty())
+
+
+func _process(delta: float) -> void:
+	var t := Time.get_ticks_msec() / 1000.0
+	for node in _spinners:
+		node.rotation.y += delta * 2.5
+	for node in _swayers:
+		node.rotation.z = sin(t * 1.3 + node.position.x) * 0.12
+		node.rotation.x = cos(t * 0.9 + node.position.x) * 0.06
 
 
 static func _plain(color: Color) -> StandardMaterial3D:

@@ -20,9 +20,11 @@ func _ready() -> void:
 	menu_button.pressed.connect(func(): main_menu.emit())
 
 
-func show_game_over(score: int, can_revive: bool) -> void:
+func show_game_over(score: int, can_revive: bool, depth: int = 0, previous_best: int = 0) -> void:
 	score_label.text = "SCORE %d" % score
-	best_label.text = "BEST %d" % int(SaveData.data["max_score"]["score"])
+	var best := int(SaveData.data["max_score"]["score"])
+	best_label.text = "BEST %d   .   DEPTH %d m   .   COINS %d" % [best, depth, int(SaveData.data["coins"])]
+	%NewBest.visible = score > previous_best and score > 0
 	revive_button.visible = can_revive
 	revive_button.text = "revive (%d coins)" % Game.REVIVE_COST
 	revive_button.disabled = not SaveData.can_afford(Game.REVIVE_COST)

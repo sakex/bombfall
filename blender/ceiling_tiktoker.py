@@ -19,8 +19,9 @@ for i in range(30):
     x = 0.3 + i * 0.5
     sphere(0.035, (x, D - 0.2, -0.15 - abs(math.sin(i * 0.8)) * 0.35), [NEON_PINK, NEON_YELLOW, NEON_CYAN][i % 3], segments=6, rings=4)
 cable_drape(0.3, 15.0, D - 0.2, -0.1, sag=0.3, m=PLASTIC_BLACK, segments=10, r=0.008)
-rod((12.5, D - 1.0, 0.0), (12.5, D - 1.0, -0.5), 0.01, PLASTIC_BLACK, verts=4)
-sphere(0.4, (12.5, D - 1.0, -0.95), neon((1.0, 0.6, 0.8), 1.2, (0.5, 0.3, 0.4)), segments=12, rings=8)
+lan = pivot("sway_lantern", (12.5, D - 1.0, 0.0))
+rod((12.5, D - 1.0, 0.0), (12.5, D - 1.0, -0.5), 0.01, PLASTIC_BLACK, verts=4, parent=lan)
+sphere(0.4, (12.5, D - 1.0, -0.95), neon((1.0, 0.6, 0.8), 1.2, (0.5, 0.3, 0.4)), segments=12, rings=8, parent=lan)
 
 join_static("decor")
 export("ceiling_tiktoker")

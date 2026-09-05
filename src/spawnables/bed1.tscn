@@ -10,6 +10,9 @@ size = Vector3(5.8, 1.6, 2.2)
 collision_layer = 32
 collision_mask = 2875
 mass = 100
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.36, 0)
+angular_damp = 1.5
 can_sleep = false
 script = ExtResource("1")
 

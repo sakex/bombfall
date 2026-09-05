@@ -262,3 +262,95 @@ def block():
     """A 1 m crystal block the boss's shots leave behind, centred."""
     cube((0.95, 0.95, 0.95), (0, 0, 0), neon((0.5, 0.2, 0.9), 1.0, (0.25, 0.1, 0.45)), bevel=0.12)
     cube((0.6, 0.6, 0.6), (0, 0, 0), neon((0.9, 0.5, 1.0), 3.0), rot=(0.6, 0.4, 0.3), bevel=0.05)
+
+
+def slot_machine():
+    """A one-armed bandit 1.6 m wide, 2.6 m tall: pull the 'lever' pivot
+    (the game does it when something hits the machine) and the reels spin."""
+    BODY = ((0.18, 0.05, 0.22), 0.4, 0.4)
+    cube((1.5, 1.2, 2.0), (0, 0, 1.0), BODY, bevel=0.05)
+    cube((1.5, 0.9, 0.6), (0, 0.1, 2.3), BODY, bevel=0.05)
+    cube((1.3, 0.03, 0.4), (0, -0.46, 2.3), NEON_YELLOW, bevel=0.0, name="marquee")
+    cube((1.2, 0.04, 0.6), (0, -0.62, 1.4), PLASTIC_BLACK, bevel=0.0)
+    for j in range(3):
+        r = pivot("reel_%d" % (j + 1), (-0.36 + j * 0.36, -0.55, 1.4))
+        cyl(0.26, 0.3, (-0.36 + j * 0.36, -0.55, 1.4), (WHITE, 0.6, 0.0), rot=(0, math.pi / 2, 0), verts=12, parent=r)
+        for k in range(4):
+            a = k * math.pi / 2
+            cube((0.2, 0.03, 0.14), (-0.36 + j * 0.36, -0.55 + math.cos(a) * 0.27, 1.4 + math.sin(a) * 0.27), [NEON_RED, NEON_YELLOW, NEON_GREEN, NEON_CYAN][(k + j) % 4], rot=(-a, 0, 0), bevel=0.0, parent=r)
+    cube((1.3, 0.5, 0.1), (0, -0.4, 0.95), METAL_GOLD, bevel=0.02)
+    cube((0.9, 0.2, 0.3), (0, -0.5, 0.45), PLASTIC_BLACK, bevel=0.02)            # coin tray
+    lv = pivot("lever", (0.82, 0.2, 1.6))
+    rod((0.82, 0.2, 1.6), (0.95, 0.2, 2.5), 0.04, METAL_CHROME, parent=lv)
+    sphere(0.12, (0.95, 0.2, 2.55), ((0.85, 0.05, 0.05), 0.3, 0.0), segments=10, rings=8, parent=lv)
+    for i in range(10):
+        sphere(0.04, (-0.6 + i * 0.133, -0.47, 2.62), NEON_YELLOW if i % 2 else NEON_WHITE, segments=5, rings=4)
+    cube((0.5, 0.03, 0.2), (0, -0.46, 0.7), NEON_RED, bevel=0.0)
+
+
+def arcade_cabinet():
+    """An arcade cabinet 1.4 m wide, 2.9 m tall with a glowing screen and
+    marquee (the game animates the 'screen' material)."""
+    BODY = ((0.10, 0.10, 0.35), 0.5, 0.2)
+    cube((1.3, 1.2, 2.2), (0, 0, 1.1), BODY, bevel=0.04)
+    cube((1.3, 0.7, 0.6), (0, 0.2, 2.5), BODY, bevel=0.04)
+    cube((1.15, 0.03, 0.4), (0, -0.16, 2.5), NEON_PINK, bevel=0.0, name="marquee")
+    cube((1.05, 0.04, 0.85), (0, -0.55, 1.75), SCREEN_CYAN, rot=(0.25, 0, 0), bevel=0.0, name="screen")
+    cube((1.2, 0.5, 0.12), (0, -0.45, 1.25), PLASTIC_BLACK, bevel=0.02)
+    for j in range(4):
+        sphere(0.05, (-0.3 + j * 0.2, -0.5, 1.33), [NEON_RED, NEON_CYAN, NEON_YELLOW, NEON_GREEN][j], segments=6, rings=4)
+    rod((0.45, -0.5, 1.3), (0.45, -0.55, 1.5), 0.02, METAL_CHROME, verts=5)
+    sphere(0.05, (0.45, -0.55, 1.52), NEON_RED, segments=6, rings=4)
+    cube((0.16, 0.02, 0.06), (-0.4, -0.61, 0.7), NEON_YELLOW, bevel=0.0)             # coin slot
+    for s in (-1, 1):
+        cube((0.05, 0.4, 2.2), (s * 0.66, -0.3, 1.1), NEON_CYAN if s > 0 else NEON_PINK, bevel=0.0)
+
+
+def bumper():
+    """A pinball bumper 1.2 m across: a mushroom that flings things away
+    when hit (the game flashes the 'cap')."""
+    cyl(0.5, 0.3, (0, 0, 0.15), METAL_CHROME, verts=20)
+    cyl(0.35, 0.5, (0, 0, 0.55), ((0.85, 0.05, 0.1), 0.3, 0.0), verts=16)
+    cyl(0.62, 0.12, (0, 0, 0.86), ((0.85, 0.05, 0.1), 0.3, 0.0), r2=0.55, verts=20, name="cap")
+    cyl(0.4, 0.06, (0, 0, 0.95), NEON_YELLOW, verts=16, name="cap_light")
+    torus(0.58, 0.04, (0, 0, 0.86), NEON_WHITE, major_segments=24)
+    for i in range(8):
+        a = i / 8.0 * math.tau
+        cube((0.08, 0.03, 0.12), (math.cos(a) * 0.48, math.sin(a) * 0.48, 0.55), NEON_CYAN, rot=(0, 0, a), bevel=0.0)
+
+
+def air_fan():
+    """A floor fan 2 m across that blows things upward; the 'blades' pivot spins."""
+    cube((2.0, 2.0, 0.3), (0, 0, 0.15), METAL_DARK, bevel=0.05)
+    cyl(0.9, 0.5, (0, 0, 0.55), METAL_STEEL, verts=24)
+    cyl(0.78, 0.55, (0, 0, 0.56), PLASTIC_BLACK, verts=24)
+    b = pivot("blades", (0, 0, 0.6))
+    cyl(0.12, 0.3, (0, 0, 0.6), METAL_CHROME, verts=10, parent=b)
+    for i in range(5):
+        a = i / 5.0 * math.tau
+        cube((0.6, 0.22, 0.03), (math.cos(a) * 0.42, math.sin(a) * 0.42, 0.62), ((0.3, 0.32, 0.36), 0.4, 0.5), rot=(0.5, 0, a), bevel=0.0, parent=b)
+    for i in range(6):
+        cube((1.6, 0.04, 0.02), (0, -0.7 + i * 0.28, 0.85), METAL_STEEL, bevel=0.0)  # grille
+    torus(0.85, 0.05, (0, 0, 0.85), NEON_CYAN, major_segments=28)
+    cube((0.6, 0.06, 0.1), (0, -1.0, 0.2), NEON_GREEN, bevel=0.0)
+
+
+def vault_door():
+    """A bank-vault door 6 m across (fills the shaft interior), with a wheel
+    handle and bolts. Centred, facing -Y. Explosions crack it open."""
+    cyl(3.0, 0.9, (0, 0, 0), METAL_STEEL, rot=(math.pi / 2, 0, 0), verts=40, bevel=0.08)
+    cyl(2.6, 1.0, (0, 0, 0), METAL_DARK, rot=(math.pi / 2, 0, 0), verts=40, bevel=0.04)
+    torus(2.75, 0.08, (0, -0.5, 0), NEON_YELLOW, rot=(math.pi / 2, 0, 0), major_segments=40)
+    for i in range(16):
+        a = i / 16.0 * math.tau
+        cyl(0.18, 0.2, (math.cos(a) * 2.35, -0.55, math.sin(a) * 2.35), METAL_CHROME, rot=(math.pi / 2, 0, 0), verts=10)
+    w = pivot("wheel", (0, -0.6, 0))
+    torus(0.9, 0.1, (0, -0.7, 0), METAL_CHROME, rot=(math.pi / 2, 0, 0), major_segments=28, parent=w)
+    for i in range(6):
+        a = i / 6.0 * math.tau
+        rod((0, -0.7, 0), (math.cos(a) * 0.9, -0.7, math.sin(a) * 0.9), 0.06, METAL_CHROME, parent=w)
+    sphere(0.22, (0, -0.72, 0), METAL_CHROME, segments=12, rings=8, parent=w)
+    cube((1.4, 0.06, 0.4), (0, -0.55, 1.6), PLASTIC_BLACK, bevel=0.02)
+    cube((1.2, 0.02, 0.25), (0, -0.59, 1.6), NEON_RED, bevel=0.0, name="lock_light")
+    for s in (-1, 1):
+        cube((0.5, 0.5, 5.6), (s * 3.05, 0.0, 0), METAL_DARK, bevel=0.05)          # hinges frame

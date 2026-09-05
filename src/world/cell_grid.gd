@@ -7,18 +7,22 @@ extends Node3D
 ## costs no scene nodes at all and an explosion can punch a hole by simply
 ## dropping a few cells.
 
-enum Kind { FLOOR, JUNK }
+enum Kind { FLOOR, JUNK, STEEL }
 
 const MODELS := {
 	Kind.FLOOR: "res://assets/models/tile_floor.glb",
 	Kind.JUNK: "res://assets/models/tile_junk.glb",
+	Kind.STEEL: "res://assets/models/tile_steel.glb",
 }
+## Blasts a cell can take before it goes.
+const HIT_POINTS := {Kind.FLOOR: 1, Kind.JUNK: 1, Kind.STEEL: 3}
 const CAPACITY := 1024
 
 class Cell:
 	var kind: int
 	var body: RID
 	var instance: int
+	var hp: int = 1
 
 
 var _cells: Dictionary = {}          # Vector2i(cx, row) -> Cell
@@ -91,6 +95,7 @@ func set_cell(cx: int, row: int, kind: int) -> void:
 		return
 	var cell := Cell.new()
 	cell.kind = kind
+	cell.hp = HIT_POINTS.get(kind, 1)
 	cell.instance = slots.pop_back()
 	var xform := Transform3D(Basis(), Grid.cell_center(cx, row))
 	_multimeshes[kind].set_instance_transform(cell.instance, xform)
@@ -118,9 +123,11 @@ func remove_cell(cx: int, row: int) -> bool:
 	return true
 
 
-## Removes every cell whose centre lies within [param radius] of [param center].
+## Blasts every cell whose centre lies within [param radius] of [param center];
+## cells with hit points left are only damaged. [param blast_id] lets one
+## explosion damage a tough cell once rather than every frame it grows.
 ## Returns how many cells were destroyed.
-func destroy_in_sphere(center: Vector3, radius: float) -> int:
+func destroy_in_sphere(center: Vector3, radius: float, blast_id: int = 0) -> int:
 	var destroyed := 0
 	var c0 := Grid.col_of(center.x - radius) - 1
 	var c1 := Grid.col_of(center.x + radius) + 1
@@ -133,9 +140,29 @@ func destroy_in_sphere(center: Vector3, radius: float) -> int:
 				continue
 			var p := Grid.cell_center(cx, row)
 			if Vector2(p.x, p.y).distance_to(Vector2(center.x, center.y)) <= reach:
+				var cell: Cell = _cells[Vector2i(cx, row)]
+				if cell.hp > 1:
+					if blast_id != 0 and _hit_by.get(Vector2i(cx, row), 0) == blast_id:
+						continue
+					_hit_by[Vector2i(cx, row)] = blast_id
+					cell.hp -= 1
+					_shake(cell)
+					continue
+				_hit_by.erase(Vector2i(cx, row))
 				remove_cell(cx, row)
 				destroyed += 1
 	return destroyed
+
+
+var _hit_by: Dictionary = {}
+
+
+## Nudges a damaged cell's instance so the hit reads visually.
+func _shake(cell: Cell) -> void:
+	var mm: MultiMesh = _multimeshes[cell.kind]
+	var xform: Transform3D = mm.get_instance_transform(cell.instance)
+	xform.basis = Basis().rotated(Vector3.FORWARD, randf_range(-0.12, 0.12)).scaled(Vector3(0.94, 0.94, 0.94))
+	mm.set_instance_transform(cell.instance, xform)
 
 
 ## Clears every cell in rows row0..row1 (inclusive).

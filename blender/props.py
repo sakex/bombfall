@@ -66,7 +66,7 @@ def neon_sign(text, x, y, z, m, cell=0.16, gap=0.6, backing=None):
         for r, row in enumerate(rows):
             for c, bit in enumerate(row):
                 if bit == "1":
-                    cube((cell * 0.9, 0.06, cell * 0.9), (cx + c * cell, y, z + (4 - r) * cell), m, bevel=0.01)
+                    cube((cell * 0.9, 0.06, cell * 0.9), (cx + c * cell, y, z + (4 - r) * cell), m, bevel=0.0)
         cx += cell * 3 + cell * gap
     width = cx - x - cell * gap
     if backing is not None:

@@ -51,8 +51,9 @@ func _pause() -> void:
 
 func _on_player_died(score: int) -> void:
 	get_tree().paused = true
+	var previous_best := int(SaveData.data["max_score"]["score"])
 	_record(score)
-	death_screen.show_game_over(score, allow_revive)
+	death_screen.show_game_over(score, allow_revive, maxi(int(-player.position.y), 0), previous_best)
 
 
 func _record(score: int) -> void:

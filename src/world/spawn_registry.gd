@@ -41,7 +41,7 @@ static func _ensure() -> void:
 			_specs[s.id] = s
 		else:
 			print("SpawnRegistry: '%s' skipped, missing scene %s" % [s.id, s.scene_path])
-	for entry in [["shield_battery", 10], ["shield_core", 2], ["magnet", 4], ["crate", 1]]:
+	for entry in [["shield_battery", 10], ["shield_core", 2], ["magnet", 4], ["crate", 1], ["doubler", 3]]:
 		var s: SpawnableSpec = _specs.get(entry[0])
 		if s == null:
 			continue
@@ -90,11 +90,17 @@ static func _build_specs() -> Array[SpawnableSpec]:
 	out.append(SpawnableSpec.new("cake", SCENES + "cake.tscn", Vector2i(1, 1), 1).floor())
 	out.append(SpawnableSpec.new("chair", SCENES + "chair.tscn", Vector2i(3, 3), 1).floor())
 	out.append(SpawnableSpec.new("table_with_chairs", SCENES + "table_with_chairs.tscn", Vector2i(5, 4), 1).floor())
+	# Arcade and casino toys.
+	out.append(SpawnableSpec.new("arcade_cabinet", SCENES + "arcade_cabinet.tscn", Vector2i(2, 3), 1).floor().per_level(3))
+	out.append(SpawnableSpec.new("slot_machine", SCENES + "slot_machine.tscn", Vector2i(2, 3), 2).floor().per_level(2))
+	out.append(SpawnableSpec.new("bumper", SCENES + "bumper.tscn", Vector2i(2, 2), 3).floor().per_level(3).level_bound())
+	out.append(SpawnableSpec.new("air_fan", SCENES + "air_fan.tscn", Vector2i(2, 2), 4).floor().per_level(2).level_bound())
 	# Shield items.
 	out.append(SpawnableSpec.new("shield_battery", SCENES + "shield_battery.tscn", Vector2i(2, 3), 10).floor())
 	out.append(SpawnableSpec.new("shield_core", SCENES + "shield_core.tscn", Vector2i(2, 3), 2).floor())
 	out.append(SpawnableSpec.new("magnet", SCENES + "magnet.tscn", Vector2i(2, 3), 4).floor())
 	out.append(SpawnableSpec.new("crate", SCENES + "crate.tscn", Vector2i(2, 3), 1).floor())
+	out.append(SpawnableSpec.new("doubler", SCENES + "doubler.tscn", Vector2i(2, 3), 3).floor())
 	return out
 
 
@@ -166,6 +172,16 @@ static func _build_themes() -> Array[Dictionary]:
 			"id": "room2", "windows": [Rect2(3.0, 4.7, 4.0, 1.9), Rect2(1.1, 7.6, 2.6, 1.1), Rect2(6.2, 7.6, 2.6, 1.1), Rect2(11.3, 7.6, 2.6, 1.1)], "height": 16,
 			"spawnables": ["chair", "table_with_chairs", "roped_bomb_two_ways", "drone", "toilet", "desktop", "wallgun", "tv"],
 			"wall": Color(0.13, 0.18, 0.42), "trim": Color(0.4, 0.55, 1.0), "floor": Color(0.21, 0.26, 0.52),
+		},
+		{
+			"id": "arcade", "windows": [Rect2(0.5, 5.6, 3.2, 1.6), Rect2(10.3, 5.6, 3.8, 1.6), Rect2(4.6, 6.0, 5.4, 1.3)], "height": 16,
+			"spawnables": ["arcade_cabinet", "bumper", "air_fan", "chair", "drone", "roped_bomb", "button", "trampoline", "champagne", "tv"],
+			"wall": Color(0.16, 0.08, 0.34), "trim": Color(1.0, 0.35, 0.8), "floor": Color(0.14, 0.06, 0.28),
+		},
+		{
+			"id": "casino", "windows": [Rect2(5.6, 5.85, 4.4, 1.05), Rect2(11.0, 6.0, 3.0, 0.9)], "height": 15,
+			"spawnables": ["slot_machine", "table_with_chairs", "champagne", "cake", "statue", "light_ring", "drone", "wallgun", "bumper", "roped_painting", "button"],
+			"wall": Color(0.42, 0.08, 0.16), "trim": Color(1.0, 0.8, 0.3), "floor": Color(0.5, 0.07, 0.1),
 		},
 		{
 			"id": "toilet1", "windows": [Rect2(7.0, 3.2, 3.6, 1.6), Rect2(2.0, 7.9, 2.0, 1.0), Rect2(6.5, 7.9, 2.0, 1.0), Rect2(11.0, 7.9, 2.0, 1.0)], "height": 16,

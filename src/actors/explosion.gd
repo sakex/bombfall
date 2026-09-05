@@ -72,4 +72,4 @@ func _blast() -> void:
 		if area.has_method("kill"):
 			area.call_deferred("kill")
 	if _cells != null:
-		_cells.destroy_in_sphere(global_position, _radius)
+		_cells.destroy_in_sphere(global_position, _radius, get_instance_id())
