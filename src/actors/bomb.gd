@@ -33,6 +33,9 @@ func _ready() -> void:
 	detection.body_entered.connect(_on_player_near)
 	_ring_material = ModelUtil.own_material(ModelUtil.find_mesh(model, "ring"))
 	_display_material = ModelUtil.own_material(ModelUtil.find_mesh(model, "display"))
+	# Every bomb gets its own shape: the scene's shape resource is shared by
+	# all instances, and resizing it for one bomb used to resize them all.
+	shape.shape = shape.shape.duplicate()
 	set_bomb_scale(bomb_scale)
 	if no_collisions:
 		collision_layer = 0

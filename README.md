@@ -108,7 +108,8 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
   re-centering, draggable d-pads of the better mobile platformers: press to
   one side of where the thumb last was and you run that way at once, the
   base trails the thumb so reversing is a slide of a few millimetres, and
-  the dead zone is five pixels with near-full speed within a fingertip.
+  past a five-pixel dead zone it is always full speed, like the original
+  arrow buttons.
   Anywhere on the right half jumps; the round button is only a hint.
 * **Buttons.** Slanted synthwave panels with a cyan edge, a hot-pink glow
   and a chunky base; the play button is the pink hero of the title screen.
@@ -137,6 +138,14 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
   move without any extra nodes.
 * **Run cycle.** No more somersault; the runner strides with knee lift,
   pumps the opposite arm, leans into the run and bobs with each step.
+* **Shove and head bump.** Pushing a bomb or a prop puts the runner into a
+  shove pose (arms out, shoulders in, a slow heavy stride), and jumping into
+  a bomb from below knocks it up and away with a clang.
+* **Bombs rest on the floor.** Every bomb shared one collision sphere, and
+  resizing it for one bomb resized them all, so small bombs floated and big
+  ones sank into the tiles. Bombs, light rings and explosions now own their
+  shapes; a harness scenario checks a half-size and a full-size bomb both
+  sit exactly on the floor.
 * **Weight.** World gravity went from Godot's 9.8 to 30 m/s² (bombs and
   coins keep their old fall rate through their gravity scale), pushes are
   applied low and scale with mass, so a bottle skids, a toilet lumbers and

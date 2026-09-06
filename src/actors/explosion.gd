@@ -27,6 +27,7 @@ func set_explosion_scale(bomb_scale: float) -> void:
 
 
 func _ready() -> void:
+	shape.shape = shape.shape.duplicate()   # grows per blast, so never shared
 	_cells = get_tree().get_first_node_in_group("cell_grid") as CellGrid
 	if harmless:
 		collision_mask = 0

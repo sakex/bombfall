@@ -30,6 +30,7 @@ var _glow: StandardMaterial3D
 
 
 func _ready() -> void:
+	laser_shape.shape = laser_shape.shape.duplicate()   # resized per ring, so never shared
 	add_to_group("props")
 	gravity_scale = 0.78
 	_glow = ModelUtil.own_material(ModelUtil.find_mesh(model, "glow"))

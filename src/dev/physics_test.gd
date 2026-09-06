@@ -20,6 +20,8 @@ func _ready() -> void:
 	await _scenario_land()
 	await _scenario_wall()
 	await _scenario_bomb_hole()
+	await _scenario_head_bump()
+	await _scenario_bomb_rest()
 	await _scenario_coin()
 	await _scenario_rope()
 	await _scenario_trampoline()
@@ -190,6 +192,39 @@ func _scenario_push() -> void:
 	_release_all()
 	var upright := toilet.transform.basis.y.dot(Vector3.UP) > 0.9
 	_check("push_prop", toilet.position.x - start > 0.5 and upright and toilet.position.y > -5.2 and toilet.position.y < -4.6, "moved=%.2f y=%.2f upright=%s" % [toilet.position.x - start, toilet.position.y, upright])
+
+
+## Bombs of different sizes must each rest exactly on the floor: the shape
+## used to be shared between instances, so small ones floated and big ones sank.
+func _scenario_bomb_rest() -> void:
+	await _build()
+	_player.position = Vector3(2.0, -4.0, 0.0)
+	var small := _add(load("res://src/actors/bomb.tscn"), Vector3(6.0, -2.5, 0.0), {"bomb_time": 60.0, "bomb_scale": 0.5})
+	var big := _add(load("res://src/actors/bomb.tscn"), Vector3(11.0, -2.5, 0.0), {"bomb_time": 60.0, "bomb_scale": 1.0})
+	await _frames(150)
+	var floor_top := -5.0
+	var small_gap: float = small.position.y - Bomb.BASE_RADIUS * 0.5 - floor_top
+	var big_gap: float = big.position.y - Bomb.BASE_RADIUS * 1.0 - floor_top
+	_check("bomb_rest_on_floor", absf(small_gap) < 0.04 and absf(big_gap) < 0.04, "small_gap=%.3f big_gap=%.3f" % [small_gap, big_gap])
+
+
+## A bomb sitting on the runner's head gets knocked up and away by a jump.
+func _scenario_head_bump() -> void:
+	await _build()
+	_player.position = Vector3(8.5, -4.0, 0.0)
+	# Held just above the helmet, let go as the jump starts.
+	var bomb := _add(load("res://src/actors/bomb.tscn"), Vector3(8.5, -1.4, 0.0), {"bomb_time": 60.0, "freeze": true})
+	await _frames(60)
+	var rest_y := bomb.position.y
+	(bomb as RigidBody3D).freeze = false
+	Input.action_press("jump")
+	await _frames(8)
+	Input.action_release("jump")
+	await _frames(10)
+	var rise := bomb.position.y - rest_y
+	var vy: float = (bomb as RigidBody3D).linear_velocity.y
+	_release_all()
+	_check("head_bump_bomb", rise > 0.4 or vy > 3.0, "player=(%.2f,%.2f) rest_y=%.2f rise=%.2f vy=%.2f" % [_player.position.x, _player.position.y, rest_y, rise, vy])
 
 
 func _scenario_wall_gun() -> void:

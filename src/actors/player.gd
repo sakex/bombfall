@@ -17,6 +17,7 @@ const SPEED := Vector2(12.5, 21.9)    ## 800 px/s run, 1400 px/s jump
 const PUSH_SPEED := 5.5               ## a light prop we walk into is shoved up to this speed
 const PUSH_GAIN := 0.35
 const PUSH_REF_MASS := 25.0           ## chair-sized; heavier props move slower and creep
+const HEAD_BUMP := 9.5                ## m/s given to a bomb we jump into from below
 const DEATH_ANIMATION_TIME := 2.0
 const FALL_OUT_TIME := 2.0            ## seconds outside the shaft before dying
 const MAGNET_RADIUS_PER_LEVEL := 5.0  ## 320 px per magnet upgrade
@@ -41,6 +42,9 @@ var _death_progress := 0.0
 var _pulling_coins: Array[Coin] = []
 var _run_phase := 0.0
 var _last_stride := 0.0
+var _push_time := 0.0             ## seconds left of the shove pose after a push
+var _pushing := 0.0               ## blend into the shove pose
+var _pre_slide_velocity := Vector3.ZERO
 var _facing := 1.0
 var _was_on_floor := true
 var _squash := 1.0
@@ -141,6 +145,7 @@ func _move(delta: float) -> void:
 	velocity.y = maxf(velocity.y, -SPEED.y)
 	velocity.x = clampf(velocity.x, -SPEED.x, SPEED.x)
 	velocity.z = 0.0
+	_pre_slide_velocity = velocity
 	move_and_slide()
 	position.z = 0.0
 
@@ -153,6 +158,15 @@ func _push_props() -> void:
 			var body := collider as RigidBody3D
 			if body.has_method("turn_off"):
 				body.call_deferred("turn_off")
+			# Jumping into something from below knocks it up and away.
+			if collision.get_normal().y < -0.5 and _pre_slide_velocity.y > 2.0:
+				var away := signf(body.global_position.x - global_position.x)
+				if away == 0.0:
+					away = _facing
+				body.apply_central_impulse(Vector3(away * 0.4, 1.0, 0.0).normalized() * HEAD_BUMP * body.mass)
+				_squash = 1.18
+				Sfx.play("metal_bounce" if body is Bomb else "land", 1.2)
+				continue
 			# Shove sideways only, and only up to a sensible speed, so furniture
 			# slides instead of being launched or flipped.
 			var direction := -collision.get_normal()
@@ -169,6 +183,8 @@ func _push_props() -> void:
 				# Shove low, near the floor, so friction cannot tip tall props over.
 				var impulse := direction * (wanted - current) * body.mass * PUSH_GAIN * heft
 				body.apply_impulse(impulse, Vector3(0.0, 0.12, 0.0))
+			if absf(_intent_x) > 0.5 and direction.x * _facing > 0.0:
+				_push_time = 0.12
 
 
 func _check_fall_out(delta: float) -> void:
@@ -189,8 +205,12 @@ func _animate(delta: float) -> void:
 	model.rotation.y = lerp_angle(model.rotation.y, target_yaw, minf(1.0, delta * 12.0))
 	var running := absf(velocity.x) > 0.5 and _at_floor
 	var speed_t := clampf(absf(velocity.x) / SPEED.x, 0.0, 1.0)
+	# Shove pose: arms out, shoulders in, a slow heavy stride against the load.
+	_push_time = maxf(_push_time - delta, 0.0)
+	var shoving := _push_time > 0.0
+	_pushing = lerpf(_pushing, 1.0 if shoving else 0.0, minf(1.0, delta * (14.0 if shoving else 6.0)))
 	if running:
-		_run_phase += delta * TAU * RUN_CYCLE_HZ * (0.6 + 0.4 * speed_t)
+		_run_phase += delta * TAU * RUN_CYCLE_HZ * (0.6 + 0.4 * speed_t) * (1.0 - 0.45 * _pushing)
 	else:
 		_run_phase = lerpf(_run_phase, roundf(_run_phase / TAU) * TAU, minf(1.0, delta * 10.0))
 	# Run cycle: legs stride with a quick knee lift on the back swing, arms
@@ -204,10 +224,12 @@ func _animate(delta: float) -> void:
 	var airborne := 0.0 if _at_floor else clampf(-velocity.y / SPEED.y, -0.6, 0.6)
 	_set_limb("leg_l", (stride * 1.0 - lift * maxf(0.0, -stride)) * amp + airborne * 0.5)
 	_set_limb("leg_r", (-stride * 1.0 - lift * maxf(0.0, stride)) * amp - airborne * 0.3)
-	_set_limb("arm_l", (-stride * 1.1 - 0.35) * amp - airborne * 1.2)
-	_set_limb("arm_r", (stride * 1.1 - 0.35) * amp - airborne * 1.2)
-	var lean := (0.22 * speed_t) if running else 0.0
+	var shove := -1.45 + sin(_run_phase * 2.0) * 0.08
+	_set_limb("arm_l", lerpf((-stride * 1.1 - 0.35) * amp - airborne * 1.2, shove, _pushing))
+	_set_limb("arm_r", lerpf((stride * 1.1 - 0.35) * amp - airborne * 1.2, shove + 0.1, _pushing))
+	var lean := ((0.22 * speed_t) if running else 0.0) + 0.4 * _pushing
 	model.rotation.x = lerpf(model.rotation.x, lean, minf(1.0, delta * 8.0))
+	model.position.x = lerpf(model.position.x, _facing * 0.12 * _pushing, minf(1.0, delta * 8.0))
 	_animate_extras(delta, running)
 	if is_immune:
 		model.visible = fmod(Time.get_ticks_msec() / 1000.0 * 10.0, TAU) < PI

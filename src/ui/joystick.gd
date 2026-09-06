@@ -9,13 +9,13 @@ extends Control
 ##  * Following base. While dragging, the base trails the thumb and is never
 ##    more than FOLLOW pixels away, so reversing direction is a slide of a few
 ##    millimetres, never all the way back to where the touch began.
-##  * Snappy ramp. A tiny dead zone, then near-full speed within a fingertip.
+##  * Digital. Past a tiny dead zone it is always full speed: the runner has
+##    one pace, like the arrow buttons of the original game.
 ##
-## Feeds move_left / move_right as analog strengths; drawn in code.
+## Feeds move_left / move_right; drawn in code.
 
 const FOLLOW := 44.0             ## max distance between thumb and base (px)
 const DEAD_ZONE := 5.0           ## px before the pad reacts to a drag
-const RAMP := 26.0               ## px of deflection for full speed
 const SNAP := 22.0               ## press this far from the last spot = instant run
 const MEMORY := 20.0             ## seconds the last spot is remembered
 const KNOB := 52.0
@@ -112,10 +112,7 @@ func _update_axis() -> void:
 	if absf(dx) < DEAD_ZONE:
 		_set_axis(0.0)
 		return
-	var strength := clampf((absf(dx) - DEAD_ZONE) / RAMP, 0.0, 1.0)
-	# Any deflection past the dead zone already means "go": start brisk.
-	strength = maxf(strength, 0.6)
-	_set_axis(signf(dx) * strength)
+	_set_axis(signf(dx))
 
 
 func _set_axis(value: float) -> void:
