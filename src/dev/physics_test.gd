@@ -269,7 +269,7 @@ func _scenario_table_set() -> void:
 	var chair_start := chair_l.global_position.x
 	var table_start := table.global_position.x
 	# Shove the table to the right: the chair behind it must stay put.
-	table.apply_central_impulse(Vector3(1.0, 0.0, 0.0) * table.mass * 6.0)
+	table.apply_central_impulse(Vector3(1.0, 0.0, 0.0) * table.mass * 10.0)
 	await _frames(120)
 	var moved := table.global_position.x - table_start
 	var chair_drift := chair_l.global_position.x - chair_start
@@ -279,7 +279,7 @@ func _scenario_table_set() -> void:
 	# table left behind, so it ends up further along than the table did.
 	var table_x := table.global_position.x
 	Input.action_press("move_right")
-	await _frames(60)
+	await _frames(90)
 	_release_all()
 	var chair_moved := chair_l.global_position.x - chair_start
 	var table_moved := table.global_position.x - table_x

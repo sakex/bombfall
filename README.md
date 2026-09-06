@@ -40,6 +40,7 @@ hotel's windows, and a single-language GDScript code base.
 | `src/dev/` | Headless smoke test, the physics regression harness, a sandbox and a harness that forces a special level or theme (excluded from exports). |
 | `blender/` | One Python script per model plus `common.py` (primitives, neon materials, glTF export, preview render), `props.py` (set dressing kit) and `furniture.py` / `hazards.py` (prop builders). `blender/previews/` holds a render of each model. |
 | `assets/models/` | The exported `.glb` files, committed so the game builds without Blender. |
+| `assets/audio/sfx/` | Generated effects (see `tools/gen_sfx.py`); `assets/audio/music/` keeps the original tracks. |
 | `assets/shaders/` | Facade, beacon, car-light, billboard, searchlight, moon, sun, grid, mountain, haze and sky shaders of the city. |
 | `tools/` | `build_models.sh` (rebuild all models), `build_apk.sh` (headless Android export), `gen_prop_scenes.py`. |
 
@@ -84,6 +85,7 @@ godot --headless --path . res://src/dev/smoke_test.tscn     # 40 s scripted run
 godot --headless --path . res://src/dev/physics_test.tscn   # physics scenarios, prints PASS/FAIL
 godot --headless --path . res://src/dev/hitbox_audit.tscn   # collision shapes vs mesh bounds
 godot --headless --path . res://src/dev/doable_test.tscn    # bot plays every special storey
+godot --headless --path . res://src/dev/touch_test.tscn     # fake touches hit the stick and jump zones
 godot --path . res://src/dev/smoke_test.tscn -- --perf      # draw calls / primitives (needs a renderer)
 godot --path . res://src/dev/special_test.tscn -- --special=vault
 godot --path . res://src/dev/special_test.tscn -- --theme=casino
@@ -101,10 +103,10 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
 * **Biker helmet.** The runner wears a full-face coral helmet with a
   flipped-up smoked visor, chrome hinges, racing stripes and a glowing tail
   light; the bomb face still peeks out of the opening.
-* **Thumb stick.** Left/right arrows are gone: slide a thumb anywhere on
-  the lower-left of the screen and the floating stick follows, with analog
-  speed (a short slide walks, a long one runs). The whole lower-right
-  quarter jumps; the round button is only a hint.
+* **Thumb stick.** Left/right arrows are gone: touch anywhere on the left
+  half of the screen and the floating stick appears under the thumb, with
+  analog speed (a short slide walks, a long one runs). Anywhere on the
+  right half jumps; the round button is only a hint.
 * **Buttons.** Slanted synthwave panels with a cyan edge, a hot-pink glow
   and a chunky base; the play button is the pink hero of the title screen.
 * **Synthwave rooms.** Every backdrop got neon tube outlines, sunset
@@ -132,6 +134,17 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
   move without any extra nodes.
 * **Run cycle.** No more somersault; the runner strides with knee lift,
   pumps the opposite arm, leans into the run and bobs with each step.
+* **Weight.** World gravity went from Godot's 9.8 to 30 m/s² (bombs and
+  coins keep their old fall rate through their gravity scale), pushes are
+  applied low and scale with mass, so a bottle skids, a toilet lumbers and
+  a bathtub creeps, and nothing tips over any more.
+* **Sounds.** Every effect is synthesised by `tools/gen_sfx.py` (pure
+  Python, no samples): coin pings, jump chirp, landing thud, footsteps,
+  shield zap, crushed death arpeggio, boom with a sub, bomb clang, pickup
+  chimes, bumper boing, slot reels and jackpot, plasma pew, laser buzz,
+  fire, vault clang, steel dent, lobby door, bat screech, heart, menu
+  swoosh and button clicks. `Sfx.play("name")` plays any of them from a
+  pooled autoload that also clicks every button automatically.
 * **Performance.** Cells are drawn in row bands that get frustum-culled
   instead of one giant MultiMesh, the tile, coin, bomb and player meshes
   lost most of their triangles, and `smoke_test.tscn -- --perf` reports

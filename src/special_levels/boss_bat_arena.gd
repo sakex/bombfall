@@ -61,6 +61,7 @@ func _process(delta: float) -> void:
 			_boss_awake = true
 			boss.start()
 			heart.enable_heart()
+			Sfx.play("bat")
 	var boss_alive := is_instance_valid(boss)
 	if _boss_awake and boss_alive and not boss.is_dying() and _ladder_built < LADDER_STEPS.size():
 		_ladder_time += delta
@@ -107,6 +108,7 @@ func _on_player_exited(body: Node) -> void:
 func _level_won() -> void:
 	if OS.is_debug_build():
 		print("BossBatArena: heart taken")
+	Sfx.play("heart")
 	boss.set_dying()
 	# The crystals shatter with the heart so the bat drops straight to the floor.
 	for block in get_tree().get_nodes_in_group("boss_blocks"):

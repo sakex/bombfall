@@ -49,7 +49,7 @@ func _on_hit(body: Node) -> void:
 		speed = body.velocity.length()
 	if speed >= HIT_SPEED:
 		_spinning = SPIN_TIME
-		sfx.play()
+		Sfx.play("slot_spin")
 
 
 func _process(delta: float) -> void:
@@ -75,6 +75,7 @@ func _payout() -> void:
 	var roll := randf()
 	var tray := global_position + Vector3(0.0, 0.7, 0.0) + global_transform.basis.z * 0.9
 	if roll < 0.6:
+		Sfx.play("slot_win")
 		var each := maxi(coin_budget / 3, 1)
 		for i in 3:
 			var coin: Coin = COIN.instantiate()

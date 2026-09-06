@@ -96,6 +96,7 @@ func _process(delta: float) -> void:
 func _shoot() -> void:
 	if player == null or _dying:
 		return
+	Sfx.play("plasma", 0.8)
 	var to_player := player.global_position + Vector3(0, 0.7, 0) - global_position
 	to_player.z = 0.0
 	var direction := to_player.normalized()

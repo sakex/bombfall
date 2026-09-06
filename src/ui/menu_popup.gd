@@ -51,6 +51,7 @@ func _build() -> void:
 func open() -> void:
 	_refresh()
 	visible = true
+	Sfx.play("swoosh")
 
 
 func close() -> void:

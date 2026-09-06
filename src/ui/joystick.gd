@@ -26,7 +26,7 @@ func _ready() -> void:
 
 
 func _place_rest() -> void:
-	_rest = Vector2(RADIUS + 90.0, size.y - 150.0)
+	_rest = Vector2(RADIUS + 90.0, size.y - 170.0)
 	if _touch_index < 0:
 		_anchor = _rest
 		_knob = _rest

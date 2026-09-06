@@ -27,6 +27,7 @@ func _on_body(body: Node) -> void:
 	if body == self or not body.has_method("kill"):
 		return
 	body.call_deferred("kill")
+	Sfx.play("fire")
 	if not _kills.has(body):
 		_kills.append(body)
 		if _kills.size() >= MAX_KILLS:

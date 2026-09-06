@@ -7,7 +7,7 @@ signal pause_pressed
 
 const BUTTON_MARGIN := 44.0
 const BUTTON_SIZE := 210.0
-const TOUCH_ZONE_HEIGHT := 0.4      ## fraction of the screen the thumbs own
+const TOP_BAR_HEIGHT := 160.0       ## score panel and pause button live here
 
 var _player: Player
 var _score_tween: Tween
@@ -79,14 +79,18 @@ func set_touch_controls_visible(visible: bool) -> void:
 	$Touch.visible = visible
 
 
-## The left half of the lower screen is the joystick, the right half jumps:
-## the visible button is only a hint, the whole zone reacts.
+## The whole left half of the screen is the stick and the whole right half
+## jumps (below the top bar, which keeps the pause button); the round button
+## is only a hint, the zones react anywhere.
 func _layout_touch() -> void:
 	var size := get_viewport().get_visible_rect().size
-	var zone_h := size.y * TOUCH_ZONE_HEIGHT
-	joystick.position = Vector2(0.0, size.y - zone_h)
-	joystick.size = Vector2(size.x * 0.5, zone_h)
-	jump_zone.position = Vector2(size.x * 0.5, size.y - zone_h)
-	(jump_zone.shape as RectangleShape2D).size = Vector2(size.x * 0.5, zone_h)
+	var top := TOP_BAR_HEIGHT
+	joystick.position = Vector2(0.0, top)
+	joystick.size = Vector2(size.x * 0.5, size.y - top)
+	var zone := Vector2(size.x * 0.5, size.y - top)
+	(jump_zone.shape as RectangleShape2D).size = zone
+	# A RectangleShape2D is centred on the node, so park the node mid-zone.
+	jump_zone.position = Vector2(size.x * 0.75, top + zone.y * 0.5)
 	jump_hint.size = Vector2(BUTTON_SIZE, BUTTON_SIZE)
 	jump_hint.position = Vector2(size.x - BUTTON_MARGIN - BUTTON_SIZE, size.y - BUTTON_MARGIN - BUTTON_SIZE)
+

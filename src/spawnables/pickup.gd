@@ -38,11 +38,14 @@ func _on_body(body: Node) -> void:
 		Kind.SHIELD_CORE:
 			body.increment_max_shield()
 		Kind.MAGNET:
+			Sfx.play("magnet_up")
 			body.increase_magnet()
 		Kind.CRATE:
+			Sfx.play("crate_open")
 			body.increment_shield(2)
 			_spawn_coins()
 		Kind.DOUBLER:
+			Sfx.play("doubler_up")
 			body.activate_doubler()
 	item.queue_free()
 

@@ -65,6 +65,7 @@ func _physics_process(delta: float) -> void:
 				_glow.emission = Color(0.6, 0.3, 1.0).lerp(Color(1.0, 0.25, 0.6), _charge)
 		else:
 			_laser_on = true
+			Sfx.play("laser_on")
 	if _laser_on and _beam < 1.0:
 		_set_beam(minf(_beam + delta / LASER_ON_TIME, 1.0))
 	elif not _laser_on and _beam > 0.0:

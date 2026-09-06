@@ -104,6 +104,7 @@ func _on_end_door(body: Node) -> void:
 	if _entered or not (body is Player):
 		return
 	_entered = true
+	Sfx.play("door")
 	var player := body as Player
 	Game.blink(func():
 		player.outside_ok = false

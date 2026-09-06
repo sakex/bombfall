@@ -29,6 +29,7 @@ SaveData="*res://src/autoload/save_data.gd"
 Music="*res://src/autoload/music.gd"
 Services="*res://src/autoload/services.gd"
 Game="*res://src/autoload/game.gd"
+Sfx="*res://src/autoload/sfx.gd"
 
 [display]
 
@@ -90,7 +91,7 @@ pointing/android/enable_long_press_as_right_click=false
 [physics]
 
 3d/physics_engine="Jolt Physics"
-3d/default_gravity=9.8
+3d/default_gravity=30.0
 common/physics_ticks_per_second=60
 
 [rendering]

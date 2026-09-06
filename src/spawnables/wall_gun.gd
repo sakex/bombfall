@@ -48,6 +48,7 @@ func _aim_angle() -> float:
 
 
 func _shoot() -> void:
+	Sfx.play("plasma")
 	if _player == null or gun == null:
 		return
 	var angle := _aim_angle()

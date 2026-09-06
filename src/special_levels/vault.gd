@@ -61,6 +61,7 @@ func _process(delta: float) -> void:
 				intact += 1
 		if intact < Grid.WALL_RIGHT - 1:
 			_cracked = true
+			Sfx.play("vault_crack")
 			if _lock != null:
 				_lock.emission = Color(0.2, 1.0, 0.4)
 				_lock.emission_energy_multiplier = 5.0

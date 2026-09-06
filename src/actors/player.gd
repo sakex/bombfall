@@ -14,8 +14,9 @@ signal died(score: int)
 
 const GRAVITY := 47.0                 ## 3000 px/s²
 const SPEED := Vector2(12.5, 21.9)    ## 800 px/s run, 1400 px/s jump
-const PUSH_SPEED := 5.5               ## props we walk into are shoved up to this speed
+const PUSH_SPEED := 5.5               ## a light prop we walk into is shoved up to this speed
 const PUSH_GAIN := 0.35
+const PUSH_REF_MASS := 25.0           ## chair-sized; heavier props move slower and creep
 const DEATH_ANIMATION_TIME := 2.0
 const FALL_OUT_TIME := 2.0            ## seconds outside the shaft before dying
 const MAGNET_RADIUS_PER_LEVEL := 5.0  ## 320 px per magnet upgrade
@@ -39,6 +40,7 @@ var _falling_out_for := 0.0
 var _death_progress := 0.0
 var _pulling_coins: Array[Coin] = []
 var _run_phase := 0.0
+var _last_stride := 0.0
 var _facing := 1.0
 var _was_on_floor := true
 var _squash := 1.0
@@ -121,6 +123,7 @@ func _read_input() -> void:
 	if Input.get_action_strength("jump") > 0.0 and _at_floor:
 		velocity.y = SPEED.y
 		_squash = 1.25
+		Sfx.play("jump")
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
 		velocity.y = 0.0
 
@@ -158,10 +161,14 @@ func _push_props() -> void:
 			if direction.length() < 0.3:
 				continue
 			direction = direction.normalized()
-			var wanted := PUSH_SPEED * clampf(absf(_intent_x) / SPEED.x, 0.0, 1.0)
+			# Heft: a bottle skids off at full speed, a toilet lumbers, a bathtub creeps.
+			var heft := clampf(PUSH_REF_MASS / maxf(body.mass, 1.0), 0.18, 1.0)
+			var wanted := PUSH_SPEED * heft * clampf(absf(_intent_x) / SPEED.x, 0.0, 1.0)
 			var current := body.linear_velocity.dot(direction)
 			if current < wanted:
-				body.apply_central_impulse(direction * (wanted - current) * body.mass * PUSH_GAIN)
+				# Shove low, near the floor, so friction cannot tip tall props over.
+				var impulse := direction * (wanted - current) * body.mass * PUSH_GAIN * heft
+				body.apply_impulse(impulse, Vector3(0.0, 0.12, 0.0))
 
 
 func _check_fall_out(delta: float) -> void:
@@ -189,6 +196,9 @@ func _animate(delta: float) -> void:
 	# Run cycle: legs stride with a quick knee lift on the back swing, arms
 	# pump opposite to the legs, the torso leans into the run and bobs.
 	var stride := sin(_run_phase)
+	if running and signf(stride) != signf(_last_stride) and _last_stride != 0.0:
+		Sfx.play("step", 0.9 + 0.2 * speed_t)
+	_last_stride = stride
 	var lift := maxf(0.0, -sin(_run_phase * 2.0)) * 0.35
 	var amp := (0.55 + 0.45 * speed_t) if running else 0.0
 	var airborne := 0.0 if _at_floor else clampf(-velocity.y / SPEED.y, -0.6, 0.6)
@@ -209,6 +219,7 @@ func _animate(delta: float) -> void:
 func _animate_extras(delta: float, running: bool) -> void:
 	if _at_floor and not _was_on_floor:
 		_squash = 0.72
+		Sfx.play("land", 1.0, clampf(-_last_velocity.y * 0.25 - 6.0, -10.0, 4.0))
 	_was_on_floor = _at_floor
 	_squash = lerpf(_squash, 1.0, minf(1.0, delta * 9.0))
 	var stretch := 1.0 + clampf(-velocity.y / SPEED.y, 0.0, 1.0) * 0.12

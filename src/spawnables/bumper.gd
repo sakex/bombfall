@@ -45,6 +45,7 @@ func _on_body(body: Node) -> void:
 		body.velocity = away * PLAYER_KICK
 		body.lateral_force = away.x * PLAYER_KICK * 0.5
 	_flash = 1.0
+	Sfx.play("bumper")
 	sfx.play()
 
 

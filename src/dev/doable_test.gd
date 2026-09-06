@@ -7,7 +7,7 @@ const SPECIALS := {
 	"wall_block": {"rows": 16, "limit": 150.0},
 	"obstacle_course": {"rows": 37, "limit": 180.0},
 	"vault": {"rows": 19, "limit": 200.0},
-	"boss_bat_arena": {"rows": 20, "limit": 300.0},
+	"boss_bat_arena": {"rows": 20, "limit": 300.0, "speed": 1.0},   # the climb needs real-time physics
 	"skybridge": {"rows": 14, "limit": 150.0},
 }
 
@@ -24,12 +24,13 @@ var _running := false
 var _limit_override := 0.0
 var _jump_ticks := 0
 var _cheat_heart := false
+var _speed := 3.0
 
 
 func _ready() -> void:
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	var only := ""
-	Engine.time_scale = 3.0
+	_speed = 3.0
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--only="):
 			only = arg.trim_prefix("--only=")
@@ -38,7 +39,7 @@ func _ready() -> void:
 		if arg == "--cheat-heart":
 			_cheat_heart = true
 		if arg.begins_with("--speed="):
-			Engine.time_scale = float(arg.trim_prefix("--speed="))
+			_speed = float(arg.trim_prefix("--speed="))
 	for key in SPECIALS:
 		if only == "" or only == key:
 			_queue.append(key)
@@ -67,6 +68,7 @@ func _next() -> void:
 	world.render_special_level()
 	_bottom_y = -float(_roof + SPECIALS[_name]["rows"]) - 1.0
 	_limit = SPECIALS[_name]["limit"] if _limit_override <= 0.0 else _limit_override
+	Engine.time_scale = SPECIALS[_name].get("speed", _speed)
 	_t = 0.0
 	_game.player.position = Vector3(Grid.CENTER_X, -(_roof + 1.5), 0.0)
 	_game.player.add_immunity(100000.0)

@@ -198,6 +198,7 @@ var _hit_by: Dictionary = {}
 
 ## Nudges a damaged cell's instance so the hit reads visually.
 func _shake(cell: Cell) -> void:
+	Sfx.play("steel_hit")
 	var mm: MultiMesh = cell.chunk.multimesh
 	var xform: Transform3D = mm.get_instance_transform(cell.instance)
 	xform.basis = Basis().rotated(Vector3.FORWARD, randf_range(-0.12, 0.12)).scaled(Vector3(0.94, 0.94, 0.94))

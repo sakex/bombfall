@@ -144,17 +144,13 @@ anchor_bottom = 1.0
 mouse_filter = 2
 
 [node name="Joystick" type="Control" parent="Touch"]
-anchors_preset = 2
-anchor_top = 1.0
-anchor_bottom = 1.0
-offset_top = -760.0
+offset_top = 160.0
 offset_right = 540.0
-grow_vertical = 0
+offset_bottom = 1920.0
 script = ExtResource("4")
 
 [node name="JumpZone" type="TouchScreenButton" parent="Touch"]
 shape = SubResource("jump_zone")
-shape_centered = false
 shape_visible = false
 action = "jump"
 passby_press = true
