@@ -30,7 +30,10 @@ func _desired() -> Vector3:
 	var focus := override_target if override_target != null else target
 	if focus == null:
 		return position
-	return Vector3(Grid.CENTER_X, focus.global_position.y + y_offset, 0.0)
+	var x := Grid.CENTER_X
+	if focus.global_position.x > Grid.INTERIOR_MAX_X + 0.5:
+		x = focus.global_position.x + 3.0   # out on the skybridge: lead the runner
+	return Vector3(x, focus.global_position.y + y_offset, 0.0)
 
 
 func _physics_process(delta: float) -> void:

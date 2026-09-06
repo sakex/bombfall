@@ -37,6 +37,16 @@ func _fade_from_black() -> void:
 	t.tween_property(_fade, "modulate:a", 0.0, 0.45)
 
 
+## Fades to black, runs [param during] while the screen is dark, fades back.
+func blink(during: Callable, hold := 0.15) -> void:
+	var t := create_tween()
+	t.tween_property(_fade, "modulate:a", 1.0, 0.25)
+	await t.finished
+	during.call()
+	await get_tree().create_timer(hold).timeout
+	_fade_from_black()
+
+
 ## Fades to black, switches scene, fades back in.
 func _switch(path: String) -> void:
 	get_tree().paused = false

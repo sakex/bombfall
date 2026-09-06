@@ -66,7 +66,7 @@ def neon_sign(text, x, y, z, m, cell=0.16, gap=0.6, backing=None):
         for r, row in enumerate(rows):
             for c, bit in enumerate(row):
                 if bit == "1":
-                    cube((cell * 0.9, 0.06, cell * 0.9), (cx + c * cell, y, z + (4 - r) * cell), m, bevel=0.0)
+                    cube((cell * 0.9, 0.06, cell * 0.9), (cx + c * cell, y, z + (4 - r) * cell), anim(m, "marquee"), bevel=0.0)
         cx += cell * 3 + cell * gap
     width = cx - x - cell * gap
     if backing is not None:
@@ -77,7 +77,7 @@ def neon_sign(text, x, y, z, m, cell=0.16, gap=0.6, backing=None):
 def monitor(x, y, z, w=0.6, h=0.42, screen=SCREEN_CYAN, tilt=0.0, stand=True):
     """A flat screen on a stand, its face towards -Y."""
     cube((w, 0.05, h), (x, y, z + h / 2 + (0.12 if stand else 0.0)), PLASTIC_DARK, rot=(tilt, 0, 0), bevel=0.01)
-    cube((w * 0.92, 0.02, h * 0.88), (x, y - 0.03, z + h / 2 + (0.12 if stand else 0.0)), screen, rot=(tilt, 0, 0), bevel=0.0)
+    cube((w * 0.92, 0.02, h * 0.88), (x, y - 0.03, z + h / 2 + (0.12 if stand else 0.0)), anim(screen, "screen"), rot=(tilt, 0, 0), bevel=0.0)
     if stand:
         cyl(0.03, 0.12, (x, y, z + 0.06), METAL_DARK, verts=8)
         cube((w * 0.4, 0.2, 0.02), (x, y, z + 0.01), METAL_DARK, bevel=0.005)

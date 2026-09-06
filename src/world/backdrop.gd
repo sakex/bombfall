@@ -137,6 +137,7 @@ func _decor(path: String, at: Vector3) -> void:
 	decor.position = at
 	add_child(decor)
 	# Named pivots the Blender scripts left for us to animate.
+	_animate_materials(decor)
 	for node in decor.find_children("spin_*", "Node3D", true, false):
 		_spinners.append(node)
 	for node in decor.find_children("sway_*", "Node3D", true, false):
@@ -185,3 +186,50 @@ static func _glass() -> StandardMaterial3D:
 		m.albedo_color = Color(0.6, 0.8, 1.0, 0.07)
 		_materials["glass"] = m
 	return _materials["glass"]
+
+
+## Materials named anim_<kind> in the models (see blender/common.py `anim`)
+## are swapped for shader materials that scroll, chase and flicker, so the
+## signs and screens live without any per-node animation.
+const ANIM_SHADERS := {
+	"anim_marquee": "res://assets/shaders/anim_marquee.gdshader",
+	"anim_screen": "res://assets/shaders/anim_screen.gdshader",
+}
+static var _anim_cache: Dictionary = {}
+
+
+static func _animate_materials(root: Node) -> void:
+	for mesh_node in root.find_children("*", "MeshInstance3D", true, false):
+		var mi := mesh_node as MeshInstance3D
+		if mi.mesh == null:
+			continue
+		for i in mi.mesh.get_surface_count():
+			var material := mi.get_active_material(i)
+			if material == null:
+				continue
+			for prefix in ANIM_SHADERS:
+				if material.resource_name.begins_with(prefix):
+					mi.set_surface_override_material(i, _anim_material(prefix, material))
+					break
+
+
+static func _anim_material(prefix: String, source: Material) -> ShaderMaterial:
+	var colour := Color(0.9, 0.3, 0.8)
+	var energy := 3.0
+	if source is StandardMaterial3D:
+		var std := source as StandardMaterial3D
+		if std.emission_enabled and std.emission.get_luminance() > 0.05:
+			colour = std.emission
+			energy = maxf(std.emission_energy_multiplier, 1.0)
+		else:
+			colour = std.albedo_color
+			energy = 1.0
+	var key := "%s|%s|%.2f" % [prefix, colour.to_html(false), energy]
+	if _anim_cache.has(key):
+		return _anim_cache[key]
+	var sm := ShaderMaterial.new()
+	sm.shader = load(ANIM_SHADERS[prefix])
+	sm.set_shader_parameter("color", colour)
+	sm.set_shader_parameter("energy", energy)
+	_anim_cache[key] = sm
+	return sm

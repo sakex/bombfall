@@ -4,8 +4,8 @@ extends PlanarBody
 ## out of the air; bumping into anything else blows it up.
 
 const EXPLOSION := preload("res://src/actors/explosion.tscn")
-const MIN_X := 4.1              ## 264 px
-const MAX_X := 12.9             ## 824 px
+@export var min_x := 4.1              ## 264 px
+@export var max_x := 12.9             ## 824 px
 const SPEED := 4.7              ## 300 px/s
 const MAX_IMPULSE := Vector2(4.7, 0.8)
 const MAX_ROTATE := PI
@@ -24,7 +24,7 @@ func _ready() -> void:
 	gravity_scale = 0.0
 	contact_monitor = true
 	max_contacts_reported = 4
-	if position.x > (MAX_X + MIN_X) * 0.5:
+	if position.x > (max_x + min_x) * 0.5:
 		_target_speed.x = -SPEED
 	_hover_y = position.y
 	for i in 4:
@@ -57,9 +57,9 @@ func _physics_process(delta: float) -> void:
 	if absf(rotation.z) > PI / 2.0:
 		turn_off()
 		return
-	if position.x <= MIN_X:
+	if position.x <= min_x:
 		_target_speed.x = SPEED
-	elif position.x >= MAX_X:
+	elif position.x >= max_x:
 		_target_speed.x = -SPEED
 	_target_speed.y = _hover_y - position.y
 	_set_mirrored(_target_speed.x > 0.0)

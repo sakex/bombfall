@@ -13,7 +13,8 @@ hotel's windows, and a single-language GDScript code base.
 | | | |
 |---|---|---|
 | ![Menu](docs/screenshots/menu.png) | ![Gameplay](docs/screenshots/gameplay.png) | ![Casino](docs/screenshots/casino.png) |
-| ![Arcade](docs/screenshots/arcade.png) | ![Vault](docs/screenshots/vault.png) | ![Player](docs/screenshots/player.png) |
+| ![Skybridge](docs/screenshots/skybridge.png) | ![Hacker den](docs/screenshots/hacker.png) | ![Gym](docs/screenshots/gym.png) |
+| ![Vault](docs/screenshots/vault.png) | ![City](docs/screenshots/city.png) | ![Player](docs/screenshots/player.png) |
 
 ## Play it
 
@@ -118,6 +119,19 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
   checks each can be passed. The bat's crystals no longer melt mid-fight
   and grow a ladder up to the heart, and one obstacle-course ledge that
   was a hair out of jump reach was lowered.
+* **Skybridge.** A new special storey seals the floor and opens a doorway
+  onto a neon bridge to the next tower: gaps, fire, bumpers, a drone, a
+  laser ring and a wall gun, with the camera panning sideways. The lobby
+  door at the far end fades into the other building, which has its own set
+  of rooms (Hotel Electra: bedroom, dorm, toilets, gym, hacker den; Neon
+  Palace: penthouse, sky bar, casino, arcade, streamer studio).
+* **Living signs.** Every neon sign and screen in the rooms is animated:
+  materials named `anim_marquee` / `anim_screen` in the Blender kit are
+  swapped for shaders at load time (chasing and twinkling dots, rolling
+  scanlines, glitches), so the JACKPOT board and the hacker's monitors
+  move without any extra nodes.
+* **Run cycle.** No more somersault; the runner strides with knee lift,
+  pumps the opposite arm, leans into the run and bobs with each step.
 * **Performance.** Cells are drawn in row bands that get frustum-culled
   instead of one giant MultiMesh, the tile, coin, bomb and player meshes
   lost most of their triangles, and `smoke_test.tscn -- --perf` reports

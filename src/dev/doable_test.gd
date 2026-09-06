@@ -8,6 +8,7 @@ const SPECIALS := {
 	"obstacle_course": {"rows": 37, "limit": 180.0},
 	"vault": {"rows": 19, "limit": 200.0},
 	"boss_bat_arena": {"rows": 20, "limit": 300.0},
+	"skybridge": {"rows": 14, "limit": 150.0},
 }
 
 var _game: GameScene
@@ -103,6 +104,8 @@ func _physics_process(delta: float) -> void:
 		get_tree().paused = false
 		_game.death_screen.visible = false
 		player.revive()
+		player.position = Vector3(Grid.CENTER_X, -(_roof + 1.5), 0.0)
+		print("  died, back to the top at t=%.1f" % _t)
 	if player.position.y < _bottom_y:
 		print("DOABLE %s PASS in %.1fs" % [_name, _t])
 		_results.append("%s:PASS" % _name)
@@ -118,6 +121,8 @@ func _physics_process(delta: float) -> void:
 	match _name:
 		"boss_bat_arena":
 			_bot_climb(player, _heart_x)
+		"skybridge":
+			_bot_bridge(player)
 		_:
 			_bot_wander(player)
 	if int(_t * 2.0) % 40 == 0 and int(_t * 60.0) % 120 == 0:
@@ -157,10 +162,12 @@ func _bot_climb(player: Player, target_x: float) -> void:
 		return
 	var step_x: float = next.global_position.x
 	var approach_x := step_x + 1.7 * signf(Grid.CENTER_X - step_x)
-	# A jump in progress is held for a fixed time so the release never cuts it.
+	var step_top: float = next.global_position.y + 0.4
+	# A jump in progress is held for a fixed time so the release never cuts it;
+	# rise straight up beside the step and only drift over it once above.
 	if _jump_ticks > 0:
 		_jump_ticks -= 1
-		_steer(player, step_x)
+		_steer(player, step_x if player.position.y > step_top else approach_x)
 		_hop(true)
 		return
 	if int(_t * 60.0) % 120 == 0:
@@ -171,10 +178,40 @@ func _bot_climb(player: Player, target_x: float) -> void:
 			_hop(false)
 		else:
 			_steer(player, step_x)
-			_jump_ticks = 24
+			_jump_ticks = 30
 			_hop(true)
 	else:
-		_steer(player, step_x)
+		_steer(player, step_x if player.position.y > step_top else approach_x)
+		_hop(false)
+
+
+## Runs right along the deck; jumps when the deck ahead is missing or an
+## obstacle is close, and hops onto the doorway first.
+func _bot_bridge(player: Player) -> void:
+	var deck_row := _roof + Skybridge.ROWS
+	if int(_t * 60.0) % 30 == 0:
+		print("  BRIDGE t=%.1f p=(%.1f,%.1f) floor=%s" % [_t, player.position.x, player.position.y, player.is_on_floor()])
+	if player.position.x < Grid.INTERIOR_MAX_X:
+		# Inside the storey: walk to the door in the right wall.
+		_steer(player, Grid.INTERIOR_MAX_X + 2.0)
+		_hop(false)
+		return
+	_steer(player, player.position.x + 5.0)
+	var col := Grid.col_of(player.position.x)
+	var gap_ahead := not _game.world.cells.has_cell(col + 1, deck_row) or not _game.world.cells.has_cell(col + 2, deck_row)
+	var hazard_ahead := false
+	for node in get_tree().get_nodes_in_group("props") + get_tree().get_nodes_in_group("drones"):
+		if node is Node3D and absf(node.global_position.y - player.position.y) < 3.0:
+			var dx: float = node.global_position.x - player.position.x
+			if dx > 0.5 and dx < 3.5:
+				hazard_ahead = true
+	if _jump_ticks > 0:
+		_jump_ticks -= 1
+		_hop(true)
+	elif player.is_on_floor() and (gap_ahead or hazard_ahead):
+		_jump_ticks = 20
+		_hop(true)
+	else:
 		_hop(false)
 
 

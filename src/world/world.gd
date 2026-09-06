@@ -33,6 +33,12 @@ var time_between_bombs := 2.0
 var forced_theme := ""
 var forced_special := ""
 var _themes: Array[Dictionary] = []
+## Each skybridge leads to the next tower, which has its own set of rooms.
+const BUILDINGS := [
+	{"name": "HOTEL ELECTRA", "themes": ["room1", "room2", "toilet1", "gym", "hacker"]},
+	{"name": "NEON PALACE", "themes": ["rich1", "rich2", "casino", "arcade", "tiktoker"]},
+]
+var building := 0
 var _used_themes: Array[Dictionary] = []
 var _special_levels: Array[SpecialLevel] = []
 var _used_special_levels: Array[SpecialLevel] = []
@@ -49,7 +55,7 @@ func _ready() -> void:
 	_props = Node3D.new()
 	_props.name = "Props"
 	add_child(_props)
-	_themes = SpawnRegistry.themes().duplicate()
+	_themes = _building_themes()
 	for arg in OS.get_cmdline_user_args():
 		if arg.begins_with("--theme="):
 			forced_theme = arg.trim_prefix("--theme=")
@@ -60,6 +66,7 @@ func _ready() -> void:
 		SceneLevel.new("res://src/special_levels/obstacle_course.tscn", 35, 37, 37),
 		SceneLevel.new("res://src/special_levels/boss_bat_arena.tscn", 22, 20),
 		SceneLevel.new("res://src/special_levels/vault.tscn", 19, 20, 19),
+		SceneLevel.new("res://src/special_levels/skybridge.tscn", Skybridge.ROWS, Skybridge.ROWS, Skybridge.ROWS),
 	]:
 		if special.available():
 			_special_levels.append(special)
@@ -74,6 +81,24 @@ func _init_levels() -> void:
 		levels.append(level)
 		next_roof = level.next_roof()
 		size = randi_range(11, 15)
+
+
+func _building_themes() -> Array[Dictionary]:
+	var ids: Array = BUILDINGS[building % BUILDINGS.size()]["themes"]
+	var out: Array[Dictionary] = []
+	for theme in SpawnRegistry.themes():
+		if ids.has(theme["id"]):
+			out.append(theme)
+	return out if not out.is_empty() else SpawnRegistry.themes().duplicate()
+
+
+## Called by the skybridge when the player walks into the next tower.
+func enter_next_building() -> void:
+	building += 1
+	_themes = _building_themes()
+	_used_themes = []
+	if tracked is Player:
+		(tracked as Player).pickup_taken.emit("welcome to " + BUILDINGS[building % BUILDINGS.size()]["name"].to_lower())
 
 
 func _pick_theme() -> Dictionary:

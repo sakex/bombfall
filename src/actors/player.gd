@@ -48,6 +48,8 @@ var _antenna_spring := Vector2.ZERO
 var _antenna_vel := Vector2.ZERO
 var _last_velocity := Vector3.ZERO
 var _intent_x := 0.0
+## Set by the skybridge while the player is legitimately outside the shaft.
+var outside_ok := false
 
 @onready var model: Node3D = $Model
 @onready var shield_bubble: MeshInstance3D = $Shield
@@ -164,6 +166,8 @@ func _push_props() -> void:
 
 func _check_fall_out(delta: float) -> void:
 	var outside := position.x < Grid.INTERIOR_MIN_X - 1.0 or position.x > Grid.INTERIOR_MAX_X + 0.2
+	if outside_ok:
+		outside = false
 	if not is_on_floor() and outside:
 		_falling_out_for += delta
 		if _falling_out_for > FALL_OUT_TIME:

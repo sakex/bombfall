@@ -10,10 +10,10 @@ const FLOOR_DELETE_DELAY := 10.0
 ## The bat's crystals also grow up the wall under its heart while the fight
 ## drags on: one frozen step every few seconds, so the heart is always
 ## reachable within a couple of minutes even if the stray shots do not pile up.
-const LADDER_INTERVAL := 9.0
+const LADDER_INTERVAL := 8.0
 const LADDER_STEPS := [
-	Vector2(14.6, -17.0), Vector2(11.9, -14.0), Vector2(14.6, -11.2), Vector2(11.9, -8.4),
-	Vector2(14.6, -5.8), Vector2(12.4, -3.4),
+	Vector2(14.5, -17.2), Vector2(11.8, -14.6), Vector2(14.5, -12.0), Vector2(11.8, -9.4),
+	Vector2(14.5, -6.8), Vector2(12.4, -4.4),
 ]
 
 var coin_budget := 0
@@ -78,7 +78,7 @@ func _grow_ladder_step() -> void:
 	block.freeze = true
 	block.freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
 	block.position = Vector3(step.x, step.y, 0.0)
-	block.scale = Vector3(1.6, 0.7, 1.0)
+	block.scale = Vector3(2.0, 0.7, 1.0)
 	add_child(block)
 	ladder.append(block)
 

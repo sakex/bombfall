@@ -90,12 +90,21 @@ GLASS = (WHITE, 0.05, 0.0)
 _MATS = {}
 
 
+def anim(spec, kind):
+    """A copy of `spec` named `anim_<kind>`: the game swaps every material
+    whose name starts with that prefix for an animated shader at load time
+    (see Backdrop._animate_materials). Kinds: screen, marquee."""
+    return mat(spec, name="anim_" + kind)
+
+
 def mat(spec, rough=0.6, metal=0.0, emit=None, strength=3.0, name=None):
     """Return a cached Principled material.
 
     `spec` may be an (r, g, b) base colour or a tuple
     (base, roughness, metallic[, emission, strength]) such as NEON_CYAN.
     """
+    if isinstance(spec, bpy.types.Material):
+        return spec
     if isinstance(spec, tuple) and len(spec) and isinstance(spec[0], tuple):
         base = spec[0]
         rough = spec[1] if len(spec) > 1 else rough
@@ -104,7 +113,7 @@ def mat(spec, rough=0.6, metal=0.0, emit=None, strength=3.0, name=None):
         strength = spec[4] if len(spec) > 4 else strength
     else:
         base = tuple(spec)
-    key = (tuple(base), round(rough, 3), round(metal, 3), tuple(emit) if emit else None, round(strength, 3))
+    key = (tuple(base), round(rough, 3), round(metal, 3), tuple(emit) if emit else None, round(strength, 3), name)
     if key in _MATS:
         return _MATS[key]
     m = bpy.data.materials.new(name or "m%02d" % len(_MATS))
