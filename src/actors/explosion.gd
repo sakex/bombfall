@@ -69,8 +69,11 @@ func _blast() -> void:
 	for body in get_overlapping_bodies():
 		if body.has_method("kill"):
 			body.call_deferred("kill")
-	for area in get_overlapping_areas():
-		if area.has_method("kill"):
-			area.call_deferred("kill")
+	# Area props (trampolines and the like) are not reliably reported as
+	# overlapping areas by the physics engine, so reach them by distance.
+	for node in get_tree().get_nodes_in_group("props"):
+		if node is Node3D and not (node is PhysicsBody3D) and node.has_method("kill"):
+			if (node as Node3D).global_position.distance_to(global_position) <= _radius + 0.6:
+				node.call_deferred("kill")
 	if _cells != null:
 		_cells.destroy_in_sphere(global_position, _radius, get_instance_id())

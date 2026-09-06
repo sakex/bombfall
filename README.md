@@ -141,6 +141,10 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
 * **Shove and head bump.** Pushing a bomb or a prop puts the runner into a
   shove pose (arms out, shoulders in, a slow heavy stride), and jumping into
   a bomb from below knocks it up and away with a clang.
+* **Blasts clear trampolines.** Trampolines are areas, not bodies, and the
+  physics engine never reported them as overlapping the blast; explosions
+  now reach area props by distance, and explosions are louder (their 3D
+  player attenuated over the 30 m to the camera).
 * **Bombs rest on the floor.** Every bomb shared one collision sphere, and
   resizing it for one bomb resized them all, so small bombs floated and big
   ones sank into the tiles. Bombs, light rings and explosions now own their

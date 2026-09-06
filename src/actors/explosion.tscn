@@ -58,3 +58,5 @@ stream = ExtResource("2")
 volume_db = 6.0
 max_distance = 80.0
 bus = &"sfx"
+unit_size = 40.0
+max_db = 8.0

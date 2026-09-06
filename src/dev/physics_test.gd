@@ -25,6 +25,7 @@ func _ready() -> void:
 	await _scenario_coin()
 	await _scenario_rope()
 	await _scenario_trampoline()
+	await _scenario_trampoline_blast()
 	await _scenario_pickup()
 	await _scenario_push()
 	await _scenario_wall_gun()
@@ -206,6 +207,18 @@ func _scenario_bomb_rest() -> void:
 	var small_gap: float = small.position.y - Bomb.BASE_RADIUS * 0.5 - floor_top
 	var big_gap: float = big.position.y - Bomb.BASE_RADIUS * 1.0 - floor_top
 	_check("bomb_rest_on_floor", absf(small_gap) < 0.04 and absf(big_gap) < 0.04, "small_gap=%.3f big_gap=%.3f" % [small_gap, big_gap])
+
+
+## Explosions must take trampolines with them (an Area3D, not a body).
+func _scenario_trampoline_blast() -> void:
+	await _build()
+	_player.position = Vector3(2.0, -4.0, 0.0)
+	# The bomb lands beside the trampoline (on it, the mat would fling it away).
+	var tramp := _add(load("res://src/spawnables/trampoline.tscn"), Vector3(8.5, -5.0, 0.0))
+	var chair := _add(load("res://src/spawnables/chair.tscn"), Vector3(13.0, -5.0, 0.0))
+	_add(load("res://src/actors/bomb.tscn"), Vector3(11.0, -3.0, 0.0), {"bomb_time": 0.6, "bomb_scale": 0.8})
+	await _frames(120)
+	_check("trampoline_blasted", not is_instance_valid(tramp) and not is_instance_valid(chair), "trampoline alive=%s chair alive=%s" % [is_instance_valid(tramp), is_instance_valid(chair)])
 
 
 ## A bomb sitting on the runner's head gets knocked up and away by a jump.

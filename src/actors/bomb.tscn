@@ -42,3 +42,5 @@ shape = SubResource("detect")
 stream = ExtResource("3")
 max_polyphony = 4
 bus = &"sfx"
+volume_db = -2.0
+unit_size = 30.0
