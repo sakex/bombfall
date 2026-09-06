@@ -3,13 +3,13 @@
 importer="scene"
 importer_version=1
 type="PackedScene"
-uid="uid://dx24clugqk21e"
-path="res://.godot/imported/table_with_chairs.glb-6dde79ededd1c65715f15e03675b69e6.scn"
+uid="uid://cek1ucen0u60k"
+path="res://.godot/imported/table.glb-77ddeb5cb2b4d102b457ffd0a4efe8ae.scn"
 
 [deps]
 
-source_file="res://assets/models/table_with_chairs.glb"
-dest_files=["res://.godot/imported/table_with_chairs.glb-6dde79ededd1c65715f15e03675b69e6.scn"]
+source_file="res://assets/models/table.glb"
+dest_files=["res://.godot/imported/table.glb-77ddeb5cb2b4d102b457ffd0a4efe8ae.scn"]
 
 [params]
 

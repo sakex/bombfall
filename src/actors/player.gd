@@ -44,7 +44,6 @@ var _was_on_floor := true
 var _squash := 1.0
 var _blink_timer := 2.5
 var _blink := 0.0
-var _flip := 1.0
 var _antenna_spring := Vector2.ZERO
 var _antenna_vel := Vector2.ZERO
 var _last_velocity := Vector3.ZERO
@@ -119,7 +118,6 @@ func _read_input() -> void:
 	_intent_x = velocity.x
 	if Input.get_action_strength("jump") > 0.0 and _at_floor:
 		velocity.y = SPEED.y
-		_flip = 0.0
 		_squash = 1.25
 	if Input.is_action_just_released("jump") and velocity.y > 0.0:
 		velocity.y = 0.0
@@ -179,16 +177,23 @@ func _animate(delta: float) -> void:
 	var target_yaw := _facing * deg_to_rad(65.0)
 	model.rotation.y = lerp_angle(model.rotation.y, target_yaw, minf(1.0, delta * 12.0))
 	var running := absf(velocity.x) > 0.5 and _at_floor
+	var speed_t := clampf(absf(velocity.x) / SPEED.x, 0.0, 1.0)
 	if running:
-		_run_phase += delta * TAU * RUN_CYCLE_HZ
+		_run_phase += delta * TAU * RUN_CYCLE_HZ * (0.6 + 0.4 * speed_t)
 	else:
-		_run_phase = lerpf(_run_phase, roundf(_run_phase / PI) * PI, minf(1.0, delta * 10.0))
-	var swing := sin(_run_phase) * (0.75 if running else 0.0)
+		_run_phase = lerpf(_run_phase, roundf(_run_phase / TAU) * TAU, minf(1.0, delta * 10.0))
+	# Run cycle: legs stride with a quick knee lift on the back swing, arms
+	# pump opposite to the legs, the torso leans into the run and bobs.
+	var stride := sin(_run_phase)
+	var lift := maxf(0.0, -sin(_run_phase * 2.0)) * 0.35
+	var amp := (0.55 + 0.45 * speed_t) if running else 0.0
 	var airborne := 0.0 if _at_floor else clampf(-velocity.y / SPEED.y, -0.6, 0.6)
-	_set_limb("leg_l", swing + airborne * 0.4)
-	_set_limb("leg_r", -swing - airborne * 0.2)
-	_set_limb("arm_l", -swing * 0.8 - airborne * 1.2)
-	_set_limb("arm_r", swing * 0.8 - airborne * 1.2)
+	_set_limb("leg_l", (stride * 1.0 - lift * maxf(0.0, -stride)) * amp + airborne * 0.5)
+	_set_limb("leg_r", (-stride * 1.0 - lift * maxf(0.0, stride)) * amp - airborne * 0.3)
+	_set_limb("arm_l", (-stride * 1.1 - 0.35) * amp - airborne * 1.2)
+	_set_limb("arm_r", (stride * 1.1 - 0.35) * amp - airborne * 1.2)
+	var lean := (0.22 * speed_t) if running else 0.0
+	model.rotation.x = lerpf(model.rotation.x, lean, minf(1.0, delta * 8.0))
 	_animate_extras(delta, running)
 	if is_immune:
 		model.visible = fmod(Time.get_ticks_msec() / 1000.0 * 10.0, TAU) < PI
@@ -196,22 +201,15 @@ func _animate(delta: float) -> void:
 		model.visible = true
 
 
-## The little touches: landing squash, falling stretch, a somersault on
-## jumps, blinking, a springy antenna, a fluttering scarf and jet flames.
+## The little touches: landing squash, falling stretch, blinking, a springy antenna, a fluttering scarf and jet flames.
 func _animate_extras(delta: float, running: bool) -> void:
 	if _at_floor and not _was_on_floor:
 		_squash = 0.72
 	_was_on_floor = _at_floor
 	_squash = lerpf(_squash, 1.0, minf(1.0, delta * 9.0))
 	var stretch := 1.0 + clampf(-velocity.y / SPEED.y, 0.0, 1.0) * 0.12
-	var bob := absf(sin(_run_phase)) * 0.04 if running else 0.0
+	var bob := absf(sin(_run_phase)) * 0.05 if running else 0.0
 	model.scale = Vector3(2.0 - _squash, _squash * stretch + bob, 2.0 - _squash)
-	# Somersault after a jump.
-	if _flip < 1.0:
-		_flip = minf(_flip + delta * 1.6, 1.0)
-		model.rotation.x = -TAU * smoothstep(0.0, 1.0, _flip)
-	else:
-		model.rotation.x = 0.0
 	# Blink.
 	_blink_timer -= delta
 	if _blink_timer <= 0.0:
@@ -304,7 +302,6 @@ func revive() -> void:
 	model.position = Vector3.ZERO
 	model.rotation = Vector3.ZERO
 	model.scale = Vector3.ONE
-	_flip = 1.0
 	_squash = 1.0
 	position.x = Grid.CENTER_X
 	velocity = Vector3.ZERO

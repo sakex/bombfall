@@ -35,8 +35,10 @@ func _on_body(body: Node) -> void:
 	if away.length() < 0.05:
 		away = Vector3.UP
 	away = away.normalized()
-	if away.y < 0.25:
-		away = (away + Vector3(0, 0.5, 0)).normalized()
+	# Always pop things upward, even when they hit the bumper from the side.
+	if away.y < 0.5:
+		away.y = 0.5
+		away = away.normalized()
 	if body is RigidBody3D:
 		body.linear_velocity = away * KICK
 	elif body is Player:

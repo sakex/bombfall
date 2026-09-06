@@ -80,7 +80,10 @@ The package name is `ch.senges.bombfall`; change `package/unique_name` in
 ```sh
 godot --headless --path . --import
 godot --headless --path . res://src/dev/smoke_test.tscn     # 40 s scripted run
-godot --headless --path . res://src/dev/physics_test.tscn   # 19 physics scenarios, prints PASS/FAIL
+godot --headless --path . res://src/dev/physics_test.tscn   # physics scenarios, prints PASS/FAIL
+godot --headless --path . res://src/dev/hitbox_audit.tscn   # collision shapes vs mesh bounds
+godot --headless --path . res://src/dev/doable_test.tscn    # bot plays every special storey
+godot --path . res://src/dev/smoke_test.tscn -- --perf      # draw calls / primitives (needs a renderer)
 godot --path . res://src/dev/special_test.tscn -- --special=vault
 godot --path . res://src/dev/special_test.tscn -- --theme=casino
 godot --path . -- --theme=gym --screenshot=shot.png:2       # any scene, saves a frame
@@ -91,6 +94,34 @@ isolation and asserts on positions after a fixed number of physics ticks
 (landing, wall clamps, bomb holes, rope length, trampoline height, prop
 pushing without tipping, drone hover, button presses, laser kills...). Run
 it after touching anything under `src/actors/` or `src/spawnables/`.
+
+## Version 2.2
+
+* **Biker helmet.** The runner wears a full-face coral helmet with a
+  flipped-up smoked visor, chrome hinges, racing stripes and a glowing tail
+  light; the bomb face still peeks out of the opening.
+* **Thumb stick.** Left/right arrows are gone: slide a thumb anywhere on
+  the lower-left of the screen and the floating stick follows, with analog
+  speed (a short slide walks, a long one runs). The whole lower-right
+  quarter jumps; the round button is only a hint.
+* **Buttons.** Slanted synthwave panels with a cyan edge, a hot-pink glow
+  and a chunky base; the play button is the pink hero of the title screen.
+* **Synthwave rooms.** Every backdrop got neon tube outlines, sunset
+  murals, grid floors, holograms, palms, chevrons, scanline screens and
+  laser fans, and the walls around the windows went dark with neon trims.
+* **Physics audit.** A headless tool (`src/dev/hitbox_audit.tscn`) compares
+  every spawnable's collision shape with its mesh; shapes, masses, centres
+  of mass and damping were corrected, and the table and its chairs are now
+  three independent bodies.
+* **Special rooms verified.** `src/dev/doable_test.tscn` plays the junk
+  wall, the obstacle course, the vault and the bat arena with a bot and
+  checks each can be passed. The bat's crystals no longer melt mid-fight
+  and grow a ladder up to the heart, and one obstacle-course ledge that
+  was a hair out of jump reach was lowered.
+* **Performance.** Cells are drawn in row bands that get frustum-culled
+  instead of one giant MultiMesh, the tile, coin, bomb and player meshes
+  lost most of their triangles, and `smoke_test.tscn -- --perf` reports
+  draw calls and primitives per frame.
 
 ## Version 2.1
 

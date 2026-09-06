@@ -9,10 +9,10 @@ size = Vector3(5.8, 2.9, 2.4)
 [node name="Bed2" type="RigidBody3D"]
 collision_layer = 32
 collision_mask = 2875
-mass = 100
+mass = 110
 center_of_mass_mode = 1
-center_of_mass = Vector3(0, 0.65, 0)
-angular_damp = 1.5
+center_of_mass = Vector3(0, 1.22, 0)
+angular_damp = 2.0
 can_sleep = false
 script = ExtResource("1")
 

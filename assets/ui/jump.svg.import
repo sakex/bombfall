@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://b4g7awxsem6sw"
-path="res://.godot/imported/pause_button.png-d82ff4faf630e1aae74a3019a707cd6e.ctex"
+uid="uid://bvclsier7x441"
+path="res://.godot/imported/jump.svg-0d5e1a72b2b1f9a40e9dbd7f49e79240.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/pause_button.png"
-dest_files=["res://.godot/imported/pause_button.png-d82ff4faf630e1aae74a3019a707cd6e.ctex"]
+source_file="res://assets/ui/jump.svg"
+dest_files=["res://.godot/imported/jump.svg-0d5e1a72b2b1f9a40e9dbd7f49e79240.ctex"]
 
 [params]
 
@@ -38,3 +38,6 @@ process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
 detect_3d/compress_to=1
+svg/scale=1.0
+editor/scale_with_editor_scale=false
+editor/convert_colors_with_editor_theme=false

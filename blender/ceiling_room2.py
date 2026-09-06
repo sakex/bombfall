@@ -6,6 +6,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *  # noqa: F401,F403
 from props import *  # noqa: F401,F403
+from synth import *  # noqa: F401,F403
 
 clean_scene()
 D = 1.85
@@ -15,6 +16,10 @@ pipe_run(0.2, 14.8, D - 0.4, -0.2, r=0.05, m=(CREST_RED, 0.5, 0.4), drops=(2.5, 
 cube((0.7, 0.5, 0.06), (7.5, D - 1.3, -0.03), METAL_STEEL, bevel=0.005)
 for i in range(4):
     cube((0.6, 0.04, 0.02), (7.5, D - 1.5 + i * 0.13, -0.05), METAL_DARK, bevel=0.0)
+
+# Synthwave touch: a neon cornice along the front edge and a laser fan.
+hline(0.2, 14.8, 0.15, -0.06, neon((0.4, 0.55, 1.0), 4.0), r=0.025)
+laser_fan(7.5, D - 1.0, 0.0, m=NEON_HOT, n=4, spread=1.2, length=1.0)
 
 join_static("decor")
 export("ceiling_room2")

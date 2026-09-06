@@ -11,4 +11,4 @@ extends PlanarBody
 func _ready() -> void:
 	add_to_group("props")
 	if random_flip and model != null and randi() % 2 == 0:
-		model.scale.x = -1.0
+		model.scale.x = -model.scale.x

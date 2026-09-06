@@ -24,7 +24,10 @@ script = ExtResource("1")
 [node name="Desk" type="RigidBody3D" parent="."]
 collision_layer = 32
 collision_mask = 2875
-mass = 35.0
+mass = 45.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.85, 0)
+angular_damp = 2.0
 can_sleep = false
 script = ExtResource("2")
 
@@ -45,19 +48,25 @@ shape = SubResource("area_shape")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.0, 0)
 collision_layer = 32
 collision_mask = 2875
-mass = 20.0
+mass = 12.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.75, -0.33)
+angular_damp = 2.0
 can_sleep = false
 script = ExtResource("2")
 
 [node name="Shape" type="CollisionShape3D" parent="Monitor"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, 0.3)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.92, -0.33)
 shape = SubResource("monitor_shape")
 
 [node name="Tower" type="RigidBody3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.7, 0, 0)
 collision_layer = 32
 collision_mask = 2875
-mass = 20.0
+mass = 15.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.4, 0)
+angular_damp = 2.0
 can_sleep = false
 script = ExtResource("2")
 

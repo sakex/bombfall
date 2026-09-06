@@ -2,10 +2,11 @@ class_name CellGrid
 extends Node3D
 ## The destructible cells of the hotel (floors, walls, junk).
 ##
-## Visuals go through one MultiMesh per cell kind, collisions through one
-## static body per cell created directly on the PhysicsServer, so a level
-## costs no scene nodes at all and an explosion can punch a hole by simply
-## dropping a few cells.
+## Visuals go through one MultiMesh per cell kind and band of rows (so the
+## storeys above and below the screen get frustum-culled instead of drawn),
+## collisions through one static body per cell created directly on the
+## PhysicsServer, so a level costs almost no scene nodes and an explosion
+## can punch a hole by simply dropping a few cells.
 
 enum Kind { FLOOR, JUNK, STEEL }
 
@@ -16,18 +17,30 @@ const MODELS := {
 }
 ## Blasts a cell can take before it goes.
 const HIT_POINTS := {Kind.FLOOR: 1, Kind.JUNK: 1, Kind.STEEL: 3}
-const CAPACITY := 1024
+## Rows per MultiMesh band; one band holds at most BAND_ROWS * 17 cells.
+const BAND_ROWS := 12
+const BAND_CAPACITY := BAND_ROWS * (Grid.WALL_RIGHT + 1)
 
 class Cell:
 	var kind: int
 	var body: RID
 	var instance: int
+	var chunk: Chunk
 	var hp: int = 1
 
 
+## One MultiMesh: a kind of cell within a band of rows.
+class Chunk:
+	var multimesh: MultiMesh
+	var node: MultiMeshInstance3D
+	var free_slots: Array[int] = []
+	var used := 0
+	var hidden: Transform3D
+
+
 var _cells: Dictionary = {}          # Vector2i(cx, row) -> Cell
-var _multimeshes: Dictionary = {}    # Kind -> MultiMesh
-var _free_slots: Dictionary = {}     # Kind -> Array[int]
+var _meshes: Dictionary = {}         # Kind -> Mesh
+var _chunks: Dictionary = {}         # Vector2i(kind, band) -> Chunk
 var _shape: RID
 var _space: RID
 
@@ -37,24 +50,45 @@ func _ready() -> void:
 	_shape = PhysicsServer3D.box_shape_create()
 	PhysicsServer3D.shape_set_data(_shape, Vector3(Grid.CELL, Grid.CELL, Grid.DEPTH) * 0.5)
 	for kind in MODELS:
-		var mesh := _extract_mesh(MODELS[kind])
-		var mm := MultiMesh.new()
-		mm.transform_format = MultiMesh.TRANSFORM_3D
-		mm.mesh = mesh
-		mm.instance_count = CAPACITY
-		var hidden := Transform3D().scaled(Vector3.ZERO)
-		for i in CAPACITY:
-			mm.set_instance_transform(i, hidden)
-		var mmi := MultiMeshInstance3D.new()
-		mmi.multimesh = mm
-		mmi.name = "Cells%d" % kind
-		add_child(mmi)
-		_multimeshes[kind] = mm
-		var slots: Array[int] = []
-		slots.resize(CAPACITY)
-		for i in CAPACITY:
-			slots[i] = CAPACITY - 1 - i
-		_free_slots[kind] = slots
+		_meshes[kind] = _extract_mesh(MODELS[kind])
+
+
+static func _band_of(row: int) -> int:
+	return int(floor(float(row) / BAND_ROWS))
+
+
+## The chunk drawing [param kind] cells in [param row]'s band, made on demand.
+func _chunk_for(kind: int, row: int) -> Chunk:
+	var band := _band_of(row)
+	var key := Vector2i(kind, band)
+	if _chunks.has(key):
+		return _chunks[key]
+	var chunk := Chunk.new()
+	chunk.multimesh = MultiMesh.new()
+	chunk.multimesh.transform_format = MultiMesh.TRANSFORM_3D
+	chunk.multimesh.mesh = _meshes[kind]
+	chunk.multimesh.instance_count = BAND_CAPACITY
+	# Hidden instances collapse to a point inside the band so the chunk's
+	# bounds stay tight and it can be culled when the band scrolls away.
+	chunk.hidden = Transform3D(Basis().scaled(Vector3.ZERO), Grid.cell_center(int(Grid.CENTER_X), band * BAND_ROWS + BAND_ROWS / 2))
+	for i in BAND_CAPACITY:
+		chunk.multimesh.set_instance_transform(i, chunk.hidden)
+	chunk.free_slots.resize(BAND_CAPACITY)
+	for i in BAND_CAPACITY:
+		chunk.free_slots[i] = BAND_CAPACITY - 1 - i
+	chunk.node = MultiMeshInstance3D.new()
+	chunk.node.multimesh = chunk.multimesh
+	chunk.node.name = "Cells%d_%d" % [kind, band]
+	add_child(chunk.node)
+	_chunks[key] = chunk
+	return chunk
+
+
+func _release_chunk(kind: int, row: int) -> void:
+	var key := Vector2i(kind, _band_of(row))
+	var chunk: Chunk = _chunks[key]
+	chunk.node.queue_free()
+	_chunks.erase(key)
 
 
 func _exit_tree() -> void:
@@ -89,16 +123,18 @@ func set_cell(cx: int, row: int, kind: int) -> void:
 		if _cells[key].kind == kind:
 			return
 		remove_cell(cx, row)
-	var slots: Array[int] = _free_slots[kind]
-	if slots.is_empty():
-		push_warning("CellGrid is full; cell %s dropped" % key)
+	var chunk := _chunk_for(kind, row)
+	if chunk.free_slots.is_empty():
+		push_warning("CellGrid band is full; cell %s dropped" % key)
 		return
 	var cell := Cell.new()
 	cell.kind = kind
 	cell.hp = HIT_POINTS.get(kind, 1)
-	cell.instance = slots.pop_back()
+	cell.chunk = chunk
+	cell.instance = chunk.free_slots.pop_back()
+	chunk.used += 1
 	var xform := Transform3D(Basis(), Grid.cell_center(cx, row))
-	_multimeshes[kind].set_instance_transform(cell.instance, xform)
+	chunk.multimesh.set_instance_transform(cell.instance, xform)
 	cell.body = PhysicsServer3D.body_create()
 	PhysicsServer3D.body_set_mode(cell.body, PhysicsServer3D.BODY_MODE_STATIC)
 	PhysicsServer3D.body_set_space(cell.body, _space)
@@ -116,8 +152,11 @@ func remove_cell(cx: int, row: int) -> bool:
 	if not _cells.has(key):
 		return false
 	var cell: Cell = _cells[key]
-	_multimeshes[cell.kind].set_instance_transform(cell.instance, Transform3D().scaled(Vector3.ZERO))
-	_free_slots[cell.kind].append(cell.instance)
+	cell.chunk.multimesh.set_instance_transform(cell.instance, cell.chunk.hidden)
+	cell.chunk.free_slots.append(cell.instance)
+	cell.chunk.used -= 1
+	if cell.chunk.used == 0:
+		_release_chunk(cell.kind, row)
 	PhysicsServer3D.free_rid(cell.body)
 	_cells.erase(key)
 	return true
@@ -159,7 +198,7 @@ var _hit_by: Dictionary = {}
 
 ## Nudges a damaged cell's instance so the hit reads visually.
 func _shake(cell: Cell) -> void:
-	var mm: MultiMesh = _multimeshes[cell.kind]
+	var mm: MultiMesh = cell.chunk.multimesh
 	var xform: Transform3D = mm.get_instance_transform(cell.instance)
 	xform.basis = Basis().rotated(Vector3.FORWARD, randf_range(-0.12, 0.12)).scaled(Vector3(0.94, 0.94, 0.94))
 	mm.set_instance_transform(cell.instance, xform)

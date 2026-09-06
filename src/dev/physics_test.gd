@@ -30,6 +30,12 @@ func _ready() -> void:
 	await _scenario_drone()
 	await _scenario_button()
 	await _scenario_light_ring()
+	await _scenario_table_set()
+	await _scenario_chair_drop()
+	await _scenario_champagne()
+	await _scenario_bumper()
+	await _scenario_air_fan()
+	await _scenario_desktop()
 	print("PHYSICS_RESULT failures=%d" % _failures)
 	get_tree().quit()
 
@@ -239,6 +245,105 @@ func _scenario_light_ring() -> void:
 	var bomb := _add(BOMB, Vector3(5.0, -2.5, 0.0), {"no_timeout": true})
 	await _frames(60 * 6)
 	_check("light_ring_laser", not is_instance_valid(bomb), "bomb_alive=%s beam=%s" % [is_instance_valid(bomb), ring.get_node("Laser/Beam").visible])
+
+
+func _upright(body: Node3D) -> bool:
+	return body.global_transform.basis.y.dot(Vector3.UP) > 0.95
+
+
+func _scenario_table_set() -> void:
+	await _build()
+	var set := _add(load("res://src/spawnables/table_with_chairs.tscn"), Vector3(11.5, -5.0, 0.0))
+	await _frames(90)
+	var table: RigidBody3D = set.get_node("Table")
+	var chair_l: RigidBody3D = set.get_node("ChairL")
+	var chair_r: RigidBody3D = set.get_node("ChairR")
+	var bodies: Array[RigidBody3D] = [table, chair_l, chair_r]
+	var settled := true
+	for b in bodies:
+		settled = settled and absf(b.global_position.y + 5.0) < 0.1 and _upright(b)
+	# The chairs face the table: their models look along +X (left) and -X (right).
+	var facing: bool = chair_l.get_node("Model").global_transform.basis.z.normalized().x > 0.9 and chair_r.get_node("Model").global_transform.basis.z.normalized().x < -0.9
+	_check("table_set_rests", settled and facing and chair_l.global_position.x < table.global_position.x and chair_r.global_position.x > table.global_position.x,
+		"table_y=%.2f chairs_y=%.2f/%.2f facing=%s" % [table.global_position.y, chair_l.global_position.y, chair_r.global_position.y, facing])
+	var chair_start := chair_l.global_position.x
+	var table_start := table.global_position.x
+	# Shove the table to the right: the chair behind it must stay put.
+	table.apply_central_impulse(Vector3(1.0, 0.0, 0.0) * table.mass * 6.0)
+	await _frames(120)
+	var moved := table.global_position.x - table_start
+	var chair_drift := chair_l.global_position.x - chair_start
+	_check("table_split", moved > 0.5 and absf(chair_drift) < 0.05 and _upright(table) and _upright(chair_l),
+		"table_moved=%.2f left_chair_drift=%.3f" % [moved, chair_drift])
+	# Walking into the left chair slides it on its own across the gap the
+	# table left behind, so it ends up further along than the table did.
+	var table_x := table.global_position.x
+	Input.action_press("move_right")
+	await _frames(60)
+	_release_all()
+	var chair_moved := chair_l.global_position.x - chair_start
+	var table_moved := table.global_position.x - table_x
+	_check("chair_pushed_alone", chair_moved > 0.3 and chair_moved > table_moved + 0.2 and _upright(chair_l),
+		"chair_moved=%.2f table_moved=%.3f" % [chair_moved, table_moved])
+
+
+func _scenario_chair_drop() -> void:
+	await _build()
+	var chair := _add(load("res://src/spawnables/chair.tscn"), Vector3(4.5, -2.0, 0.0))
+	await _frames(180)
+	_check("chair_lands_upright", _upright(chair) and absf(chair.position.y + 5.0) < 0.1 and absf(chair.position.x - 4.5) < 0.2,
+		"y=%.3f x=%.2f up=%.3f" % [chair.position.y, chair.position.x, chair.global_transform.basis.y.dot(Vector3.UP)])
+
+
+func _scenario_champagne() -> void:
+	await _build()
+	var bottle := _add(load("res://src/spawnables/champagne.tscn"), Vector3(5.5, -3.0, 0.0))
+	await _frames(180)
+	_check("champagne_on_floor", is_instance_valid(bottle) and absf(bottle.position.y + 5.0) < 0.08 and _upright(bottle),
+		"y=%.3f up=%.3f" % [bottle.position.y, bottle.global_transform.basis.y.dot(Vector3.UP)])
+
+
+func _scenario_bumper() -> void:
+	await _build()
+	_add(load("res://src/spawnables/bumper.tscn"), Vector3(11.5, -5.0, 0.0))
+	await _frames(60)
+	Input.action_press("move_right")
+	var kicked := false
+	var max_x := 0.0
+	var max_y := -100.0
+	for i in 120:
+		await get_tree().physics_frame
+		max_x = maxf(max_x, _player.position.x)
+		max_y = maxf(max_y, _player.position.y)
+		if _player.velocity.y > 3.0 and _player.velocity.x < -3.0:
+			kicked = true
+	_release_all()
+	_check("bumper_kicks_player", kicked and max_x < 11.0 and max_y > -4.6, "kicked=%s max_x=%.2f max_y=%.2f" % [kicked, max_x, max_y])
+
+
+func _scenario_air_fan() -> void:
+	await _build()
+	_add(load("res://src/spawnables/air_fan.tscn"), Vector3(12.0, -5.0, 0.0))
+	_player.position = Vector3(12.0, -3.0, 0.0)
+	var max_y := -100.0
+	var min_y := 100.0
+	for i in 180:
+		await get_tree().physics_frame
+		max_y = maxf(max_y, _player.position.y)
+		min_y = minf(min_y, _player.position.y)
+	_check("air_fan_lifts_player", max_y > -1.5 and min_y > -4.4, "max_y=%.2f min_y=%.2f" % [max_y, min_y])
+
+
+func _scenario_desktop() -> void:
+	await _build()
+	var desktop := _add(load("res://src/spawnables/desktop.tscn"), Vector3(11.0, -5.0, 0.0))
+	await _frames(120)
+	var desk: RigidBody3D = desktop.get_node("Desk")
+	var monitor: RigidBody3D = desktop.get_node("Monitor")
+	var tower: RigidBody3D = desktop.get_node("Tower")
+	var meshes_ok := monitor.find_child("monitor", true, false) != null and tower.find_child("tower", true, false) != null
+	_check("desktop_stacks", meshes_ok and absf(desk.global_position.y + 5.0) < 0.1 and absf(monitor.global_position.y + 3.0) < 0.15 and absf(tower.global_position.y + 5.0) < 0.1 and _upright(monitor),
+		"desk_y=%.2f monitor_y=%.2f tower_y=%.2f meshes=%s" % [desk.global_position.y, monitor.global_position.y, tower.global_position.y, meshes_ok])
 
 
 class WorldStub extends Node:

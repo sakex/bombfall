@@ -64,26 +64,20 @@ def chair():
     cube((0.6, 0.05, 0.6), (0, 0.36, 1.9), NEON_CYAN, bevel=0.02)                     # back emblem
 
 
-def table_with_chairs():
-    """A round pedestal table with two chairs and a candle-lit dinner. 5 x 4 m."""
+def table(radius=0.95):
+    """A round pedestal table with a candle-lit dinner on it, 2 m across and
+    2 m tall (2.7 m with the candle). The game seats two chairs beside it
+    (see table_with_chairs.tscn), each its own rigid body."""
     cyl(0.45, 0.15, (0, 0, 0.08), METAL_DARK, verts=16)
     cyl(0.14, 1.9, (0, 0, 1.0), METAL_DARK, verts=10)
-    cyl(1.35, 0.12, (0, 0, 2.0), ((0.05, 0.05, 0.08), 0.15, 0.3), verts=28)
-    torus(1.35, 0.04, (0, 0, 2.0), NEON_PINK, major_segments=28)
-    cyl(0.2, 0.02, (0.4, -0.3, 2.07), (WHITE, 0.4, 0.0), verts=14)                   # plate
-    cyl(0.2, 0.02, (-0.4, 0.3, 2.07), (WHITE, 0.4, 0.0), verts=14)
+    cyl(radius, 0.12, (0, 0, 2.0), ((0.05, 0.05, 0.08), 0.15, 0.3), verts=28)
+    torus(radius, 0.04, (0, 0, 2.0), NEON_PINK, major_segments=28)
+    cyl(0.2, 0.02, (0.35, -0.3, 2.07), (WHITE, 0.4, 0.0), verts=14)                  # plate
+    cyl(0.2, 0.02, (-0.35, 0.3, 2.07), (WHITE, 0.4, 0.0), verts=14)
     cyl(0.05, 0.5, (0.0, 0.0, 2.3), (WHITE, 0.6, 0.0), verts=8)                       # candle
     sphere(0.05, (0.0, 0.0, 2.6), NEON_ORANGE, scale=(0.7, 0.7, 1.4), segments=8, rings=6)
-    cyl(0.07, 0.45, (-0.6, -0.2, 2.28), ((0.1, 0.3, 0.15), 0.1, 0.0), verts=8)       # bottle
-    cyl(0.03, 0.2, (-0.6, -0.2, 2.6), ((0.1, 0.3, 0.15), 0.1, 0.0), verts=8)
-    for s in (-1, 1):
-        x = s * 1.9
-        cube((0.9, 0.9, 0.16), (x, 0, 1.05), CUSHION, bevel=0.06)
-        cube((0.9, 0.2, 1.3), (x + s * 0.35, 0, 1.75), CUSHION, bevel=0.06)
-        rod((x + s * 0.35, 0, 2.4), (x + s * 0.35, 0, 1.2), 0.03, NEON_CYAN)
-        for sy in (-1, 1):
-            for sx in (-1, 1):
-                rod((x + sx * 0.38, sy * 0.38, 0.0), (x + sx * 0.38, sy * 0.38, 1.0), 0.04, METAL_DARK)
+    cyl(0.07, 0.45, (-0.5, -0.2, 2.28), ((0.1, 0.3, 0.15), 0.1, 0.0), verts=8)       # bottle
+    cyl(0.03, 0.2, (-0.5, -0.2, 2.6), ((0.1, 0.3, 0.15), 0.1, 0.0), verts=8)
 
 
 def tv():

@@ -9,6 +9,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *  # noqa: F401,F403
 from props import *  # noqa: F401,F403
+from synth import *  # noqa: F401,F403
 
 clean_scene()
 D = 1.85
@@ -24,6 +25,10 @@ for o in list(bpy.context.scene.objects):
         attach(o, lamp)
 hanging_lamp(2.2, D - 1.4, 0.0, drop=0.9, m=NEON_GREEN)
 led_strip(0.2, 14.8, D + 0.02, -0.25, m=NEON_GREEN, r=0.025)
+
+# Synthwave touch: a neon cornice along the front edge and a laser fan.
+hline(0.2, 14.8, 0.15, -0.06, NEON_ICE, r=0.025)
+laser_fan(12.0, D - 1.0, 0.0, m=NEON_GREEN, n=4, spread=1.2, length=1.1)
 
 join_static("decor")
 export("ceiling_hacker")

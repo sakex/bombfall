@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *  # noqa: F401,F403
 from props import *  # noqa: F401,F403
+from synth import *  # noqa: F401,F403
 
 clean_scene()
 D = 1.85
@@ -28,7 +29,12 @@ neon_sign("PLAY", 6.95, D - 1.05, -0.8, NEON_PINK, cell=0.07)
 for o in list(bpy.context.scene.objects):
     if o.type == "MESH" and o.parent is None and abs(o.location.x - 7.5) < 0.9 and abs(o.location.y - (D - 1.05)) < 0.1:
         attach(o, sg)
+join_under(sg, "spin_sign_mesh")
 led_strip(0.2, 14.8, D + 0.02, -0.2, m=NEON_MAGENTA)
+
+# Synthwave touch: a neon cornice along the front edge and a laser fan.
+hline(0.2, 14.8, 0.15, -0.06, NEON_HOT, r=0.025)
+laser_fan(11.5, D - 1.0, 0.0, m=NEON_ICE, n=4, spread=1.2, length=1.1)
 
 join_static("decor")
 export("ceiling_arcade")

@@ -4,8 +4,17 @@ extends Node3D
 ## boss; killing it opens the floor and drops a crate of coins.
 
 const CRATE_SCENE := "res://src/spawnables/crate.tscn"
+const BLOCK := preload("res://src/special_levels/boss_block.tscn")
 const BOSS_SPAWN_TIME := 3.0
 const FLOOR_DELETE_DELAY := 10.0
+## The bat's crystals also grow up the wall under its heart while the fight
+## drags on: one frozen step every few seconds, so the heart is always
+## reachable within a couple of minutes even if the stray shots do not pile up.
+const LADDER_INTERVAL := 9.0
+const LADDER_STEPS := [
+	Vector2(14.6, -17.0), Vector2(11.9, -14.0), Vector2(14.6, -11.2), Vector2(11.9, -8.4),
+	Vector2(14.6, -5.8), Vector2(12.4, -3.4),
+]
 
 var coin_budget := 0
 var _world: Node = null
@@ -15,6 +24,9 @@ var _spawn_progress := 0.0
 var _boss_awake := false
 var _floor_flashing := false
 var _floor_material: StandardMaterial3D
+var _ladder_time := 0.0
+var _ladder_built := 0
+var ladder: Array[Node3D] = []
 
 @onready var boss: BossBat = $BossBat
 @onready var heart: BatHeart = $BatHeart
@@ -48,8 +60,27 @@ func _process(delta: float) -> void:
 			_boss_awake = true
 			boss.start()
 			heart.enable_heart()
+	if _boss_awake and not boss.is_dying() and _ladder_built < LADDER_STEPS.size():
+		_ladder_time += delta
+		if _ladder_time >= LADDER_INTERVAL:
+			_ladder_time = 0.0
+			_grow_ladder_step()
 	if _floor_flashing and _floor_material != null:
 		_floor_material.emission_energy_multiplier = 1.0 + 3.0 * (0.5 + 0.5 * sin(Time.get_ticks_msec() / 1000.0 * 12.0))
+
+
+func _grow_ladder_step() -> void:
+	var step: Vector2 = LADDER_STEPS[_ladder_built]
+	_ladder_built += 1
+	var block: RigidBody3D = BLOCK.instantiate()
+	block.lifetime = 0.0
+	block.indestructible = true
+	block.freeze = true
+	block.freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
+	block.position = Vector3(step.x, step.y, 0.0)
+	block.scale = Vector3(1.6, 0.7, 1.0)
+	add_child(block)
+	ladder.append(block)
 
 
 func _on_player_entered(body: Node) -> void:

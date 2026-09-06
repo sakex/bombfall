@@ -5,8 +5,9 @@ extends CanvasLayer
 
 signal pause_pressed
 
-const BUTTON_MARGIN := 40.0
-const BUTTON_SIZE := 190.0
+const BUTTON_MARGIN := 44.0
+const BUTTON_SIZE := 210.0
+const TOUCH_ZONE_HEIGHT := 0.4      ## fraction of the screen the thumbs own
 
 var _player: Player
 var _score_tween: Tween
@@ -14,13 +15,13 @@ var _score_tween: Tween
 @onready var score_label: Label = %Score
 @onready var depth_label: Label = %Depth
 @onready var shield_bar: ShieldBar = %ShieldBar
-@onready var pause_button: Button = %PauseButton
+@onready var pause_button: TextureButton = %PauseButton
 @onready var doubler_badge: PanelContainer = %DoublerBadge
 @onready var doubler_label: Label = %DoublerLabel
 @onready var toast: Label = %Toast
-@onready var touch_left: TouchScreenButton = $Touch/Left
-@onready var touch_right: TouchScreenButton = $Touch/Right
-@onready var touch_jump: TouchScreenButton = $Touch/Jump
+@onready var joystick: Joystick = $Touch/Joystick
+@onready var jump_zone: TouchScreenButton = $Touch/JumpZone
+@onready var jump_hint: TextureRect = $Touch/JumpHint
 
 
 func _ready() -> void:
@@ -28,6 +29,8 @@ func _ready() -> void:
 	get_viewport().size_changed.connect(_layout_touch)
 	_layout_touch()
 	set_score(0)
+	# Thumb controls only where there is a thumb (debug builds keep them for screenshots).
+	$Touch.visible = OS.has_feature("mobile") or DisplayServer.is_touchscreen_available() or OS.is_debug_build()
 	doubler_badge.visible = false
 	toast.modulate.a = 0.0
 
@@ -76,11 +79,14 @@ func set_touch_controls_visible(visible: bool) -> void:
 	$Touch.visible = visible
 
 
+## The left half of the lower screen is the joystick, the right half jumps:
+## the visible button is only a hint, the whole zone reacts.
 func _layout_touch() -> void:
 	var size := get_viewport().get_visible_rect().size
-	for button in [touch_left, touch_right, touch_jump]:
-		button.scale = Vector2.ONE * (BUTTON_SIZE / button.texture_normal.get_width())
-	var y := size.y - BUTTON_MARGIN - BUTTON_SIZE
-	touch_left.position = Vector2(BUTTON_MARGIN, y)
-	touch_right.position = Vector2(BUTTON_MARGIN * 2 + BUTTON_SIZE, y)
-	touch_jump.position = Vector2(size.x - BUTTON_MARGIN - BUTTON_SIZE, y)
+	var zone_h := size.y * TOUCH_ZONE_HEIGHT
+	joystick.position = Vector2(0.0, size.y - zone_h)
+	joystick.size = Vector2(size.x * 0.5, zone_h)
+	jump_zone.position = Vector2(size.x * 0.5, size.y - zone_h)
+	(jump_zone.shape as RectangleShape2D).size = Vector2(size.x * 0.5, zone_h)
+	jump_hint.size = Vector2(BUTTON_SIZE, BUTTON_SIZE)
+	jump_hint.position = Vector2(size.x - BUTTON_MARGIN - BUTTON_SIZE, size.y - BUTTON_MARGIN - BUTTON_SIZE)

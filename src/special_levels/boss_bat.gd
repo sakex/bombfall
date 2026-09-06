@@ -60,6 +60,10 @@ func set_dying() -> void:
 	gravity_scale = 1.5
 
 
+func is_dying() -> bool:
+	return _dying
+
+
 func _randomize_direction() -> void:
 	_direction = _direction.rotated(randf_range(-TAU, TAU))
 	if (position.y >= _y_max and _direction.y > 0.0) or (position.y <= _y_min and _direction.y < 0.0):
@@ -109,6 +113,7 @@ func _on_bullet_hit(item: Node, bullet: PlasmaBullet) -> void:
 	if item is Player or item is Bomb:
 		return
 	var block := BLOCK.instantiate()
+	block.lifetime = 0.0   # crystals last the whole fight: they are the stairs to the heart
 	block.position = bullet.global_position + Vector3(0.0, 0.5, 0.0)
 	get_parent().add_child(block)
 	_blocks.append(block)

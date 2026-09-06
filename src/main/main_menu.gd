@@ -32,6 +32,7 @@ func _ready() -> void:
 	for popup in [store, settings, leaderboard, credits, tutorial_modal]:
 		popups.add_child(popup)
 	%PlayButton.pressed.connect(Game.start_game)
+	_style_play_button()
 	%LeaderboardButton.pressed.connect(leaderboard.open)
 	%StoreButton.pressed.connect(store.open)
 	%SettingsButton.pressed.connect(settings.open)
@@ -60,3 +61,22 @@ func _process(delta: float) -> void:
 func _on_any_buyable(buyable: bool) -> void:
 	%StoreButton.modulate = Color(1.0, 0.9, 0.5) if buyable else Color.WHITE
 	%StoreButton.text = "store  *" if buyable else "store"
+
+
+## The play button is the hot-pink hero of the menu.
+func _style_play_button() -> void:
+	var button: Button = %PlayButton
+	var normal: StyleBoxFlat = button.get_theme_stylebox("normal").duplicate()
+	normal.bg_color = Color(0.85, 0.1, 0.55, 1.0)
+	normal.border_color = Color(1.0, 0.75, 0.95, 1.0)
+	normal.shadow_color = Color(1.0, 0.3, 0.8, 0.7)
+	normal.shadow_size = 18
+	button.add_theme_stylebox_override("normal", normal)
+	var hover: StyleBoxFlat = normal.duplicate()
+	hover.bg_color = Color(1.0, 0.2, 0.65, 1.0)
+	button.add_theme_stylebox_override("hover", hover)
+	var pressed: StyleBoxFlat = normal.duplicate()
+	pressed.bg_color = Color(0.3, 0.9, 1.0, 1.0)
+	pressed.border_color = Color(0.85, 1.0, 1.0, 1.0)
+	pressed.shadow_color = Color(0.3, 0.9, 1.0, 0.7)
+	button.add_theme_stylebox_override("pressed", pressed)

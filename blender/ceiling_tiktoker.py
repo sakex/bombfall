@@ -8,6 +8,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from common import *  # noqa: F401,F403
 from props import *  # noqa: F401,F403
+from synth import *  # noqa: F401,F403
 
 clean_scene()
 D = 1.85
@@ -22,6 +23,10 @@ cable_drape(0.3, 15.0, D - 0.2, -0.1, sag=0.3, m=PLASTIC_BLACK, segments=10, r=0
 lan = pivot("sway_lantern", (12.5, D - 1.0, 0.0))
 rod((12.5, D - 1.0, 0.0), (12.5, D - 1.0, -0.5), 0.01, PLASTIC_BLACK, verts=4, parent=lan)
 sphere(0.4, (12.5, D - 1.0, -0.95), neon((1.0, 0.6, 0.8), 1.2, (0.5, 0.3, 0.4)), segments=12, rings=8, parent=lan)
+
+# Synthwave touch: a neon cornice along the front edge and a laser fan.
+hline(0.2, 14.8, 0.15, -0.06, NEON_HOT, r=0.025)
+laser_fan(2.5, D - 1.0, 0.0, m=NEON_ICE, n=4, spread=1.2, length=1.0)
 
 join_static("decor")
 export("ceiling_tiktoker")

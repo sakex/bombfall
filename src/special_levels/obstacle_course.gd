@@ -8,7 +8,7 @@ const WALL_GUN := preload("res://src/spawnables/wall_gun.tscn")
 const CRATE := preload("res://src/spawnables/crate.tscn")
 ## (x, top row, width) in cells, from the original 32 px tile map.
 const LEDGES := [
-	[3.0, 6.0, 1.0], [8.0, 9.5, 2.0], [0.5, 13.5, 1.0], [14.5, 14.0, 1.5],
+	[3.0, 6.0, 1.0], [8.0, 9.5, 2.0], [0.5, 14.0, 1.0], [14.5, 14.0, 1.5],
 	[1.0, 18.5, 4.5], [13.0, 18.5, 2.5], [11.0, 22.0, 1.0], [4.0, 24.5, 2.5],
 	[12.5, 28.0, 1.0], [5.0, 31.0, 2.5], [0.5, 34.0, 2.0],
 ]

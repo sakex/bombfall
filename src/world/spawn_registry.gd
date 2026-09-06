@@ -141,51 +141,51 @@ static func _build_themes() -> Array[Dictionary]:
 		{
 			"id": "gym", "windows": [Rect2(0.2, 7.6, 1.6, 1.3), Rect2(13.2, 7.6, 1.6, 1.3), Rect2(4.2, 4.6, 6.6, 2.2)], "height": 16,
 			"spawnables": ["trampoline", "wallgun", "roped_bomb", "treadmill", "bench_press", "button"],
-			"wall": Color(0.13, 0.26, 0.29), "trim": Color(0.2, 1.0, 0.75), "floor": Color(0.21, 0.42, 0.42),
+			"wall": Color(0.05, 0.09, 0.17), "trim": Color(0.25, 1.0, 0.75), "floor": Color(0.06, 0.10, 0.18),
 		},
 		{
 			"id": "rich1", "windows": [Rect2(1.7, 2.0, 4.6, 2.6), Rect2(1.5, 7.7, 2.2, 1.2), Rect2(11.3, 7.7, 2.2, 1.2)], "height": 16,
 			"spawnables": ["table_with_chairs", "button", "statue", "light_ring", "drone", "floor_painting", "roped_painting", "desktop", "bed_rich", "bathtub", "wallgun", "cake", "tv", "champagne"],
-			"wall": Color(0.31, 0.21, 0.13), "trim": Color(1.0, 0.75, 0.2), "floor": Color(0.47, 0.31, 0.16),
+			"wall": Color(0.15, 0.06, 0.21), "trim": Color(1.0, 0.72, 0.3), "floor": Color(0.10, 0.05, 0.14),
 		},
 		{
 			"id": "rich2", "windows": [Rect2(0.4, 5.2, 2.6, 1.6), Rect2(12.2, 5.2, 2.6, 1.6), Rect2(3.6, 5.2, 7.8, 1.5)], "height": 15,
 			"spawnables": ["table_with_chairs", "button", "statue", "light_ring", "drone", "floor_painting", "roped_painting", "desktop", "bed_rich", "bathtub", "wallgun", "cake", "tv", "champagne"],
-			"wall": Color(0.16, 0.21, 0.36), "trim": Color(0.3, 0.8, 1.0), "floor": Color(0.26, 0.26, 0.47),
+			"wall": Color(0.06, 0.07, 0.21), "trim": Color(0.3, 0.9, 1.0), "floor": Color(0.05, 0.05, 0.15),
 		},
 		{
 			"id": "hacker", "windows": [Rect2(10.6, 4.2, 3.6, 2.0), Rect2(0.3, 4.4, 3.0, 1.6)], "height": 16,
 			"spawnables": ["chair", "button", "wallgun", "roped_bomb", "drone", "trampoline", "desktop"],
-			"wall": Color(0.08, 0.16, 0.13), "trim": Color(0.2, 1.0, 0.4), "floor": Color(0.13, 0.23, 0.21),
+			"wall": Color(0.03, 0.06, 0.11), "trim": Color(0.25, 1.0, 0.45), "floor": Color(0.03, 0.05, 0.09),
 		},
 		{
 			"id": "tiktoker", "windows": [Rect2(5.0, 4.0, 4.0, 2.2), Rect2(9.6, 4.6, 2.2, 1.6)], "height": 16,
 			"spawnables": ["chair", "wallgun", "roped_painting", "drone", "bathtub", "light_ring", "desktop", "treadmill", "bed2"],
-			"wall": Color(0.36, 0.10, 0.31), "trim": Color(1.0, 0.3, 0.7), "floor": Color(0.52, 0.16, 0.42),
+			"wall": Color(0.17, 0.04, 0.19), "trim": Color(1.0, 0.3, 0.7), "floor": Color(0.12, 0.03, 0.14),
 		},
 		{
 			"id": "room1", "windows": [Rect2(0.9, 2.1, 3.4, 2.6), Rect2(1.1, 7.4, 3.0, 1.5), Rect2(8.9, 7.4, 3.0, 1.5)], "height": 16,
 			"spawnables": ["chair", "table_with_chairs", "roped_bomb_two_ways", "drone", "toilet", "treadmill", "desktop", "bed1", "cake", "champagne"],
-			"wall": Color(0.26, 0.16, 0.47), "trim": Color(0.75, 0.4, 1.0), "floor": Color(0.36, 0.23, 0.57),
+			"wall": Color(0.12, 0.05, 0.23), "trim": Color(0.7, 0.3, 1.0), "floor": Color(0.09, 0.04, 0.16),
 		},
 		{
 			"id": "room2", "windows": [Rect2(3.0, 4.7, 4.0, 1.9), Rect2(1.1, 7.6, 2.6, 1.1), Rect2(6.2, 7.6, 2.6, 1.1), Rect2(11.3, 7.6, 2.6, 1.1)], "height": 16,
 			"spawnables": ["chair", "table_with_chairs", "roped_bomb_two_ways", "drone", "toilet", "desktop", "wallgun", "tv"],
-			"wall": Color(0.13, 0.18, 0.42), "trim": Color(0.4, 0.55, 1.0), "floor": Color(0.21, 0.26, 0.52),
+			"wall": Color(0.05, 0.07, 0.21), "trim": Color(0.4, 0.55, 1.0), "floor": Color(0.04, 0.05, 0.14),
 		},
 		{
 			"id": "arcade", "windows": [Rect2(0.5, 5.6, 3.2, 1.6), Rect2(10.3, 5.6, 3.8, 1.6), Rect2(4.6, 6.0, 5.4, 1.3)], "height": 16,
 			"spawnables": ["arcade_cabinet", "bumper", "air_fan", "chair", "drone", "roped_bomb", "button", "trampoline", "champagne", "tv"],
-			"wall": Color(0.16, 0.08, 0.34), "trim": Color(1.0, 0.35, 0.8), "floor": Color(0.14, 0.06, 0.28),
+			"wall": Color(0.10, 0.04, 0.23), "trim": Color(1.0, 0.35, 0.8), "floor": Color(0.06, 0.03, 0.14),
 		},
 		{
 			"id": "casino", "windows": [Rect2(5.6, 5.85, 4.4, 1.05), Rect2(11.0, 6.0, 3.0, 0.9)], "height": 15,
 			"spawnables": ["slot_machine", "table_with_chairs", "champagne", "cake", "statue", "light_ring", "drone", "wallgun", "bumper", "roped_painting", "button"],
-			"wall": Color(0.42, 0.08, 0.16), "trim": Color(1.0, 0.8, 0.3), "floor": Color(0.5, 0.07, 0.1),
+			"wall": Color(0.19, 0.04, 0.15), "trim": Color(1.0, 0.8, 0.3), "floor": Color(0.12, 0.03, 0.09),
 		},
 		{
 			"id": "toilet1", "windows": [Rect2(7.0, 3.2, 3.6, 1.6), Rect2(2.0, 7.9, 2.0, 1.0), Rect2(6.5, 7.9, 2.0, 1.0), Rect2(11.0, 7.9, 2.0, 1.0)], "height": 16,
 			"spawnables": ["bathtub", "toilet", "roped_bomb_two_ways", "drone", "trampoline", "tv", "fire_zone"],
-			"wall": Color(0.26, 0.34, 0.39), "trim": Color(0.6, 0.95, 1.0), "floor": Color(0.36, 0.47, 0.52),
+			"wall": Color(0.06, 0.09, 0.21), "trim": Color(0.35, 0.9, 1.0), "floor": Color(0.05, 0.08, 0.16),
 		},
 	]

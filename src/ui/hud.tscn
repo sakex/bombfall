@@ -3,10 +3,12 @@
 [ext_resource type="Script" path="res://src/ui/hud.gd" id="1"]
 [ext_resource type="Theme" path="res://src/ui/theme.tres" id="2"]
 [ext_resource type="Script" path="res://src/ui/shield_bar.gd" id="3"]
-[ext_resource type="Texture2D" path="res://assets/ui/left_arrow.png" id="4"]
-[ext_resource type="Texture2D" path="res://assets/ui/right_arrow.png" id="5"]
-[ext_resource type="Texture2D" path="res://assets/ui/jump_button.png" id="6"]
-[ext_resource type="Texture2D" path="res://assets/ui/pause_button.png" id="7"]
+[ext_resource type="Script" path="res://src/ui/joystick.gd" id="4"]
+[ext_resource type="Texture2D" path="res://assets/ui/jump.svg" id="6"]
+[ext_resource type="Texture2D" path="res://assets/ui/pause.svg" id="7"]
+
+[sub_resource type="RectangleShape2D" id="jump_zone"]
+size = Vector2(540, 700)
 
 [sub_resource type="StyleBoxFlat" id="badge"]
 content_margin_left = 20.0
@@ -75,15 +77,15 @@ size_flags_horizontal = 3
 size_flags_vertical = 0
 script = ExtResource("3")
 
-[node name="PauseButton" type="Button" parent="Top/Row"]
+[node name="PauseButton" type="TextureButton" parent="Top/Row"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(96, 96)
+custom_minimum_size = Vector2(104, 104)
 layout_mode = 2
 size_flags_horizontal = 8
 size_flags_vertical = 0
-icon = ExtResource("7")
-flat = true
-expand_icon = true
+texture_normal = ExtResource("7")
+ignore_texture_size = true
+stretch_mode = 5
 
 [node name="Center" type="CenterContainer" parent="."]
 anchors_preset = 15
@@ -135,19 +137,30 @@ theme_override_constants/outline_size = 0
 theme_override_font_sizes/font_size = 40
 text = "x2  12s"
 
-[node name="Touch" type="Node2D" parent="."]
+[node name="Touch" type="Control" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
 
-[node name="Left" type="TouchScreenButton" parent="Touch"]
-texture_normal = ExtResource("4")
-action = "move_left"
-passby_press = true
+[node name="Joystick" type="Control" parent="Touch"]
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -760.0
+offset_right = 540.0
+grow_vertical = 0
+script = ExtResource("4")
 
-[node name="Right" type="TouchScreenButton" parent="Touch"]
-texture_normal = ExtResource("5")
-action = "move_right"
-passby_press = true
-
-[node name="Jump" type="TouchScreenButton" parent="Touch"]
-texture_normal = ExtResource("6")
+[node name="JumpZone" type="TouchScreenButton" parent="Touch"]
+shape = SubResource("jump_zone")
+shape_centered = false
+shape_visible = false
 action = "jump"
 passby_press = true
+
+[node name="JumpHint" type="TextureRect" parent="Touch"]
+mouse_filter = 2
+texture = ExtResource("6")
+expand_mode = 1
+stretch_mode = 5

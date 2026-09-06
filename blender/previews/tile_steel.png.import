@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://dybm2d1hl5vso"
-path="res://.godot/imported/right_arrow.png-11bbfdcce15b0dffe5a995faae11b186.ctex"
+uid="uid://cgxjkjso4k8h0"
+path="res://.godot/imported/tile_steel.png-77a38d31efb2fa6153cb11e438277f84.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/ui/right_arrow.png"
-dest_files=["res://.godot/imported/right_arrow.png-11bbfdcce15b0dffe5a995faae11b186.ctex"]
+source_file="res://blender/previews/tile_steel.png"
+dest_files=["res://.godot/imported/tile_steel.png-77a38d31efb2fa6153cb11e438277f84.ctex"]
 
 [params]
 

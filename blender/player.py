@@ -1,5 +1,6 @@
 # The player: a chibi astronaut in a coral pressure suit with an oversized
-# glossy black helmet, two huge glowing eyes with sparkle highlights,
+# glossy black bomb head inside a coral full-face biker helmet with a
+# flipped-up visor, two huge glowing eyes with sparkle highlights,
 # blushing cheeks, a smile, headphone cups, a bobbing antenna, a little
 # jet pack and a cyan scarf. ~1.5 m tall, origin between the feet, facing
 # -Y. Pivots the game animates:
@@ -27,6 +28,9 @@ SMILE = neon((0.35, 0.95, 1.0), 4.0, (0.1, 0.5, 0.6))
 ANTENNA = neon(PINK, 6.0)
 VENT = neon(CYAN, 3.0)
 SCARF = ((0.15, 0.85, 0.95), 0.7, 0.0)
+SHELL = ((0.98, 0.42, 0.50), 0.28, 0.0)
+VISOR = ((0.03, 0.03, 0.05), 0.08, 0.5)
+STRIPE = ((0.97, 0.97, 1.0), 0.45, 0.0)
 FLAME = neon((1.0, 0.6, 0.15), 6.0, (1.0, 0.4, 0.1))
 
 HIP = 0.38
@@ -46,7 +50,7 @@ for side, name in ((-1, "leg_l"), (1, "leg_r")):
     cube((0.16, 0.10, 0.03), (x, -0.16, 0.07), VENT, bevel=0.01, parent=p)            # boot light
 
 # Body: a round belly, a belt with pouches, a chest badge and side stripes.
-sphere(0.33, (0, 0, 0.62), SUIT, scale=(0.95, 0.80, 0.82), segments=20, rings=14)
+sphere(0.33, (0, 0, 0.62), SUIT, scale=(0.95, 0.80, 0.82), segments=16, rings=10)
 torus(0.29, 0.035, (0, 0, 0.50), SUIT_DARK, scale=(1.0, 0.85, 1.0))
 sphere(0.05, (0, -0.25, 0.50), METAL_CHROME, segments=8, rings=6)
 for s in (-1, 1):
@@ -77,28 +81,91 @@ for side, name in ((-1, "arm_l"), (1, "arm_r")):
     torus(0.075, 0.012, (x + side * 0.02, -0.01, SHOULDER - 0.12), SUIT_LIGHT, rot=(0.15, side * 0.2, 0), parent=p)
     sphere(0.10, (x + side * 0.07, -0.03, SHOULDER - 0.34), GLOVE, segments=10, rings=8, parent=p)
 
-# Helmet: the big glossy dome with a crescent sheen.
+# Head: the big glossy black bomb dome.
 cyl(0.17, 0.10, (0, 0, 0.90), GLOVE, verts=14)
-sphere(HEAD_R, (0, 0, HZ), HELMET, scale=(1.06, 1.0, 1.0), segments=24, rings=16, name="helmet")
-sheen = torus(HEAD_R * 0.82, 0.02, (0, -0.02, HZ + 0.05), SHEEN, rot=(0.9, 0.3, 0.4), scale=(1.0, 1.0, 0.7), major_segments=24, minor_segments=5)
-bpy.ops.object.select_all(action="DESELECT")
-sheen.select_set(True)
-bpy.context.view_layer.objects.active = sheen
-bpy.ops.object.mode_set(mode="EDIT")
-bpy.ops.mesh.select_all(action="SELECT")
-bpy.ops.mesh.bisect(plane_co=(0, -0.02, HZ + 0.05), plane_no=(0.5, 0.2, -1.0), clear_inner=True)
-bpy.ops.object.mode_set(mode="OBJECT")
+sphere(HEAD_R, (0, 0, HZ), HELMET, scale=(1.06, 1.0, 1.0), segments=18, rings=12, name="helmet")
+
+
+def keep_above(obj, co, no):
+    """Cut `obj` by a plane and keep the side the normal points to."""
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.mode_set(mode="EDIT")
+    bpy.ops.mesh.select_all(action="SELECT")
+    bpy.ops.mesh.bisect(plane_co=co, plane_no=no, clear_inner=True)
+    bpy.ops.object.mode_set(mode="OBJECT")
+    return obj
+
+
+def cut_out(obj, size, loc):
+    """Subtract a box from `obj` (boolean difference, applied)."""
+    bpy.ops.mesh.primitive_cube_add(size=1.0, location=loc)
+    cutter = bpy.context.active_object
+    cutter.scale = size
+    mod = obj.modifiers.new("cut", "BOOLEAN")
+    mod.operation = "DIFFERENCE"
+    mod.solver = "EXACT"
+    mod.object = cutter
+    bpy.ops.object.select_all(action="DESELECT")
+    obj.select_set(True)
+    bpy.context.view_layer.objects.active = obj
+    bpy.ops.object.modifier_apply(modifier=mod.name)
+    bpy.data.objects.remove(cutter, do_unlink=True)
+    return obj
+
+
+# Biker helmet: a full-face coral shell around the whole head with a wide
+# face opening for the eyes and smile, a chin bar with vents, a flipped-up
+# smoked visor on chrome hinges, racing stripes and a glowing tail light.
+SHELL_R = HEAD_R + 0.06
+SHELL_SX = 1.06
+OPEN_LO = HZ - 0.24      # bottom of the face opening (above the chin bar)
+OPEN_HI = HZ + 0.30      # top of the face opening (under the visor)
+shell = sphere(SHELL_R, (0, 0, HZ), SHELL, scale=(SHELL_SX, 1.0, 1.04), segments=24, rings=14)
+keep_above(shell, (0, 0, HZ - 0.40), (0, 0, 1))                                      # open at the neck
+cut_out(shell, (0.80, 0.70, OPEN_HI - OPEN_LO), (0, -SHELL_R - 0.05, (OPEN_HI + OPEN_LO) / 2))
+# Rim around the face opening and the chin bar.
+for z in (OPEN_LO, OPEN_HI):
+    cube((0.80, 0.05, 0.035), (0, -SHELL_R * 0.86, z), SUIT_DARK, bevel=0.01)
+cube((0.62, 0.05, 0.02), (0, -SHELL_R * 0.90, OPEN_LO - 0.005), VENT, bevel=0.0)      # neon lip
+for i in range(3):
+    cube((0.10, 0.06, 0.05), (-0.16 + i * 0.16, -SHELL_R * 0.97, HZ - 0.33), GLOVE, bevel=0.005)   # chin vents
+torus(SHELL_R * 0.84, 0.03, (0, 0, HZ - 0.40), SUIT_DARK, scale=(SHELL_SX, 1.0, 1.0), major_segments=24, minor_segments=5)  # neck roll
+# Visor: a smoked band lifted up onto the forehead.
+visor = sphere(SHELL_R + 0.035, (0, 0, HZ), VISOR, scale=(SHELL_SX, 1.0, 1.04), segments=24, rings=14)
+keep_above(visor, (0, 0, OPEN_HI + 0.01), (0, 0, 1))
+keep_above(visor, (0, 0, OPEN_HI + 0.24), (0, 0, -1))
+keep_above(visor, (0, -0.08, HZ), (0, -1, 0))
+vrim = torus(SHELL_R + 0.04, 0.015, (0, 0, OPEN_HI + 0.02), METAL_CHROME, scale=(SHELL_SX, 1.0, 1.0), major_segments=24, minor_segments=4)
+keep_above(vrim, (0, -0.08, HZ), (0, -1, 0))
+for s in (-1, 1):
+    hx = s * (SHELL_R * SHELL_SX + 0.015)
+    cyl(0.085, 0.05, (hx, -0.02, HZ + 0.10), METAL_CHROME, rot=(0, math.pi / 2, 0), verts=14)   # visor hinge
+    cyl(0.035, 0.03, (hx + s * 0.03, -0.02, HZ + 0.10), VENT, rot=(0, math.pi / 2, 0), verts=10)
+# Racing stripes over the top: white centre, cyan either side.
+for x, m, w in ((0.0, STRIPE, 0.028), (-0.10, VENT, 0.012), (0.10, VENT, 0.012)):
+    r = math.sqrt(SHELL_R ** 2 - (x / SHELL_SX) ** 2) + 0.006
+    st = torus(r, w, (x, 0, HZ), m, rot=(0, math.pi / 2, 0), scale=(1.0, 1.0, 1.04), major_segments=24, minor_segments=4)
+    keep_above(st, (0, 0, HZ + 0.30), (0, 0, 1))
+    keep_above(st, (0, 0.30, HZ), (0, 1, 0))                                          # back half only
+# Tail light: a glowing band around the back.
+tail = torus(SHELL_R + 0.004, 0.014, (0, 0, HZ - 0.02), ANTENNA, scale=(SHELL_SX, 1.0, 1.0), major_segments=24, minor_segments=4)
+keep_above(tail, (0, 0.22, HZ), (0, 1, 0))
+# Sheen: a crescent highlight on the shell.
+sheen = torus(SHELL_R * 0.80, 0.02, (0, -0.02, HZ + 0.12), SHEEN, rot=(0.9, 0.3, 0.4), scale=(1.0, 1.0, 0.7), major_segments=24, minor_segments=5)
+keep_above(sheen, (0, -0.02, HZ + 0.12), (0.5, 0.2, -1.0))
 # Eyes: huge, slightly tilted outward, on pivots so they can blink.
 for s in (-1, 1):
     ex = s * 0.17
     ey = -HEAD_R * 0.86
     ez = HZ + 0.06
     ep = pivot("eye_l" if s < 0 else "eye_r", (ex, ey, ez))
-    e = sphere(0.135, (ex, ey, ez), EYE, scale=(1.0, 0.35, 1.25), segments=14, rings=10, parent=ep)
+    e = sphere(0.135, (ex, ey, ez), EYE, scale=(1.0, 0.35, 1.25), segments=12, rings=8, parent=ep)
     e.rotation_euler = (0, s * 0.18, 0)
-    sphere(0.045, (ex - s * 0.045, ey - 0.05, ez + 0.07), SPARK, segments=8, rings=6, parent=ep)
-    sphere(0.022, (ex + s * 0.05, ey - 0.05, ez - 0.05), SPARK, segments=8, rings=6, parent=ep)
-    sphere(0.07, (s * 0.32, -HEAD_R * 0.78, HZ - 0.12), BLUSH, scale=(1.0, 0.3, 0.7), segments=10, rings=6)
+    sphere(0.045, (ex - s * 0.045, ey - 0.05, ez + 0.07), SPARK, segments=6, rings=4, parent=ep)
+    sphere(0.022, (ex + s * 0.05, ey - 0.05, ez - 0.05), SPARK, segments=6, rings=4, parent=ep)
+    sphere(0.065, (s * 0.29, -HEAD_R * 0.80, HZ - 0.11), BLUSH, scale=(1.0, 0.3, 0.7), segments=10, rings=6)
 arc = torus(0.085, 0.014, (0, -HEAD_R * 0.98, HZ - 0.12), SMILE, rot=(math.pi / 2, 0, 0), major_segments=20, minor_segments=6)
 bpy.ops.object.select_all(action="DESELECT")
 arc.select_set(True)
@@ -107,15 +174,12 @@ bpy.ops.object.mode_set(mode="EDIT")
 bpy.ops.mesh.select_all(action="SELECT")
 bpy.ops.mesh.bisect(plane_co=(0, -HEAD_R * 0.98, HZ - 0.12), plane_no=(0, 0, -1), clear_inner=True)
 bpy.ops.object.mode_set(mode="OBJECT")
-# Headphone cups and band.
-for s in (-1, 1):
-    cyl(0.13, 0.09, (s * HEAD_R * 1.02, 0.0, HZ), SUIT, rot=(0, math.pi / 2, 0), verts=14, bevel=0.02)
-    cyl(0.07, 0.03, (s * (HEAD_R * 1.02 + 0.05), 0.0, HZ), VENT, rot=(0, math.pi / 2, 0), verts=12)
-torus(HEAD_R * 1.03, 0.028, (0, 0, HZ), SUIT_DARK, rot=(0, math.pi / 2, 0), scale=(1.0, 0.55, 1.0), major_segments=28)
 # Antenna with a glowing tip, on a pivot at its base.
-ap = pivot("antenna", (0.12, 0.05, HZ + HEAD_R * 0.9))
-rod((0.12, 0.05, HZ + HEAD_R * 0.9), (0.22, 0.05, HZ + HEAD_R + 0.20), 0.018, GLOVE, parent=ap)
-sphere(0.055, (0.22, 0.05, HZ + HEAD_R + 0.22), ANTENNA, segments=10, rings=8, parent=ap)
+ANT_Z = HZ + math.sqrt(SHELL_R ** 2 - 0.12 ** 2 - 0.05 ** 2)
+ap = pivot("antenna", (0.12, 0.05, ANT_Z))
+sphere(0.035, (0.12, 0.05, ANT_Z), GLOVE, segments=8, rings=6, parent=ap)
+rod((0.12, 0.05, ANT_Z), (0.22, 0.05, HZ + SHELL_R + 0.20), 0.018, GLOVE, parent=ap)
+sphere(0.055, (0.22, 0.05, HZ + SHELL_R + 0.22), ANTENNA, segments=10, rings=8, parent=ap)
 
 join_static("body")
 export("player")

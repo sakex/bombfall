@@ -1,23 +1,39 @@
-[gd_scene load_steps=4 format=3]
+[gd_scene load_steps=6 format=3]
 
-[ext_resource type="Script" path="res://src/spawnables/prop.gd" id="1"]
-[ext_resource type="PackedScene" path="res://assets/models/table_with_chairs.glb" id="2"]
+[ext_resource type="Script" path="res://src/spawnables/multi_body.gd" id="1"]
+[ext_resource type="PackedScene" path="res://src/spawnables/table.tscn" id="2"]
+[ext_resource type="PackedScene" path="res://src/spawnables/chair.tscn" id="3"]
 
-[sub_resource type="BoxShape3D" id="shape"]
-size = Vector3(4.6, 2.5, 1.6)
+[sub_resource type="BoxShape3D" id="chair_shape"]
+size = Vector3(1.3, 2.1, 1.4)
 
-[node name="TableWithChairs" type="RigidBody3D"]
-collision_layer = 32
-collision_mask = 2875
-mass = 80
-center_of_mass_mode = 1
-center_of_mass = Vector3(0, 0.56, 0)
-angular_damp = 1.5
-can_sleep = false
+[node name="TableWithChairs" type="Node3D"]
 script = ExtResource("1")
 
-[node name="Shape" type="CollisionShape3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.25, 0)
-shape = SubResource("shape")
+[node name="Table" parent="." instance=ExtResource("2")]
 
-[node name="Model" parent="." instance=ExtResource("2")]
+[node name="ChairL" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.68, 0, 0)
+mass = 15.0
+center_of_mass = Vector3(0, 0.5, 0)
+random_flip = false
+
+[node name="Shape" parent="ChairL"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+shape = SubResource("chair_shape")
+
+[node name="Model" parent="ChairL"]
+transform = Transform3D(0, 0, 0.7, 0, 0.7, 0, -0.7, 0, 0, 0, 0, 0)
+
+[node name="ChairR" parent="." instance=ExtResource("3")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.68, 0, 0)
+mass = 15.0
+center_of_mass = Vector3(0, 0.5, 0)
+random_flip = false
+
+[node name="Shape" parent="ChairR"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.05, 0)
+shape = SubResource("chair_shape")
+
+[node name="Model" parent="ChairR"]
+transform = Transform3D(0, 0, -0.7, 0, 0.7, 0, 0.7, 0, 0, 0, 0, 0)

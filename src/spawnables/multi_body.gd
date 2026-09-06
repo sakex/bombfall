@@ -1,22 +1,27 @@
 class_name MultiBody
 extends Node3D
-## A prop made of several rigid pieces sharing one glTF model (statue,
-## desktop). At start each named mesh of the model is moved under the body
-## with the same name; the empty root frees itself once every piece is gone.
+## A prop made of several independent rigid pieces: the statue and the
+## desktop share one glTF model whose named meshes are moved under the body
+## with the same name (each body's transform then places its piece); the
+## dinner set simply holds ready-made prop scenes. The empty root frees
+## itself once every piece is gone.
 
-@onready var model: Node3D = $Model
+@onready var model: Node3D = get_node_or_null("Model")
 
 
 func _ready() -> void:
 	for body in get_children():
 		if body is RigidBody3D:
-			var mesh := model.find_child(body.name.to_lower(), true, false)
-			if mesh != null:
-				mesh.reparent(body, true)
+			if model != null:
+				var mesh := model.find_child(body.name.to_lower(), true, false)
+				if mesh != null:
+					# Keep the mesh's own offset: the body's transform positions it.
+					mesh.reparent(body, false)
 			body.tree_exited.connect(_on_piece_gone)
-	if randi() % 2 == 0:
-		_mirror()
-	model.queue_free()
+	if model != null:
+		if randi() % 2 == 0:
+			_mirror()
+		model.queue_free()
 
 
 func _mirror() -> void:
