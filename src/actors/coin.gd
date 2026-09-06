@@ -18,6 +18,11 @@ func _ready() -> void:
 	pickup.body_entered.connect(_on_body_entered)
 	_apply_tint()
 	if unpickable:
+		# Frozen before entering the tree (crate rewards): arm the timer now.
+		if _freeze_seconds > 0.0:
+			timer.wait_time = _freeze_seconds
+			if not timer.timeout.is_connected(_unfreeze):
+				timer.timeout.connect(_unfreeze)
 		timer.start()
 
 
@@ -76,16 +81,21 @@ func _on_body_entered(body: Node3D) -> void:
 		kill()
 
 
-## Drops the coin in the world frozen for a moment (crate rewards).
+var _freeze_seconds := 0.0
+
+
+## Drops the coin in the world frozen for a moment (crate rewards). Safe to
+## call before the coin is in the tree.
 func freeze_for(seconds: float) -> void:
 	unpickable = true
-	timer.wait_time = seconds
-	if not timer.timeout.is_connected(_unfreeze):
-		timer.timeout.connect(_unfreeze)
+	_freeze_seconds = seconds
 	collision_layer = 0
 	freeze = true
 	freeze_mode = RigidBody3D.FREEZE_MODE_STATIC
-	if is_inside_tree():
+	if is_node_ready():
+		timer.wait_time = seconds
+		if not timer.timeout.is_connected(_unfreeze):
+			timer.timeout.connect(_unfreeze)
 		timer.start()
 
 

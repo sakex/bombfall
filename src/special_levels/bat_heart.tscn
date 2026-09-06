@@ -1,9 +1,12 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/special_levels/bat_heart.gd" id="1"]
 [ext_resource type="Script" path="res://src/actors/planar_body.gd" id="2"]
 [ext_resource type="PackedScene" path="res://assets/models/heart.glb" id="3"]
 [ext_resource type="PackedScene" path="res://src/spawnables/rope.tscn" id="4"]
+
+[sub_resource type="SphereShape3D" id="grab"]
+radius = 1.4
 
 [sub_resource type="SphereShape3D" id="shape"]
 radius = 0.55
@@ -31,7 +34,7 @@ collision_mask = 1
 monitorable = false
 
 [node name="Shape" type="CollisionShape3D" parent="HeartBody/Area"]
-shape = SubResource("shape")
+shape = SubResource("grab")
 
 [node name="Rope" parent="." instance=ExtResource("4")]
 transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 0, 0.6, 0)

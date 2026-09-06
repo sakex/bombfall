@@ -23,6 +23,7 @@ var _heart_x := 13.25
 var _running := false
 var _limit_override := 0.0
 var _jump_ticks := 0
+var _cheat_heart := false
 
 
 func _ready() -> void:
@@ -34,6 +35,8 @@ func _ready() -> void:
 			only = arg.trim_prefix("--only=")
 		if arg.begins_with("--limit="):
 			_limit_override = float(arg.trim_prefix("--limit="))
+		if arg == "--cheat-heart":
+			_cheat_heart = true
 		if arg.begins_with("--speed="):
 			Engine.time_scale = float(arg.trim_prefix("--speed="))
 	for key in SPECIALS:
@@ -140,10 +143,13 @@ func _bot_wander(player: Player) -> void:
 ## Climbs the crystal ladder: stand beside the next step, jump towards it.
 func _bot_climb(player: Player, target_x: float) -> void:
 	var arena := _game.world.find_child("BossBatArena", true, false)
+	if _cheat_heart and arena != null and _t > 12.0 and _t < 12.1 and is_instance_valid(arena.heart.heart_body):
+		print("  CHEAT: grabbing the heart")
+		arena.heart._on_body(player)
 	if int(_t * 60.0) % 600 == 0:
 		var blocks := get_tree().get_nodes_in_group("boss_blocks").size()
 		print("  arena=%s ladder=%d boss_blocks=%d awake=%s" % [arena != null, arena.ladder.size() if arena != null else -1, blocks, arena._boss_awake if arena != null else "?"])
-	if arena != null and arena.boss.is_dying():
+	if arena != null and (not is_instance_valid(arena.boss) or arena.boss.is_dying()):
 		# Fight won: get off the ladder and wait for the floor to open.
 		_steer(player, Grid.CENTER_X)
 		_hop(false)
@@ -157,11 +163,26 @@ func _bot_climb(player: Player, target_x: float) -> void:
 			if y > player.position.y + 0.3 and (next == null or y < next.global_position.y):
 				next = step
 	if next == null:
+		if int(_t * 60.0) % 120 == 0 and arena != null and is_instance_valid(arena.heart.heart_body):
+			var hb: Vector3 = arena.heart.heart_body.global_position
+			print("  TOP t=%.0f p=(%.2f,%.2f) heart=(%.2f,%.2f) vis=%s mon=%s layer=%d" % [_t, player.position.x, player.position.y, hb.x, hb.y, arena.heart.visible, arena.heart.area.monitoring, arena.heart.heart_body.collision_layer])
 		_steer(player, target_x)
-		_hop(false)
+		# Ladder done: under the heart, hop up to grab it.
+		var heart_above := false
+		if arena != null and is_instance_valid(arena.heart.heart_body):
+			var hb: Vector3 = arena.heart.heart_body.global_position
+			heart_above = absf(hb.x - player.position.x) < 1.0 and hb.y > player.position.y + 0.6 and hb.y < player.position.y + 5.0
+		if _jump_ticks > 0:
+			_jump_ticks -= 1
+			_hop(true)
+		elif heart_above and player.is_on_floor():
+			_jump_ticks = 30
+			_hop(true)
+		else:
+			_hop(false)
 		return
 	var step_x: float = next.global_position.x
-	var approach_x := step_x + 1.7 * signf(Grid.CENTER_X - step_x)
+	var approach_x := step_x + 2.4 * signf(Grid.CENTER_X - step_x)
 	var step_top: float = next.global_position.y + 0.4
 	# A jump in progress is held for a fixed time so the release never cuts it;
 	# rise straight up beside the step and only drift over it once above.

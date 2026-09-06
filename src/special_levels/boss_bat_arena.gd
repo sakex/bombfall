@@ -12,8 +12,8 @@ const FLOOR_DELETE_DELAY := 10.0
 ## reachable within a couple of minutes even if the stray shots do not pile up.
 const LADDER_INTERVAL := 8.0
 const LADDER_STEPS := [
-	Vector2(14.5, -17.2), Vector2(11.8, -14.6), Vector2(14.5, -12.0), Vector2(11.8, -9.4),
-	Vector2(14.5, -6.8), Vector2(12.4, -4.4),
+	Vector2(14.6, -17.2), Vector2(11.4, -14.6), Vector2(14.6, -12.0), Vector2(11.4, -9.4),
+	Vector2(14.6, -6.8), Vector2(12.4, -4.4),
 ]
 
 var coin_budget := 0
@@ -25,6 +25,7 @@ var _boss_awake := false
 var _floor_flashing := false
 var _floor_material: StandardMaterial3D
 var _ladder_time := 0.0
+var _dying_for := 0.0
 var _ladder_built := 0
 var ladder: Array[Node3D] = []
 
@@ -60,11 +61,17 @@ func _process(delta: float) -> void:
 			_boss_awake = true
 			boss.start()
 			heart.enable_heart()
-	if _boss_awake and not boss.is_dying() and _ladder_built < LADDER_STEPS.size():
+	var boss_alive := is_instance_valid(boss)
+	if _boss_awake and boss_alive and not boss.is_dying() and _ladder_built < LADDER_STEPS.size():
 		_ladder_time += delta
 		if _ladder_time >= LADDER_INTERVAL:
 			_ladder_time = 0.0
 			_grow_ladder_step()
+	if boss_alive and boss.is_dying() and is_instance_valid(kill_area):
+		# A dying bat that lands on leftover crystals still has to open the floor.
+		_dying_for += delta
+		if _dying_for > 8.0:
+			_on_kill_area(boss)
 	if _floor_flashing and _floor_material != null:
 		_floor_material.emission_energy_multiplier = 1.0 + 3.0 * (0.5 + 0.5 * sin(Time.get_ticks_msec() / 1000.0 * 12.0))
 
@@ -98,7 +105,13 @@ func _on_player_exited(body: Node) -> void:
 
 
 func _level_won() -> void:
+	if OS.is_debug_build():
+		print("BossBatArena: heart taken")
 	boss.set_dying()
+	# The crystals shatter with the heart so the bat drops straight to the floor.
+	for block in get_tree().get_nodes_in_group("boss_blocks"):
+		block.queue_free()
+	ladder.clear()
 
 
 func _on_kill_area(body: Node) -> void:
