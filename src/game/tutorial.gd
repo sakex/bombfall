@@ -8,7 +8,7 @@ const CORE := preload("res://src/spawnables/shield_core.tscn")
 const COIN := preload("res://src/actors/coin.tscn")
 
 const STEPS := [
-	"Slide your thumb left or right on the bottom left of the screen to move. A small slide walks, a big one runs.",
+	"Touch the left half of the screen and slide to run. Tap to one side of where your thumb was to dash that way at once.",
 	"Tap anywhere on the bottom right of the screen to jump. Hold it to jump higher.",
 	"Everything can be pushed and destroyed. Try pushing the toilet!",
 	"Your shields are the bar at the top of the screen. Grab the shield cell to charge one.",

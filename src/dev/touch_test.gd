@@ -36,6 +36,33 @@ func _ready() -> void:
 	# Stick: press anywhere on the left, drag right/left.
 	await _check_drag(Vector2(size.x * 0.25, size.y * 0.3), 220.0, "move_right", "stick drag right (upper left)")
 	await _check_drag(Vector2(size.x * 0.15, size.y * 0.9), -220.0, "move_left", "stick drag left (lower left)")
+	# Smart stick: press intent, following base, quick reversal.
+	var p0 := Vector2(size.x * 0.2, size.y * 0.6)
+	_touch(p0, true, 2)
+	await get_tree().process_frame
+	_touch(p0, false, 2)
+	await get_tree().process_frame
+	_touch(p0 + Vector2(90.0, 0.0), true, 2)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_report(Input.get_action_strength("move_right") > 0.9, "press right of last spot runs right at once: %.2f" % Input.get_action_strength("move_right"))
+	_touch(p0 + Vector2(90.0, 0.0), false, 2)
+	await get_tree().process_frame
+	_touch(p0 - Vector2(60.0, 0.0), true, 2)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_report(Input.get_action_strength("move_left") > 0.9, "press left of last spot runs left at once: %.2f" % Input.get_action_strength("move_left"))
+	# Reversal while dragging: run right 120 px, slide back 60 px -> left.
+	_drag_to(p0 - Vector2(60.0, 0.0) + Vector2(120.0, 0.0), 2)
+	await get_tree().process_frame
+	var right_str := Input.get_action_strength("move_right")
+	_drag_to(p0 - Vector2(60.0, 0.0) + Vector2(60.0, 0.0), 2)
+	await get_tree().process_frame
+	await get_tree().process_frame
+	_report(right_str > 0.9 and Input.get_action_strength("move_left") > 0.5, "slide back 60 px reverses: right=%.2f then left=%.2f" % [right_str, Input.get_action_strength("move_left")])
+	_touch(p0, false, 2)
+	await get_tree().process_frame
+	_report(Input.get_action_strength("move_left") == 0.0 and Input.get_action_strength("move_right") == 0.0, "release stops")
 	print("TOUCH_RESULT failures=%d" % _fails)
 	get_tree().quit()
 
@@ -50,6 +77,13 @@ func _touch(pos: Vector2, pressed: bool, index := 0) -> void:
 	ev.position = _to_window(pos)
 	ev.pressed = pressed
 	ev.index = index
+	Input.parse_input_event(ev)
+
+
+func _drag_to(pos: Vector2, index: int) -> void:
+	var ev := InputEventScreenDrag.new()
+	ev.index = index
+	ev.position = _to_window(pos)
 	Input.parse_input_event(ev)
 
 

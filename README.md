@@ -103,10 +103,13 @@ it after touching anything under `src/actors/` or `src/spawnables/`.
 * **Biker helmet.** The runner wears a full-face coral helmet with a
   flipped-up smoked visor, chrome hinges, racing stripes and a glowing tail
   light; the bomb face still peeks out of the opening.
-* **Thumb stick.** Left/right arrows are gone: touch anywhere on the left
-  half of the screen and the floating stick appears under the thumb, with
-  analog speed (a short slide walks, a long one runs). Anywhere on the
-  right half jumps; the round button is only a hint.
+* **Thumb stick.** Left/right arrows are gone. Touch anywhere on the left
+  half and the pad appears under the thumb. It is built like the floating,
+  re-centering, draggable d-pads of the better mobile platformers: press to
+  one side of where the thumb last was and you run that way at once, the
+  base trails the thumb so reversing is a slide of a few millimetres, and
+  the dead zone is five pixels with near-full speed within a fingertip.
+  Anywhere on the right half jumps; the round button is only a hint.
 * **Buttons.** Slanted synthwave panels with a cyan edge, a hot-pink glow
   and a chunky base; the play button is the pink hero of the title screen.
 * **Synthwave rooms.** Every backdrop got neon tube outlines, sunset
