@@ -191,8 +191,13 @@ Full game: `src/game/game.tscn -- --theme=casino --screenshot=…`, special
 rooms: `src/dev/special_test.tscn -- --special=vault`.
 
 After a first import of a new model, run `python3 tools/fix_texture_imports.py`
-and import again: it makes the baked textures GPU-compressed (the build
-scripts do this automatically).
+and import again: it makes the baked textures GPU-compressed and caps their
+in-game size to what the phone camera resolves (rooms 1024, ceilings 512,
+the hero 1024, everything else 256; normal and ORM maps one step smaller).
+The build scripts do this automatically. The APK must stay under 100 MB.
+
+Baked materials render single-sided in the game (the game switches them at
+load), so build closed shapes or faces that point at the camera.
 
 Regression (must stay green): `src/dev/physics_test.tscn`,
 `src/dev/hitbox_audit.tscn` (collision shapes vs. mesh), `src/dev/doable_test.tscn`,
