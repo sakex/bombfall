@@ -249,7 +249,7 @@ def build_arm(s):
 # ------------------------------------------------------------------ head --
 def build_head():
     # The glossy black bomb face (front half only; the helmet hides the rest).
-    face = prim("uv_sphere", FACE, "face", segments=26, ring_count=14, radius=1.0)
+    face = prim("uv_sphere", FACE, "face", segments=24, ring_count=12, radius=1.0)
     transform(face, loc=HC, scale=FR)
     cut_below(face, HC.y + 0.12, keep_above=False, axis=(0, 1, 0))
     part(face, ("rigid", "head"))
@@ -333,7 +333,7 @@ def build_head():
         part(h3, ("rigid", "head"))
 
     # Tail light across the back.
-    tl = disc(HC, HR, (0, 1, -0.06), 0.36, 0.035, PINK_L, lift=0.003, dome=0.0, rings=1, segs=24, name="tail_light",
+    tl = disc(HC, HR, (0, 1, -0.08), 0.46, 0.042, PINK_L, lift=0.003, dome=0.0, rings=1, segs=24, name="tail_light",
               shape=lambda a: 1.0 / (abs(math.cos(a)) ** 6 + abs(math.sin(a)) ** 6) ** (1 / 6))
     part(tl, ("rigid", "head"))
 
@@ -390,6 +390,24 @@ def build_head():
 
 
 ANT = []
+
+
+def decorate_suit():
+    """Puffer-suit quilting across the torso, side seams, and a sole tread."""
+    ex = Ex(SUIT)
+    x, z = ex.x, ex.z
+    torso = ex.smooth(0.20, 0.18, abs(x)) * ex.smooth(0.465, 0.49, z) * ex.smooth(0.80, 0.77, z)
+    rib = abs(ex.sin((z - 0.47) * (math.pi / 0.066)))
+    puff = ex.op("POWER", rib, 0.45)
+    zip_gap = ex.smooth(0.012, 0.03, abs(x))
+    ex.relief((puff - 1.0) * (torso * zip_gap * 0.004), 1.0)
+    ex.darken((1.0 - puff) * (torso * zip_gap), 0.35)
+    seam = ex.band(abs(x), 0.205, 0.003, 0.002) * ex.smooth(0.46, 0.5, z) * ex.smooth(0.72, 0.68, z)
+    ex.relief(-seam * 0.002, 1.0)
+    sole = Ex(SOLE)
+    tread = sole.band((sole.y * (1 / 0.032)).frac(), 0.5, 0.22, 0.05) * sole.smooth(0.012, 0.004, sole.z)
+    sole.relief(-tread * 0.004, 1.0)
+    sole.darken(tread, 0.5)
 
 
 def decorate_helmet():
@@ -495,7 +513,7 @@ def build_scarf():
     part(knot, ("rigid", "chest"))
     # Two tails streaming back, with twists and folds.
     for k, (dx, dz, ln, w0) in enumerate(((0.03, 0.0, 1.0, 0.052), (-0.035, -0.035, 0.8, 0.046))):
-        n = 12
+        n = 10
         pts, radii = [], []
         for i in range(n + 1):
             t = i / n * ln
@@ -592,6 +610,7 @@ def skin_and_join(arm):
 
 
 # ------------------------------------------------------------------ main --
+decorate_suit()
 build_torso()
 for s in (1, -1):
     build_leg(s)

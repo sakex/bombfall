@@ -808,7 +808,7 @@ def bake_hero(name, tex=1024, ao_distance=None):
             d["nt"].links.new(d[sock_key] if sock_key != "comb" else d["comb"].outputs[0], d["emis"].inputs["Color"])
             return d["emis"].outputs[0]
         return wire
-    run("EMIT", albedo, 4, emission_of("base"))
+    run("EMIT", albedo, 16, emission_of("base"))    # common uses 4: speckles on glossy parts
     run("EMIT", orm, 24, emission_of("comb"))
     run("NORMAL", normal, 8, lambda d: d["surface"])
     bpy.data.objects.remove(floor, do_unlink=True)
