@@ -665,6 +665,29 @@ def parse_args():
     return out, preview
 
 
+# Meshes the game scripts look up by name (see STYLE.md contracts): never merged.
+KEEP_NAMES = {"ring", "display", "fuse", "glow", "cap_light", "canvas", "eyes", "heart_glow", "lock_light",
+              "lever", "gun", "monitor", "tower", "wheel", "blades", "top", "screen", "marquee"}
+
+
+def merge_pivot_children(name):
+    """Merge the plain meshes hanging under each pivot into one mesh per
+    pivot (they move together anyway). 164 separately blinking LEDs were 164
+    draw calls; now they are one per blink group. Named contract meshes and
+    anything animated or skinned stay separate."""
+    for p in [o for o in bpy.context.scene.objects if o.type == "EMPTY"]:
+        kids = [c for c in p.children if c.type == "MESH" and not c.children and not c.animation_data
+                and c.parent_type == "OBJECT" and not c.name.startswith("_")
+                and c.name.split(".")[0] not in KEEP_NAMES
+                and not any(md.type == "ARMATURE" for md in c.modifiers)]
+        if len(kids) < 2:
+            continue
+        for c in kids:
+            if c.data.users > 1:
+                c.data = c.data.copy()
+        join(kids, "mesh_" + p.name)
+
+
 def export(name, out_dir=None, preview_dir=None, tex=None, ground=None, bake=True, ao_distance=None):
     """Bake the procedural materials, then export the scene as `<name>.glb`
     (with its animation clips) and optionally render a preview.
@@ -679,6 +702,7 @@ def export(name, out_dir=None, preview_dir=None, tex=None, ground=None, bake=Tru
     preview_dir = preview_dir or default_preview
     os.makedirs(out_dir, exist_ok=True)
     path = os.path.join(out_dir, name + ".glb")
+    merge_pivot_children(name)
     if bake and os.environ.get("NO_BAKE") != "1":
         bake_textures(name, tex=tex, ground=ground, ao_distance=ao_distance)
     bpy.ops.object.select_all(action="DESELECT")
@@ -766,6 +790,7 @@ def bake_textures(name, tex=None, ground=None, ao_distance=None):
     material replaces them all; neon/glass materials are left as they are.
     """
     scn = bpy.context.scene
+    merge_pivot_children(name)
     meshes = [o for o in all_meshes() if any(_bakeable(s.material) for s in o.material_slots)]
     if not meshes:
         return

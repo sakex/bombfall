@@ -54,9 +54,10 @@ PREVIEW=1 tools/build_models.sh    # also render blender/previews/*.png
 
 Needs Blender 4.0+ on the PATH (`BLENDER=/path/to/blender` to override).
 Each script runs with `blender -b --python blender/<name>.py`, builds the
-model from primitives with named pivots the game animates (`leg_l`,
-`rotor_1`, `wing_r`, `gun`, `top`...), joins the static parts into one mesh
-and exports glTF with the Y-up conversion. One unit is one metre, which is
+model with named pivots the game animates (`rotor_1`, `gun`, `top`...),
+joins the static parts into one mesh, bakes the PBR texture maps and
+exports glTF with its animation clips. `blender/STYLE.md` is the art and
+pipeline guide (materials, budgets, animation rules, node-name contracts). One unit is one metre, which is
 one hotel cell (the 2D game used 64 px cells).
 
 ## Building the APK
@@ -97,6 +98,29 @@ isolation and asserts on positions after a fixed number of physics ticks
 (landing, wall clamps, bomb holes, rope length, trampoline height, prop
 pushing without tipping, drone hover, button presses, laser kills...). Run
 it after touching anything under `src/actors/` or `src/spawnables/`.
+
+## Version 3.0
+
+* **Every asset remodelled.** The hero, bombs, coins, tiles, pickups,
+  hazards, the bat boss, all furniture and machines, and all eleven room
+  backdrops and ceilings were rebuilt in Blender from scratch: bevelled,
+  manufactured shapes; painted metal with worn edges, chrome, gold,
+  porcelain, marble, velvet, leather and wood; neon as the accent.
+* **Real materials.** Each model's procedural Cycles materials are baked
+  into albedo, AO/roughness/metal and normal maps (`blender/common.py`),
+  then GPU-compressed on import (`tools/fix_texture_imports.py`). The scene
+  gets its ambient light and reflections from a sunset sky.
+* **Everything moves.** Models ship with animation clips: an `idle` loop
+  plays on every instance with a random phase, and one-shots play on
+  demand. Rooms have swaying chandeliers, fish tanks, spinning reels and
+  roulette wheels, a working claw machine, blinking server racks, pumping
+  speakers and flickering candles. Screens and marquees run animated shaders.
+* **Rigged hero.** A 30-bone skeleton with run, push, jump, rise, fall,
+  land, hurt, death and idle clips, crossfaded by the player script, with
+  footsteps on every heel strike, blinking eyes and springy antenna and scarf.
+* **Explosions.** A shader-driven fireball, flash, shockwave and smoke.
+* **City.** Glass curtain-wall towers that reflect the sky, with lit rooms
+  you can see into (interior mapping) that flicker and switch on and off.
 
 ## Version 2.2
 
