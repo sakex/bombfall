@@ -1,5 +1,6 @@
-# statue: a chrome android on a plinth, in three separate pieces (base,
-# body, head) so the game can knock the head off. 4 m wide, 8 m tall.
+# statue: "The Disco Droid", a chrome android on a marble plinth, in three
+# separate pieces (base, body, head) so the game can knock the head off.
+# The chest core pulses in the idle clip. 3.6 m wide, 7.9 m tall.
 #   blender -b --python blender/statue.py -- --preview blender/previews
 import os
 import sys
@@ -9,7 +10,8 @@ from common import *  # noqa: F401,F403
 import furniture
 
 clean_scene()
-parts = furniture.statue_parts()
-for name, objs in parts.items():
-    join(objs, name)
-export("statue")
+parts, pivots = furniture.statue_parts()
+joined = {name: join(objs, name) for name, objs in parts.items()}
+for p in pivots:
+    furniture.attach(p, joined["body"])
+furniture.finish("statue", keep=tuple(parts))

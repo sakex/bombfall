@@ -60,3 +60,4 @@ func _shoot() -> void:
 	bullet.position = gun.global_position + direction * BARREL_LENGTH
 	bullet.set_velocity(direction * BULLET_SPEED)
 	get_parent().add_child(bullet)
+	ModelUtil.play(model, "fire")      # recoil kick and muzzle flare

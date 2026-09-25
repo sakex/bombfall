@@ -1,5 +1,7 @@
 # drone: built by hazards.drone(), see blender/hazards.py.
 #   blender -b --python blender/drone.py -- --preview blender/previews
+# BAKE_TEX=256 still forces a small atlas for quick looks (export() would
+# otherwise let the explicit size win over the environment variable).
 import os
 import sys
 
@@ -9,5 +11,5 @@ import hazards
 
 clean_scene()
 hazards.drone()
-join_static("body", keep=("rotor_1", "rotor_2", "rotor_3", "rotor_4",))
-export("drone")
+join_static("body", keep=())
+export("drone", tex=int(os.environ.get("BAKE_TEX", 0)) or 512)

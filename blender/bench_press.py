@@ -9,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.bench_press()
-join_static("body")
-export("bench_press")
+furniture.finish("bench_press")

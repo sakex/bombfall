@@ -9,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.chair()
-join_static("body")
-export("chair")
+furniture.finish("chair")

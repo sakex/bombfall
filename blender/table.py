@@ -1,5 +1,4 @@
-# table: built by furniture.table(), see blender/furniture.py. The chairs of
-# the dinner set are separate bodies using chair.glb (table_with_chairs.tscn).
+# table: built by furniture.table(), see blender/furniture.py.
 #   blender -b --python blender/table.py -- --preview blender/previews
 import os
 import sys
@@ -10,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.table()
-join_static("body")
-export("table")
+furniture.finish("table")

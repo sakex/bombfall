@@ -1,4 +1,4 @@
-# tv: built by furniture.tv(), see blender/furniture.py.
+# tv: a retro CRT TV on a walnut stand, built by furniture.tv().
 #   blender -b --python blender/tv.py -- --preview blender/previews
 import os
 import sys
@@ -9,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.tv()
-join_static("body")
-export("tv")
+furniture.finish("tv")

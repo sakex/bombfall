@@ -1,4 +1,4 @@
-# bed2: built by furniture.bed(1), see blender/furniture.py.
+# bed2: built by furniture.bed2(), see blender/furniture.py.
 #   blender -b --python blender/bed2.py -- --preview blender/previews
 import os
 import sys
@@ -8,6 +8,5 @@ from common import *  # noqa: F401,F403
 import furniture
 
 clean_scene()
-furniture.bed(1)
-join_static("body")
-export("bed2")
+furniture.bed2()
+furniture.finish("bed2")

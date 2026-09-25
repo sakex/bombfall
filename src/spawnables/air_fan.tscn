@@ -1,13 +1,27 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/spawnables/air_fan.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/models/air_fan.glb" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/haz_wind.gdshader" id="3"]
 
 [sub_resource type="BoxShape3D" id="shape"]
 size = Vector3(2.0, 0.9, 2.0)
 
 [sub_resource type="BoxShape3D" id="column"]
 size = Vector3(1.9, 7.0, 2.0)
+
+[sub_resource type="CylinderMesh" id="wind_mesh"]
+top_radius = 0.82
+bottom_radius = 0.82
+height = 7.0
+radial_segments = 24
+rings = 1
+cap_top = false
+cap_bottom = false
+
+[sub_resource type="ShaderMaterial" id="wind_mat"]
+render_priority = 0
+shader = ExtResource("3")
 
 [node name="AirFan" type="StaticBody3D"]
 collision_layer = 32
@@ -28,3 +42,8 @@ monitorable = false
 
 [node name="Shape" type="CollisionShape3D" parent="Column"]
 shape = SubResource("column")
+
+[node name="Wind" type="MeshInstance3D" parent="Column"]
+cast_shadow = 0
+mesh = SubResource("wind_mesh")
+surface_material_override/0 = SubResource("wind_mat")

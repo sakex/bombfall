@@ -4,6 +4,9 @@ extends PlanarBody
 
 const PUSH := 4.7              ## 300 px/s per tick
 const CHECK_EVERY := 1.0 / 30.0
+const BELT_SHADER := preload("res://assets/shaders/haz_belt.gdshader")
+
+static var _belt_material: ShaderMaterial
 
 var _direction := -1.0
 var _since_check := 0.0
@@ -23,6 +26,15 @@ func _ready() -> void:
 		_direction = 1.0
 		model.scale.x = -1.0
 		moving_area.position.x = -moving_area.position.x
+	# The belt surface (material "haz_belt") scrolls its ribs with the rollers.
+	if _belt_material == null:
+		_belt_material = ShaderMaterial.new()
+		_belt_material.shader = BELT_SHADER
+	for mesh in ModelUtil.all_meshes(model):
+		for i in mesh.mesh.get_surface_count():
+			var source := mesh.mesh.surface_get_material(i)
+			if source != null and source.resource_name.begins_with("haz_belt"):
+				mesh.set_surface_override_material(i, _belt_material)
 
 
 func _physics_process(delta: float) -> void:

@@ -1,4 +1,5 @@
-# bathtub: built by furniture.bathtub(), see blender/furniture.py.
+# bathtub: a roll-top clawfoot tub full of bubble bath, built by
+# furniture.bathtub().
 #   blender -b --python blender/bathtub.py -- --preview blender/previews
 import os
 import sys
@@ -9,5 +10,4 @@ import furniture
 
 clean_scene()
 furniture.bathtub()
-join_static("body")
-export("bathtub")
+furniture.finish("bathtub")

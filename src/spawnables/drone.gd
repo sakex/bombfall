@@ -43,6 +43,9 @@ func turn_off() -> void:
 		return
 	turned_off = true
 	gravity_scale = FALL_GRAVITY
+	var anim := ModelUtil.anim_player(model)
+	if anim != null:
+		anim.pause()       # nav lights and camera gimbal freeze as it drops
 
 
 func _physics_process(delta: float) -> void:

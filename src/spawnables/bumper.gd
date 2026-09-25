@@ -45,6 +45,7 @@ func _on_body(body: Node) -> void:
 		body.velocity = away * PLAYER_KICK
 		body.lateral_force = away.x * PLAYER_KICK * 0.5
 	_flash = 1.0
+	ModelUtil.play(model, "hit")       # the skirt snaps down, the cap squashes
 	Sfx.play("bumper")
 	sfx.play()
 
@@ -53,7 +54,6 @@ func _process(delta: float) -> void:
 	_flash = maxf(_flash - delta * 4.0, 0.0)
 	if _light != null:
 		_light.emission_energy_multiplier = 1.0 + 8.0 * _flash
-	model.scale = Vector3(1.0 + _flash * 0.15, 1.0 - _flash * 0.1, 1.0 + _flash * 0.15)
 
 
 func kill() -> void:

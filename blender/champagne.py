@@ -9,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.champagne()
-join_static("body")
-export("champagne")
+furniture.finish("champagne")

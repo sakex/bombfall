@@ -25,6 +25,7 @@ var _display_material: StandardMaterial3D
 @onready var shape: CollisionShape3D = $Shape
 @onready var detection: Area3D = $Detection
 @onready var sfx_bounce: AudioStreamPlayer3D = $SfxBounce
+@onready var sparks: GPUParticles3D = $Sparks
 
 
 func _ready() -> void:
@@ -33,6 +34,12 @@ func _ready() -> void:
 	detection.body_entered.connect(_on_player_near)
 	_ring_material = ModelUtil.own_material(ModelUtil.find_mesh(model, "ring"))
 	_display_material = ModelUtil.own_material(ModelUtil.find_mesh(model, "display"))
+	# The fuse sparks ride on the glowing tip, so they follow the cord's sway,
+	# the bomb's roll and its scale.
+	var tip := ModelUtil.find_mesh(model, "fuse")
+	if tip != null:
+		sparks.reparent(tip, false)
+		sparks.transform = Transform3D.IDENTITY
 	# Every bomb gets its own shape: the scene's shape resource is shared by
 	# all instances, and resizing it for one bomb used to resize them all.
 	shape.shape = shape.shape.duplicate()
@@ -43,6 +50,7 @@ func _ready() -> void:
 		freeze = true
 	if no_timeout and _ring_material != null:
 		_ring_material.emission_energy_multiplier = 0.3
+	sparks.emitting = not no_timeout
 
 
 func set_bomb_scale(value: float) -> void:

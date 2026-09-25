@@ -9,5 +9,4 @@ import furniture
 
 clean_scene()
 furniture.cake()
-join_static("body")
-export("cake")
+furniture.finish("cake")

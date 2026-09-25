@@ -1,5 +1,7 @@
 # trampoline: built by hazards.trampoline(), see blender/hazards.py.
 #   blender -b --python blender/trampoline.py -- --preview blender/previews
+# BAKE_TEX=256 still forces a small atlas for quick looks (export() would
+# otherwise let the explicit size win over the environment variable).
 import os
 import sys
 
@@ -10,4 +12,4 @@ import hazards
 clean_scene()
 hazards.trampoline()
 join_static("body", keep=())
-export("trampoline")
+export("trampoline", tex=int(os.environ.get("BAKE_TEX", 0)) or 512)

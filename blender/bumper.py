@@ -1,5 +1,7 @@
 # bumper: built by hazards.bumper(), see blender/hazards.py.
 #   blender -b --python blender/bumper.py -- --preview blender/previews
+# BAKE_TEX=256 still forces a small atlas for quick looks (export() would
+# otherwise let the explicit size win over the environment variable).
 import os
 import sys
 
@@ -9,5 +11,5 @@ import hazards
 
 clean_scene()
 hazards.bumper()
-join_static("body", keep=("cap", "cap_light",))
-export("bumper")
+join_static("body", keep=())
+export("bumper", tex=int(os.environ.get("BAKE_TEX", 0)) or 512)

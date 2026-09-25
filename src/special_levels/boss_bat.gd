@@ -3,6 +3,12 @@ extends PlanarBody
 ## The bat boss: flutters around the arena shooting plasma that turns into
 ## crystal blocks wherever it lands. Steal its heart and it drops like a
 ## stone; when it hits the floor the arena opens.
+##
+## The model is rigged (see blender/hazards.py boss_bat): its "idle" clip
+## beats the wings (two beats per loop), "fall_loop" flails them while it
+## drops. The jaw bone is driven here: it snaps open on every shot and
+## gapes while falling; the eyes flare when it fires and the chest heart
+## goes dark once the heart has been taken.
 
 signal level_won
 signal fell
@@ -15,24 +21,30 @@ const BULLET_SPEED := 4.0
 const MUZZLE := 2.4
 const X_MIN := 3.0
 const X_MAX := 13.0
+const JAW_OPEN := 0.6             ## radians at a full gape
+const EYE_ENERGY := 6.0
 
+## Wing beats per second (plays the idle clip faster or slower).
 @export var clap_per_second := 1.0
-@export var min_rotation := -PI / 4.0
-@export var max_rotation := PI / 4.0
 
 var player: Node3D = null
 var _started := false
 var _dying := false
 var _direction := Vector2(SPEED, SPEED)
-var _wing_phase := 0.0
-var _wing_dir := 1.0
 var _y_min := 0.0
 var _y_max := 0.0
 var _blocks: Array[Node] = []
+var _anim: AnimationPlayer
+var _skeleton: Skeleton3D
+var _jaw := -1
+var _jaw_rest := Quaternion.IDENTITY
+var _jaw_amount := 0.0
+var _jaw_target := 0.0
+var _flash := 0.0
+var _eyes: StandardMaterial3D
+var _heart: StandardMaterial3D
 
 @onready var model: Node3D = $Model
-@onready var wing_l: Node3D = model.find_child("wing_l", true, false)
-@onready var wing_r: Node3D = model.find_child("wing_r", true, false)
 @onready var bullet_timer: Timer = $BulletTimer
 
 
@@ -44,6 +56,17 @@ func _ready() -> void:
 	_y_max = position.y + 8.5
 	_randomize_direction()
 	bullet_timer.timeout.connect(_shoot)
+	_anim = ModelUtil.anim_player(model)
+	if _anim != null:
+		_anim.speed_scale = clap_per_second
+	var skeletons := model.find_children("*", "Skeleton3D", true, false)
+	if not skeletons.is_empty():
+		_skeleton = skeletons[0]
+		_jaw = _skeleton.find_bone("jaw")
+		if _jaw >= 0:
+			_jaw_rest = _skeleton.get_bone_rest(_jaw).basis.get_rotation_quaternion()
+	_eyes = ModelUtil.own_material(ModelUtil.find_mesh(model, "eyes"))
+	_heart = ModelUtil.own_material(ModelUtil.find_mesh(model, "heart_glow"))
 
 
 func start() -> void:
@@ -58,6 +81,12 @@ func set_dying() -> void:
 	bullet_timer.stop()
 	freeze = false
 	gravity_scale = 1.5
+	_jaw_target = 1.0
+	if _anim != null:
+		_anim.speed_scale = 1.0
+		ModelUtil.play(model, "fall_loop")
+	if _heart != null:
+		_heart.emission_energy_multiplier = 0.15
 
 
 func is_dying() -> bool:
@@ -73,19 +102,8 @@ func _randomize_direction() -> void:
 
 
 func _process(delta: float) -> void:
-	if _dying:
-		return
-	_wing_phase += delta * clap_per_second * _wing_dir * 2.0
-	if _wing_phase >= 1.0:
-		_wing_dir = -1.0
-	elif _wing_phase <= 0.0:
-		_wing_dir = 1.0
-	var angle := lerpf(min_rotation, max_rotation, _wing_phase)
-	if wing_l != null:
-		wing_l.rotation.z = -angle
-	if wing_r != null:
-		wing_r.rotation.z = angle
-	if not _started:
+	_animate_face(delta)
+	if _dying or not _started:
 		return
 	if position.y <= _y_min or position.y >= _y_max or position.x <= X_MIN or position.x >= X_MAX:
 		_randomize_direction()
@@ -93,10 +111,26 @@ func _process(delta: float) -> void:
 	model.scale.x = -1.0 if _direction.x < 0.0 else 1.0
 
 
+## Jaw snap and eye flare: quick attack, slower release.
+func _animate_face(delta: float) -> void:
+	var rate := 14.0 if _jaw_amount < _jaw_target else 4.0
+	_jaw_amount = move_toward(_jaw_amount, _jaw_target, delta * rate)
+	if _jaw_amount >= _jaw_target and not _dying:
+		_jaw_target = 0.0
+	if _skeleton != null and _jaw >= 0:
+		_skeleton.set_bone_pose_rotation(_jaw, _jaw_rest * Quaternion(Vector3.RIGHT, -_jaw_amount * JAW_OPEN))
+	_flash = maxf(_flash - delta * 3.0, 0.0)
+	if _eyes != null:
+		var flicker: float = 0.6 + 0.4 * sin(Time.get_ticks_msec() * 0.05) if _dying else 1.0
+		_eyes.emission_energy_multiplier = EYE_ENERGY * (1.0 + 1.5 * _flash) * flicker
+
+
 func _shoot() -> void:
 	if player == null or _dying:
 		return
 	Sfx.play("plasma", 0.8)
+	_jaw_target = 1.0
+	_flash = 1.0
 	var to_player := player.global_position + Vector3(0, 0.7, 0) - global_position
 	to_player.z = 0.0
 	var direction := to_player.normalized()

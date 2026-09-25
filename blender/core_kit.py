@@ -60,6 +60,9 @@ def _mesh_object(bm, name):
     bm.free()
     o = bpy.data.objects.new(name or "mesh", me)
     _link(o)
+    # attach() reads the parent's matrix_world, which is stale until the view
+    # layer updates (bpy.ops calls do that implicitly; direct creation not).
+    bpy.context.view_layer.update()
     return o
 
 
@@ -208,14 +211,28 @@ def text_mesh(text, size, loc, m, rot=(math.pi / 2, 0, 0), depth=0.01, kind="bol
     return _finish(o, m, 0, False, name, parent)
 
 
-def bolt(loc, axis, r, h, m, sides=6, name=None, parent=None, spin=0.0):
-    """A hex bolt head standing on a surface, pointing along `axis`."""
+def bolt(loc, axis, r, h, m, sides=6, name=None, parent=None, spin=0.0, dome=0.0):
+    """A bolt head standing on a surface, pointing along `axis`: a prism
+    without a bottom (it sits on something). `dome` > 0 adds a raised centre
+    (rivets, button heads)."""
     a = Vector(axis).normalized()
-    p0 = Vector(loc)
-    o = cyl(r, h, tuple(p0 + a * h / 2), m, verts=sides, bevel=0.0, smooth=False, name=name, parent=parent)
-    q = a.to_track_quat("Z", "Y")
-    o.rotation_euler = (q @ mathutils.Quaternion((0, 0, 1), spin)).to_euler()
-    return o
+    q = a.to_track_quat("Z", "Y") @ mathutils.Quaternion((0, 0, 1), spin)
+    bm = bmesh.new()
+    lo = [bm.verts.new((r * math.cos(math.tau * i / sides), r * math.sin(math.tau * i / sides), 0.0)) for i in range(sides)]
+    hi = [bm.verts.new((r * math.cos(math.tau * i / sides), r * math.sin(math.tau * i / sides), h)) for i in range(sides)]
+    for i in range(sides):
+        j = (i + 1) % sides
+        bm.faces.new((lo[i], lo[j], hi[j], hi[i]))
+    if dome > 0:
+        c = bm.verts.new((0, 0, h + dome))
+        for i in range(sides):
+            bm.faces.new((hi[i], hi[(i + 1) % sides], c))
+    else:
+        bm.faces.new(hi)
+    for v in bm.verts:
+        v.co = q @ v.co + Vector(loc)
+    o = _mesh_object(bm, name or "bolt")
+    return _finish(o, m, 0, dome > 0, name, parent, smooth_angle=50.0)
 
 
 def box_mesh(size, loc, m, rot=(0, 0, 0), chamfer=0.0, name=None, parent=None, segments=1, smooth=False):
@@ -251,6 +268,42 @@ def bm_box(size, loc, m, chamfer=0.0, segments=1, name=None, parent=None, rot=(0
     _place(o, loc, rot)
     smooth = smooth_angle is not None
     return _finish(o, m, 0, smooth, name, parent, smooth_angle=smooth_angle or 40.0)
+
+
+def tile_block(side, top=None, front=None, bottom=None, chamfer=0.03, size=(1.0, 2.0, 1.0), name="tile",
+               drop_back=True, front_only=False):
+    """The 1 x 2 x 1 m cell body (front at -Y, walkable top at +Z), with
+    chamfered edges, per-face materials and no back face (never seen)."""
+    sx, sy, sz = size
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    for v in bm.verts:
+        v.co = Vector((v.co.x * sx, v.co.y * sy, v.co.z * sz))
+    if chamfer > 0:
+        edges = list(bm.edges)
+        if front_only:      # only the front outline: tops and sides stay continuous
+            edges = [e for e in edges if all(v.co.y < -sy / 2 + 1e-4 for v in e.verts)]
+        bmesh.ops.bevel(bm, geom=edges, offset=chamfer, segments=1, profile=0.5,
+                        affect="EDGES", clamp_overlap=True)
+    bm.normal_update()
+    if drop_back:
+        back = [f for f in bm.faces if f.normal.y > 0.99]
+        bmesh.ops.delete(bm, geom=back, context="FACES")
+    mats = [side, top or side, front or side, bottom or side]
+    for f in bm.faces:
+        n = f.normal
+        if n.z > 0.99:
+            f.material_index = 1
+        elif n.y < -0.99:
+            f.material_index = 2
+        elif n.z < -0.99:
+            f.material_index = 3
+        else:
+            f.material_index = 0
+    o = _mesh_object(bm, name)
+    for m in mats:
+        o.data.materials.append(mat(m))
+    return o
 
 
 # --------------------------------------------------------------- materials --
@@ -372,8 +425,10 @@ def decal_pbr(kind, color, decals, name, emboss_distance=0.004, **opts):
             dist = _m(nt, "ABSOLUTE", _vmath(nt, "DOT_PRODUCT", rel, tuple(N)))
             depth_mask = _m(nt, "LESS_THAN", dist, d.get("depth", 0.05))
             face_mask = _m(nt, "GREATER_THAN", _vmath(nt, "DOT_PRODUCT", NRM, tuple(N)), d.get("facing", 0.35))
+        vmask = None
         if d.get("repeat"):
             u = _m(nt, "FRACT", u)
+            vmask = _m(nt, "MULTIPLY", _m(nt, "GREATER_THAN", v, 0.0), _m(nt, "LESS_THAN", v, 1.0))
         comb = _node(nt, "ShaderNodeCombineXYZ")
         _feed(nt, comb.inputs[0], u)
         _feed(nt, comb.inputs[1], v)
@@ -382,6 +437,8 @@ def decal_pbr(kind, color, decals, name, emboss_distance=0.004, **opts):
         nt.links.new(comb.outputs[0], tex.inputs["Vector"])
         mask = _m(nt, "MULTIPLY", tex.outputs["Alpha"], depth_mask)
         mask = _m(nt, "MULTIPLY", mask, face_mask)
+        if vmask is not None:
+            mask = _m(nt, "MULTIPLY", mask, vmask)
         if d.get("opacity", 1.0) != 1.0:
             mask = _m(nt, "MULTIPLY", mask, d["opacity"])
         if d.get("mode") == "multiply":
@@ -427,6 +484,66 @@ def glass(color, alpha=0.3, rough=0.05, name=None):
     return m
 
 
+def freeze_static(keep=()):
+    """Apply location/rotation/scale of every top-level static mesh, so the
+    joined body's object space is world space (decal origins and procedural
+    texture scales are given in world coordinates)."""
+    keep = set(keep)
+    objs = [o for o in all_meshes() if o.parent is None and o.name not in keep and not o.children]
+    if not objs:
+        return
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in objs:
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = objs[0]
+    bpy.ops.object.transform_apply(location=True, rotation=True, scale=True)
+
+
+def fix_scratches():
+    """common.pbr() stretches its scratch noise along object Y only, so on
+    faces square to Y (every front face) the "scratches" become blotches.
+    Tilt that stretch off all three axes so every face gets thin lines."""
+    for m in bpy.data.materials:
+        if not m.use_nodes:
+            continue
+        for n in m.node_tree.nodes:
+            if n.type == "MAPPING" and tuple(round(v) for v in n.inputs["Scale"].default_value) in ((1, 40, 1),) \
+                    and not n.get("_tilted"):
+                # Mapping scales before it rotates: rotate in a node of its own first.
+                nt = m.node_tree
+                rot = nt.nodes.new("ShaderNodeMapping")
+                rot.inputs["Rotation"].default_value = (0.62, 0.35, 0.78)
+                src = n.inputs["Vector"].links[0].from_socket if n.inputs["Vector"].is_linked else None
+                if src is not None:
+                    nt.links.new(src, rot.inputs["Vector"])
+                nt.links.new(rot.outputs[0], n.inputs["Vector"])
+                n["_tilted"] = True
+                # Sparser and shorter than a rain of parallel lines.
+                n.inputs["Scale"].default_value = (1, 18, 1)
+                for l in n.outputs[0].links:
+                    for l2 in l.to_node.outputs["Fac"].links:
+                        if l2.to_node.type == "MAP_RANGE":
+                            l2.to_node.inputs["From Min"].default_value = 0.68
+                            l2.to_node.inputs["From Max"].default_value = 0.7
+
+
+def finish(name, keep=(), body="body"):
+    """fix_scratches + freeze_static + join_static."""
+    fix_scratches()
+    freeze_static(keep)
+    return join_static(body, keep=keep)
+
+
+def tri_breakdown():
+    dg = bpy.context.evaluated_depsgraph_get()
+    for o in all_meshes():
+        e = o.evaluated_get(dg)
+        me = e.to_mesh()
+        me.calc_loop_triangles()
+        print("  %-20s %5d" % (o.name, len(me.loop_triangles)))
+        e.to_mesh_clear()
+
+
 # --------------------------------------------------------------- reporting --
 def tri_count():
     dg = bpy.context.evaluated_depsgraph_get()
@@ -455,6 +572,16 @@ def sheet(name, out_dir=None, views=None, size=360, samples=24, zoom=1.0, frame=
     from PIL import Image
     os.makedirs(out_dir, exist_ok=True)
     views = views or [(0, 0), (35, 22), (-60, 35), (160, 15)]
+    env = os.environ
+    if env.get("SHEET_VIEWS"):
+        views = [tuple(float(x) for x in v.split(",")) for v in env["SHEET_VIEWS"].split(";")]
+    zoom = float(env.get("SHEET_ZOOM", zoom))
+    if env.get("SHEET_CENTRE"):
+        centre = tuple(float(x) for x in env["SHEET_CENTRE"].split(","))
+    if env.get("SHEET_FRAME"):
+        frame = int(env["SHEET_FRAME"])
+    size = int(env.get("SHEET_SIZE", size))
+    samples = int(env.get("SHEET_SAMPLES", samples))
     if frame is not None:
         bpy.context.scene.frame_set(frame)
     lo, hi = scene_bounds()
