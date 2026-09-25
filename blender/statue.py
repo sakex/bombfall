@@ -14,4 +14,4 @@ parts, pivots = furniture.statue_parts()
 joined = {name: join(objs, name) for name, objs in parts.items()}
 for p in pivots:
     furniture.attach(p, joined["body"])
-furniture.finish("statue", keep=tuple(parts))
+furniture.finish("statue", keep=tuple(parts), tex=1024)

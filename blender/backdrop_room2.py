@@ -40,14 +40,14 @@ CORK = M("concrete", (0.32, 0.18, 0.08), grime=0.2, bump=0.9)
 ALU = M("metal", (0.6, 0.62, 0.65))
 PAPER = [M("plastic", c, rough=0.9) for c in ((0.85, 0.75, 0.2), (0.9, 0.35, 0.55), (0.3, 0.75, 0.85), (0.8, 0.8, 0.78))]
 PIN = [M("plastic", c, rough=0.3) for c in ((0.8, 0.05, 0.05), (0.05, 0.2, 0.8), (0.05, 0.6, 0.1))]
-LAMINATE = M("plastic", (0.45, 0.55, 0.5), rough=0.35, wear=0.4)
+LAMINATE = M("plastic", (0.25, 0.45, 0.38), rough=0.45, wear=0.4)
 BUTCHER = M("wood", (0.35, 0.2, 0.09), color2=(0.26, 0.14, 0.06), rough=0.4)
 BLACK = M("plastic", (0.012, 0.012, 0.015), rough=0.35)
 VEND = M("paint", (0.02, 0.02, 0.03), rough=0.25, wear=0.5)
 RUBBER = M("rubber", (0.02, 0.02, 0.025))
 WICKER = pattern("plastic", (0.35, 0.25, 0.12), "tiles", size=(0.12, 0.08), line=0.02, plane="XZ", offset=0.5)
 CLOTH = [M("fabric", c) for c in ((0.5, 0.05, 0.2), (0.05, 0.25, 0.45), (0.7, 0.7, 0.7), (0.1, 0.4, 0.2), (0.6, 0.35, 0.05))]
-PLANT_G = M("plastic", (0.03, 0.14, 0.05), rough=0.5)
+PLANT_G = M("plastic", (0.05, 0.25, 0.08), rough=0.75)
 TERRACOTTA = M("ceramic", (0.35, 0.1, 0.04), rough=0.6)
 
 VEND_LIGHT = glow((0.75, 0.9, 1.0), 2.6, base=(0.6, 0.7, 0.8))

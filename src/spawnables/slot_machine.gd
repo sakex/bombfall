@@ -2,6 +2,7 @@ class_name SlotMachine
 extends PlanarBody
 ## A one-armed bandit. Anything that hits it hard enough pulls the lever:
 ## the reels spin, then it pays out coins, drops a bomb, or does nothing.
+## The bulbs around the "marquee" chase on their own (animated shader).
 
 const COIN := preload("res://src/actors/coin.tscn")
 const BOMB_SCENE := "res://src/actors/bomb.tscn"
@@ -14,7 +15,6 @@ var _world: Node = null
 var _spinning := 0.0
 var _cooldown := 0.0
 var _reels: Array[Node3D] = []
-var _marquee: StandardMaterial3D
 
 @onready var model: Node3D = $Model
 @onready var lever: Node3D = model.find_child("lever", true, false)
@@ -30,7 +30,6 @@ func _ready() -> void:
 		var r := model.find_child("reel_%d" % (i + 1), true, false)
 		if r != null:
 			_reels.append(r)
-	_marquee = ModelUtil.own_material(ModelUtil.find_mesh(model, "marquee"))
 	if randi() % 2 == 0:
 		model.scale.x = -1.0
 
@@ -56,8 +55,6 @@ func _process(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
 	if lever != null:
 		lever.rotation.x = lerpf(lever.rotation.x, 1.2 if _spinning > 0.0 else 0.0, minf(1.0, delta * 8.0))
-	if _marquee != null:
-		_marquee.emission_energy_multiplier = 4.0 if fmod(Time.get_ticks_msec() / 250.0, 2.0) < 1.0 else 1.5
 	if _spinning <= 0.0:
 		return
 	_spinning -= delta

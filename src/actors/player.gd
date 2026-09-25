@@ -69,6 +69,10 @@ var _last_velocity := Vector3.ZERO
 var _intent_x := 0.0
 ## Set by the skybridge while the player is legitimately outside the shaft.
 var outside_ok := false
+## Bone ids and the bone-local axes the procedural touches work along.
+var _bones := {}
+var _blink_axis := {}
+var _jet_axis := {}
 
 @onready var model: Node3D = $Model
 @onready var shield_bubble: MeshInstance3D = $Shield
@@ -84,10 +88,6 @@ var outside_ok := false
 @onready var sfx_start: AudioStreamPlayer = $SfxStart
 @onready var _anim: AnimationPlayer = ModelUtil.anim_player(model)
 @onready var _skel: Skeleton3D = _find_skeleton(model)
-## Bone ids and the bone-local axes the procedural touches work along.
-var _bones := {}
-var _blink_axis := {}
-var _jet_axis := {}
 
 
 func _ready() -> void:

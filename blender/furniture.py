@@ -434,6 +434,9 @@ def shots(name, out_dir=None, size=440, samples=36, offsets=None):
     if not out_dir:
         return
     os.makedirs(out_dir, exist_ok=True)
+    for o in list(bpy.context.scene.objects):
+        if o.name.startswith(("preview_light", "preview_cam")):
+            bpy.data.objects.remove(o, do_unlink=True)
     for oname, off in (offsets or {}).items():
         o = bpy.data.objects.get(oname)
         if o is not None:
@@ -754,7 +757,7 @@ def _caster(x, y, a, m_body, m_wheel):
 def chair():
     """An executive office chair at 2.5x life size: oxblood leather with
     channel-tufted back and a plump seat, chrome armrests and five-star base,
-    twin-wheel casters. ~2.0 x 1.8 x 3.0 m, front facing -Y."""
+    twin-wheel casters. ~1.65 x 1.85 x 3.0 m, front facing -Y."""
     mats_reset()
     leather = pbr("leather", (0.26, 0.035, 0.06), rough=0.42, wear=0.35, grime=0.35, edge=0.03, name="oxblood")
     leather_dk = pbr("leather", (0.10, 0.02, 0.03), rough=0.5, edge=0.02, name="oxblood_dark")
@@ -797,7 +800,7 @@ def chair():
         tube([(sx * 0.3, 0.25, 1.12), (x, 0.3, 1.18), (x, 0.3, 1.55), (x, 0.1, 1.78)], 0.045, CHROME_M, verts=8)
         tube([(sx * 0.3, -0.35, 1.12), (x, -0.4, 1.18), (x, -0.4, 1.7)], 0.045, CHROME_M, verts=8)
         soft_box((0.2, 0.9, 0.1), (x, -0.12, 1.8), leather_dk, r=0.8, cuts=2)
-    place(1.0, 0.0)
+    place(0.91, 0.0)
 
 
 # ================================================================== table ==
@@ -1023,8 +1026,8 @@ def champagne():
     for o in parts:
         attach(o, tilt)
     tilt.rotation_euler = (math.radians(8), math.radians(12), 0)
-    tilt.location = (-0.03, 0.02, 0.1)
-    tilt.scale = (1.12, 1.12, 1.12)
+    tilt.location = (-0.03, 0.02, 0.15)
+    tilt.scale = (1.1, 1.1, 1.1)
     bpy.context.view_layer.update()
     mouth = tilt.matrix_world @ V((0, 0, 0.84))
     for o in parts:
@@ -1843,13 +1846,13 @@ def desktop_parts():
     d.append(soft_box((0.14, 0.24, 0.07), (1.05, -0.45, 2.055), steel, r=0.9, puff=0.3, cuts=2, name="mouse"))
     d.append(cube((0.02, 0.06, 0.01), (1.05, -0.52, 2.09), glow((1.0, 0.2, 0.5), 4.0), bevel=0.0))
     # headphone stand with headphones, an energy drink
-    d.append(lathe([(0.0, 2.0), (0.14, 2.0), (0.14, 2.02), (0.03, 2.04), (0.025, 2.5), (0.0, 2.5)], steel, segs=14, loc=(-1.35, -0.2, 0)))
-    d.append(soft_box((0.16, 0.08, 0.04), (-1.35, -0.2, 2.52), steel, r=0.5, cuts=1))
-    arc = [(-1.35 + math.cos(a) * 0.0, -0.2 + math.cos(a) * 0.2, 2.34 + math.sin(a) * 0.2) for a in [math.pi * k / 10 for k in range(11)]]
-    d.append(tube(arc, 0.025, steel, verts=6))
+    d.append(lathe([(0.0, 2.0), (0.12, 2.0), (0.12, 2.02), (0.03, 2.04), (0.025, 2.27), (0.0, 2.27)], steel, segs=14, loc=(-1.35, -0.2, 0)))
+    d.append(soft_box((0.14, 0.08, 0.04), (-1.35, -0.2, 2.28), steel, r=0.5, cuts=1))
+    arc = [(-1.35, -0.2 + math.cos(a) * 0.15, 2.15 + math.sin(a) * 0.15) for a in [math.pi * k / 10 for k in range(11)]]
+    d.append(tube(arc, 0.022, steel, verts=6))
     for sy in (-1, 1):
-        d.append(soft_box((0.12, 0.08, 0.18), (-1.35, -0.2 + sy * 0.21, 2.3), steel, r=0.9, cuts=2))
-        d.append(torus(0.06, 0.012, (-1.35, -0.2 + sy * 0.255, 2.3), glow((0.2, 0.9, 1.0), 4.0), rot=(math.pi / 2, 0, 0), major_segments=12,
+        d.append(soft_box((0.1, 0.07, 0.15), (-1.35, -0.2 + sy * 0.16, 2.12), steel, r=0.9, cuts=2))
+        d.append(torus(0.05, 0.011, (-1.35, -0.2 + sy * 0.198, 2.12), glow((0.2, 0.9, 1.0), 4.0), rot=(math.pi / 2, 0, 0), major_segments=12,
                        minor_segments=4))
     d.append(lathe([(0.0, 2.0), (0.06, 2.0), (0.065, 2.02), (0.065, 2.26), (0.05, 2.28), (0.0, 2.28)], pbr("metal", (0.2, 0.9, 0.3), rough=0.25,
                    name="can"), segs=14, loc=(-0.95, -0.55, 0)))
@@ -1940,7 +1943,7 @@ def desktop_parts():
 
 
 # ================================================================= statue ==
-def metaball_mesh(elements, m, resolution=0.07, threshold=0.6, tris=None, name="meta"):
+def metaball_mesh(elements, m, resolution=0.07, threshold=0.6, tris=None, name="meta", fat=1.0):
     """Blend spheres/ellipsoids [(co, radius[, (sx, sy, sz)])] into one smooth
     mesh (organic forms), optionally decimated to about `tris` triangles."""
     mb = bpy.data.metaballs.new(name)
@@ -1951,7 +1954,7 @@ def metaball_mesh(elements, m, resolution=0.07, threshold=0.6, tris=None, name="
         co, r = e[0], e[1]
         el = mb.elements.new(type="ELLIPSOID" if len(e) > 2 else "BALL")
         el.co = co
-        el.radius = r
+        el.radius = r * fat
         if len(e) > 2:
             el.size_x, el.size_y, el.size_z = e[2]
     o = bpy.data.objects.new(name, mb)
@@ -2031,8 +2034,7 @@ def statue_parts():
             ((0, 0.0, Z + 3.4), 0.55, (0.78, 0.55, 0.6)),            # waist
             ((0, -0.02, Z + 4.0), 0.72, (1.0, 0.62, 0.72)),          # chest
             ((0, 0.05, Z + 4.45), 0.6, (1.25, 0.6, 0.45))]           # shoulder girdle
-    for sx in (-1, 1):
-        els.append(((sx * 0.25, -0.26, Z + 4.1), 0.34))             # pecs
+    els.append(((0, -0.2, Z + 4.1), 0.4, (1.0, 0.5, 0.55)))        # chest plate
     els += _limb([(0, 0, Z + 4.55), (0, 0, Z + 4.95)], 0.26, 0.22)   # neck
     # legs: left straight, right bent out on tiptoe
     els += _limb([(-0.32, 0, Z + 2.85), (-0.36, -0.02, Z + 1.6), (-0.4, 0.02, Z + 0.3)], 0.42, 0.22)
@@ -2045,7 +2047,7 @@ def statue_parts():
     els += _limb([(1.55, -0.15, Z + 5.75), (1.65, -0.18, Z + 6.0)], 0.17, 0.09)
     els += _limb([(-0.95, 0, Z + 4.4), (-1.3, 0.12, Z + 3.7), (-0.78, -0.12, Z + 3.2)], 0.27, 0.17)
     els += [((-0.7, -0.14, Z + 3.1), 0.2, (1.0, 0.7, 1.3))]
-    body = metaball_mesh(els, chrome, resolution=0.06, threshold=0.3, tris=4200, name="figure")
+    body = metaball_mesh(els, chrome, resolution=0.06, threshold=0.6, tris=4200, name="figure", fat=1.5)
     bb = [body]
     # neon joint rings, belt and the chest core
     bb.append(torus(1.0, 0.03, (0, 0.0, Z + 3.35), glow(PINK, 5.0), scale=(0.5, 0.36, 1.0), major_segments=28, minor_segments=4))
@@ -2073,3 +2075,62 @@ def statue_parts():
     bpy.data.objects.remove(crest)
     parts["head"] = h
     return parts, [core]
+
+
+# =============================================================== painting ==
+def painting_frame():
+    """A gilded Baroque frame 3.75 m square, centred on the origin with the
+    canvas facing -Y: a stepped moulding with beads and a cove, acanthus
+    corner ornaments, a shell crest, a linen liner and a backing board. The
+    "canvas" quad keeps plain 0..1 UVs (it is not baked) so the
+    game can show one of the classic paintings on it."""
+    mats_reset()
+    gilt = pbr("gold", (0.95, 0.68, 0.28), rough=0.22, grime=0.7, bump=0.3, edge=0.01, name="gilt")
+    gilt_dk = pbr("gold", (0.6, 0.38, 0.12), rough=0.35, grime=0.8, bump=0.4, edge=0.01, name="gilt_dark")
+    linen = pbr("fabric", (0.78, 0.72, 0.6), color2=(0.7, 0.64, 0.52), bump=0.5, name="linen")
+    back_m = pbr("wood", (0.2, 0.12, 0.06), name="backing")
+    S = 3.75
+    F = 0.42                 # moulding width
+    C = S / 2 - F            # half size of the sight edge
+    rect = [(-C, 0, -C), (C, 0, -C), (C, 0, C), (-C, 0, C)]
+    prof = [(0.0, -0.02), (0.0, 0.03), (0.035, 0.06), (0.07, 0.05), (0.1, 0.09), (0.15, 0.14), (0.2, 0.17), (0.25, 0.165),
+            (0.29, 0.13), (0.33, 0.15), (0.37, 0.14), (0.4, 0.1), (F, 0.05), (F, -0.14), (0.0, -0.14)]
+    fr = sweep(prof, rect, gilt, plane_normal=(0, -1, 0), name="frame")
+    # bead rows: a string of pearls on the inner lip
+    for k in range(4):
+        a, b = V(rect[k]), V(rect[(k + 1) % 4])
+        n = 18
+        for i in range(n):
+            p = a.lerp(b, (i + 0.5) / n)
+            out = V((0, 0, 0)) - p
+            out = V((out.x, 0, out.z))
+            inward = out.normalized() if out.length else V((0, 0, 0))
+            q = p - V((inward.x * 0.0, 0, inward.z * 0.0))
+            edge_n = (b - a).cross(V((0, -1, 0))).normalized()
+            c = p + edge_n * 0.035
+            sphere(0.026, (c.x, -0.065, c.z), gilt, segments=5, rings=3)
+    # liner and canvas
+    sweep([(-0.001, 0.0), (0.12, -0.0), (0.12, -0.02), (0.0, -0.02)], [(-C + 0.12, 0, -C + 0.12), (C - 0.12, 0, -C + 0.12),
+          (C - 0.12, 0, C - 0.12), (-C + 0.12, 0, C - 0.12)], linen, plane_normal=(0, -1, 0), name="liner").location.y = -0.02
+    canvas = plane((2 * C - 0.24, 2 * C - 0.24), (0, -0.015, 0), pbr("screen", (0.8, 0.75, 0.65), strength=0.0, name="canvas_paint"),
+                   rot=(math.pi / 2, 0, 0), name="canvas")
+    cube((2 * C, 0.04, 2 * C), (0, 0.04, 0), back_m, bevel=0.0)
+    # acanthus corner ornaments: a rosette with curling leaves
+    for sx in (-1, 1):
+        for sz in (-1, 1):
+            cx, cz = sx * (S / 2 - 0.2), sz * (S / 2 - 0.2)
+            sphere(0.1, (cx, -0.2, cz), gilt, scale=(1, 0.55, 1), segments=12, rings=8)
+            for k in range(5):
+                a = math.atan2(-sz, -sx) + (k - 2) * 0.5
+                pts = [(cx + math.cos(a) * (0.08 + 0.06 * t), -0.19 + 0.05 * t * t, cz + math.sin(a) * (0.08 + 0.06 * t)) for t in (0, 1, 2, 3)]
+                pts = [(x + math.cos(a) * 0.07 * i, y, z + math.sin(a) * 0.07 * i) for i, (x, y, z) in enumerate(pts)]
+                tube(pts, lambda t: 0.045 * (1 - 0.7 * t), gilt, verts=6)
+                sphere(0.03, pts[-1], gilt_dk, segments=6, rings=4)
+            sphere(0.045, (cx, -0.25, cz), gilt_dk, segments=8, rings=6)
+    # shell crest on the top and a cartouche on the bottom rail
+    for k in range(9):
+        a = math.pi * (0.1 + 0.8 * k / 8)
+        tube([(0, -0.2, S / 2 - 0.12), (math.cos(a) * 0.32, -0.23, S / 2 - 0.12 + math.sin(a) * 0.3)], lambda t: 0.035 + 0.02 * t, gilt, verts=6)
+    sphere(0.09, (0, -0.22, S / 2 - 0.12), gilt_dk, scale=(1.2, 0.6, 0.8), segments=10, rings=6)
+    sphere(0.12, (0, -0.19, -S / 2 + 0.18), gilt, scale=(1.8, 0.5, 0.8), segments=12, rings=6)
+    place(1.0, 0.0)

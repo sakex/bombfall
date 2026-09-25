@@ -535,49 +535,39 @@ def slide_loop(p, axis, dist, cycles=1):
     key(p, "idle", "location", keys, index=i, interp="LINEAR")
 
 
-def puff(p, rise=0.8, grow=2.2, start=0, life=None, drift=0.0):
-    """A steam/smoke puff: rises and swells from its pivot then vanishes,
-    starting at frame `start` (wraps around the loop)."""
+def puff(p, rise=0.8, grow=2.2, start=0, life=None, drift=0.0, step=4):
+    """A steam/smoke puff (or a drip, with a negative rise): starting at
+    frame `start` it rises and swells from its pivot over `life` frames,
+    then stays hidden until it starts again; wraps around the loop, so
+    every key stays inside 0..F."""
     life = life or F // 2
-    z0 = p.location.z
-    x0 = p.location.x
-    tiny = (0.0001, 0.0001, 0.0001)
-    pts = []
-    for k in range(5):
-        t = k / 4.0
-        f = (start + t * life)
-        s = 0.3 + (grow - 0.3) * t
-        sc = (s, s, s) if k < 4 else tiny
-        pts.append((f, z0 + rise * t, x0 + drift * t, sc))
-    loc_z, loc_x, scl = [], [], []
-    for f, z, x, sc in pts:
-        loc_z.append((f, z))
-        loc_x.append((f, x))
-        scl.append((f, sc))
-    # Keep the pivot hidden for the rest of the loop, and wrap.
-    def wrap(keys, rest):
-        out = []
-        for f, v in keys:
-            out.append((f % F if f > F else f, v))
-        out.sort(key=lambda k: k[0])
-        return out
-    hidden_from = start + life
-    keys_s = [(start, (0.3, 0.3, 0.3)), (start + life * 0.5, tuple([0.3 + (grow - 0.3) * 0.5] * 3)),
-              (start + life * 0.999, (grow, grow, grow)), (start + life, tiny)]
-    keys_z = [(start, z0), (start + life, z0 + rise)]
-    keys_x = [(start, x0), (start + life, x0 + drift)]
-    if start > 0:
-        keys_s = [(0, tiny)] + keys_s
-        keys_z = [(0, z0)] + keys_z
-        keys_x = [(0, x0)] + keys_x
-    if hidden_from < F:
-        keys_s.append((F, tiny))
-        keys_z.append((F, z0 + rise))
-        keys_x.append((F, x0 + drift))
-    key(p, "idle", "scale", keys_s)
-    key(p, "idle", "location", keys_z, index=2)
+    z0, x0 = p.location.z, p.location.x
+    tiny = 0.0001
+    ks, kz, kx = [], [], []
+    pre = (start - 1) % F
+    frames = sorted(set(list(range(0, F + 1, step)) + [(start + life) % F, start % F, pre]))
+    for f in frames:
+        t = ((f - start) % F) / float(life)
+        if f == (start + life) % F and life < F:
+            t = 1.0
+        if f == pre and life < F - 1:
+            ks.append((f, (tiny, tiny, tiny)))
+            kz.append((f, z0))
+            kx.append((f, x0))
+            continue
+        if t < 1.0:
+            s = 0.3 + (grow - 0.3) * t
+            ks.append((f, (s, s, s)))
+            kz.append((f, z0 + rise * t))
+            kx.append((f, x0 + drift * t))
+        else:
+            ks.append((f, (tiny, tiny, tiny)))
+            kz.append((f, z0 + rise))
+            kx.append((f, x0 + drift))
+    key(p, "idle", "scale", ks, interp="LINEAR")
+    key(p, "idle", "location", kz, index=2, interp="LINEAR")
     if drift:
-        key(p, "idle", "location", keys_x, index=0)
+        key(p, "idle", "location", kx, index=0, interp="LINEAR")
 
 
 # ------------------------------------------------------------- finishing --
@@ -1185,3 +1175,30 @@ def exit_sign(x, y, z, body_m, text_m, hang=0.0):
     box((1.0, 0.12, 0.38), (x, y, zc), body_m, bev=0.02)
     box((0.92, 0.02, 0.3), (x, y - 0.065, zc), glow((0.1, 0.9, 0.3), 1.2, (0.02, 0.2, 0.05)))
     neon_text("EXIT", x - 0.34, zc - 0.08, 0.16, glow((0.85, 1.0, 0.85), 3.0), y=y - 0.08, r=0.012, gap=0.3)
+
+
+def drop_ceiling(m, grid_m, y0=0.0, y1=1.95, z=0.0, tile=1.5, missing=(), stained=(), stain_m=None):
+    """A suspended ceiling seen from below: tile panel with a T-bar grid; a
+    few tiles missing (dark void) or water-stained."""
+    box((15.0, y1 - y0, 0.03), (7.5, (y0 + y1) / 2, z - 0.015), m)
+    nx = int(15.0 / tile)
+    for i in range(nx + 1):
+        box((0.04, y1 - y0, 0.025), (i * tile, (y0 + y1) / 2, z - 0.04), grid_m)
+    for yy in (y0 + (y1 - y0) / 2,):
+        box((15.0, 0.04, 0.025), (7.5, yy, z - 0.04), grid_m)
+    for i in missing:
+        box((tile - 0.06, (y1 - y0) / 2 - 0.06, 0.01), (i * tile + tile / 2, y0 + (y1 - y0) * 0.25, z - 0.034),
+            M("rubber", (0.005, 0.005, 0.006)))
+    for i in stained:
+        ball(tile * 0.3, (i * tile + tile / 2, y0 + (y1 - y0) * 0.72, z - 0.031), stain_m or M("concrete", (0.25, 0.18, 0.1)),
+             scale=(1.2, 0.8, 0.02), seg=10, rings=4)
+
+
+def front_soffit(m, trim_m=None, glow_m=None, depth=0.4, h=0.3):
+    """A plaster bulkhead along the front edge of the ceiling (frames the
+    room from the game camera) with an optional cove light behind it."""
+    box((15.0, depth, h), (7.5, depth / 2, -h / 2), m, bev=0.02)
+    if trim_m is not None:
+        box((15.0, 0.08, 0.05), (7.5, depth + 0.02, -h + 0.02), trim_m)
+    if glow_m is not None:
+        box((14.9, 0.03, 0.03), (7.5, depth + 0.05, -h + 0.06), glow_m)

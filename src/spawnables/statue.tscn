@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=8 format=3]
 
 [ext_resource type="Script" path="res://src/spawnables/multi_body.gd" id="1"]
 [ext_resource type="Script" path="res://src/actors/planar_body.gd" id="2"]
@@ -8,10 +8,13 @@
 size = Vector3(3.6, 1.95, 2.2)
 
 [sub_resource type="BoxShape3D" id="body_shape"]
-size = Vector3(3.2, 4.2, 2.0)
+size = Vector3(2.7, 4.85, 2.0)
+
+[sub_resource type="BoxShape3D" id="arm_shape"]
+size = Vector3(0.75, 1.6, 0.8)
 
 [sub_resource type="SphereShape3D" id="head_shape"]
-radius = 0.72
+radius = 0.52
 
 [node name="Statue" type="Node3D"]
 script = ExtResource("1")
@@ -37,14 +40,18 @@ collision_layer = 32
 collision_mask = 2875
 mass = 200.0
 center_of_mass_mode = 1
-center_of_mass = Vector3(0, 3.2, 0)
+center_of_mass = Vector3(0, 3.6, 0)
 angular_damp = 2.0
 can_sleep = false
 script = ExtResource("2")
 
 [node name="Shape" type="CollisionShape3D" parent="Body"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 4.05, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.15, 4.375, 0)
 shape = SubResource("body_shape")
+
+[node name="ArmShape" type="CollisionShape3D" parent="Body"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.375, 7.2, 0.1)
+shape = SubResource("arm_shape")
 
 [node name="Head" type="RigidBody3D" parent="."]
 collision_layer = 32
@@ -55,5 +62,5 @@ can_sleep = false
 script = ExtResource("2")
 
 [node name="Shape" type="CollisionShape3D" parent="Head"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.9, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.33, 0)
 shape = SubResource("head_shape")

@@ -128,8 +128,8 @@ JUMP_POSE = {
     "thigh_l": (72, 0, 4), "shin_l": (-104, 0, 0), "foot_l": (14, 0, 0),
     "thigh_r": (-26, 0, 2), "shin_r": (-24, 0, 0), "foot_r": (-42, 0, 0),
     "shoulder_l": (-6, 0, 6), "shoulder_r": (10, 0, 14),
-    "upper_arm_l": (-48, 0, 16), "upper_arm_r": (128, 0, 34),
-    "forearm_l": (34, 0, 0), "forearm_r": (22, 0, 0), "hand_l": (10, 0, 0), "hand_r": (-12, 0, 0),
+    "upper_arm_l": (112, 0, 16), "upper_arm_r": (146, 0, 22),
+    "forearm_l": (40, 0, 0), "forearm_r": (22, 0, 0), "hand_l": (-10, 0, 0), "hand_r": (-12, 0, 0),
     "antenna_1": (-18, 0, 0), "antenna_2": (-12, 0, 0), "antenna_3": (-8, 0, 0),
     "scarf_1": (-35, 0, 0), "scarf_2": (-18, 0, 0), "scarf_3": (-10, 0, 0),
 }
@@ -141,7 +141,7 @@ def _scale(pose, k):
 
 def jump(arm):
     author(arm, "jump", [(0, _scale(JUMP_POSE, 0.7)), (4, JUMP_POSE),
-                         (8, _merge(JUMP_POSE, {"upper_arm_l": (-8, 0, 0), "thigh_l": (4, 0, 0), "antenna_1": (6, 0, 0)}))])
+                         (8, _merge(JUMP_POSE, {"upper_arm_l": (8, 0, 0), "thigh_l": (4, 0, 0), "antenna_1": (6, 0, 0)}))])
 
 
 def rise(arm):
@@ -157,8 +157,8 @@ def rise(arm):
             "thigh_l": (78 + 4 * s, 0, 6), "shin_l": (-112 - 4 * s, 0, 0), "foot_l": (14, 0, 0),
             "thigh_r": (26 - 5 * s, 0, 4), "shin_r": (-64 + 6 * s, 0, 0), "foot_r": (-24, 0, 0),
             "shoulder_l": (0, 0, 8), "shoulder_r": (8, 0, 14),
-            "upper_arm_l": (-30 + 6 * s, 0, 30), "upper_arm_r": (134 - 5 * s, 0, 36),
-            "forearm_l": (40, 0, 0), "forearm_r": (18, 0, 0), "hand_l": (8, 0, 0), "hand_r": (-14, 0, 0),
+            "upper_arm_l": (120 + 6 * s, 0, 18), "upper_arm_r": (148 - 5 * s, 0, 22),
+            "forearm_l": (30, 0, 0), "forearm_r": (18, 0, 0), "hand_l": (-10, 0, 0), "hand_r": (-14, 0, 0),
             "antenna_1": (-16 + 3 * math.sin(2 * ph), 0, 0), "antenna_2": (-10 + 3 * math.sin(2 * ph - 1), 0, 0),
             "antenna_3": (-6 + 3 * math.sin(2 * ph - 2), 0, 0),
             "scarf_1": (-42 + 5 * math.sin(2 * ph), 0, 4 * s), "scarf_2": (-18 + 8 * math.sin(2 * ph - 1.2), 0, 5 * s),
@@ -177,11 +177,11 @@ def fall(arm):
         p = {
             "hips@": (0, 0, 0.0),
             "hips": (-4, 4 * s, 0), "spine": (2, 0, 3 * c), "chest": (0, -4 * s, 0), "neck": (4, 0, 0),
-            "head": (10 + 3 * math.sin(2 * ph), 6 * s, -4 * c),
+            "head": (4 + 3 * math.sin(2 * ph), 6 * s, -4 * c),
             "thigh_l": (28 + 26 * s, 0, 8), "shin_l": (-40 - 30 * math.sin(ph + 1.3), 0, 0), "foot_l": (-20, 0, 0),
             "thigh_r": (28 - 26 * s, 0, 8), "shin_r": (-40 + 30 * math.sin(ph + 1.3), 0, 0), "foot_r": (-20, 0, 0),
             "shoulder_l": (0, 0, 14), "shoulder_r": (0, 0, 14),
-            "upper_arm_l": (112 + 34 * s, 0, 42), "upper_arm_r": (112 - 34 * s, 0, 42),
+            "upper_arm_l": (92 + 30 * s, 0, 34), "upper_arm_r": (92 - 30 * s, 0, 34),
             "forearm_l": (26 + 24 * math.sin(ph + 1.0), 0, 0), "forearm_r": (26 - 24 * math.sin(ph + 1.0), 0, 0),
             "hand_l": (0, 0, 14 * s), "hand_r": (0, 0, -14 * s),
             "antenna_1": (6 + 5 * math.sin(2 * ph), 0, 4 * c), "antenna_2": (4 + 5 * math.sin(2 * ph - 1), 0, 4 * c),
@@ -244,9 +244,9 @@ def push(arm):
             "thigh_l": (tl, 0, 3), "shin_l": (sl, 0, 0), "foot_l": (fl, 0, 0),
             "thigh_r": (tr, 0, 3), "shin_r": (sr, 0, 0), "foot_r": (fr, 0, 0),
             "shoulder_l": (12, 0, 4), "shoulder_r": (12, 0, 4),
-            "upper_arm_l": (74 - 4 * shove, 0, -6), "upper_arm_r": (74 - 4 * shove, 0, -6),
+            "upper_arm_l": (122 - 4 * shove, 0, -8), "upper_arm_r": (122 - 4 * shove, 0, -8),
             "forearm_l": (6 + 6 * shove, 0, 0), "forearm_r": (6 + 6 * shove, 0, 0),
-            "hand_l": (-55, 0, 0), "hand_r": (-55, 0, 0),
+            "hand_l": (-60, 0, 0), "hand_r": (-60, 0, 0),
             "antenna_1": (-6 + 3 * shove, 0, 0), "antenna_2": (-4 + 3 * shove, 0, 0), "antenna_3": (-2, 0, 0),
             "scarf_1": (-8, 0, 10 + 4 * math.sin(ph)), "scarf_2": (-35 + 5 * math.sin(2 * ph), 0, 6),
             "scarf_3": (-20 + 6 * math.sin(2 * ph - 1), 0, 4),
@@ -328,7 +328,7 @@ def death(arm):
 def wave(arm):
     base = _merge(REST_ARMS, {"hips": (0, 0, 3), "spine": (-2, 0, -3), "head": (-4, 10, 10)})
     poses = [(0, _merge(REST_ARMS, {}))]
-    up = _merge(base, {"shoulder_r": (0, 0, 16), "upper_arm_r": (10, 0, 145), "forearm_r": (10, 0, 0),
+    up = _merge(base, {"shoulder_r": (0, 0, 16), "upper_arm_r": (10, 0, 108), "forearm_r": (10, 0, 0),
                        "hand_r": (0, 0, 0), "antenna_1": (8, 0, -6)})
     for i, f in enumerate(range(6, 44, 6)):
         z = 28 if i % 2 == 0 else -18

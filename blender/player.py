@@ -529,9 +529,12 @@ def rig_bones():
         ec = ell_point(HC, FR, d0)
         b += [("eye_" + sd, tuple(ec), tuple(ec + V((0, 0, 0.1))), "head", FWD),
               ("shoulder_" + sd, (s * 0.06, 0, 0.765), tuple(S[s]), "chest", FWD),
-              ("upper_arm_" + sd, tuple(S[s]), tuple(E[s]), "shoulder_" + sd, FWD),
-              ("forearm_" + sd, tuple(E[s]), tuple(WR[s]), "upper_arm_" + sd, FWD),
-              ("hand_" + sd, tuple(WR[s]), tuple(HT[s]), "forearm_" + sd, FWD),
+              # Arm bones hang straight down (the mesh is in an A-pose): a
+              # swing about their x is then a pure forward/back swing that
+              # keeps the arms splayed clear of the belly and the helmet.
+              ("upper_arm_" + sd, tuple(S[s]), tuple(S[s] - V((0, 0, 0.14))), "shoulder_" + sd, FWD),
+              ("forearm_" + sd, tuple(E[s]), tuple(E[s] - V((0, 0, 0.12))), "upper_arm_" + sd, FWD),
+              ("hand_" + sd, tuple(WR[s]), tuple(WR[s] - V((0, 0, 0.10))), "forearm_" + sd, FWD),
               ("thigh_" + sd, tuple(HIP[s]), tuple(KNEE[s]), "hips", FWD),
               ("shin_" + sd, tuple(KNEE[s]), tuple(ANK[s]), "thigh_" + sd, FWD),
               ("foot_" + sd, tuple(ANK[s]), tuple(TOE[s]), "shin_" + sd, UP),
@@ -627,6 +630,8 @@ if os.environ.get("NO_BAKE") != "1":
 jets(1.0)
 hero_clips.author_all(arm)
 export("player", bake=False)
+if os.environ.get("HERO_DEBUG"):
+    exec(open(os.environ["HERO_DEBUG"]).read())
 
 if PREVIEW:
     jets(0.001)

@@ -1,7 +1,11 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=41 format=3]
 
 [ext_resource type="Script" path="res://src/actors/explosion.gd" id="1"]
 [ext_resource type="AudioStream" path="res://assets/audio/sfx/explosion.wav" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/core_fireball.gdshader" id="3"]
+[ext_resource type="Shader" path="res://assets/shaders/core_flash.gdshader" id="4"]
+[ext_resource type="Shader" path="res://assets/shaders/core_shockwave.gdshader" id="5"]
+[ext_resource type="Shader" path="res://assets/shaders/core_smoke.gdshader" id="6"]
 
 [sub_resource type="SphereShape3D" id="shape"]
 radius = 0.05
@@ -9,26 +13,166 @@ radius = 0.05
 [sub_resource type="SphereMesh" id="ball"]
 radius = 1.0
 height = 2.0
+radial_segments = 40
+rings = 20
+
+[sub_resource type="ShaderMaterial" id="fire_mat"]
+render_priority = 0
+shader = ExtResource("3")
+
+[sub_resource type="SphereMesh" id="core_ball"]
+radius = 1.0
+height = 2.0
 radial_segments = 24
 rings = 12
 
-[sub_resource type="StandardMaterial3D" id="fire_mat"]
-transparency = 1
-blend_mode = 1
-shading_mode = 0
-albedo_color = Color(1, 0.45, 0.08, 0.85)
-emission_enabled = true
-emission = Color(1, 0.35, 0.05, 1)
-emission_energy_multiplier = 3.0
+[sub_resource type="ShaderMaterial" id="core_mat"]
+render_priority = 1
+shader = ExtResource("4")
 
-[sub_resource type="StandardMaterial3D" id="core_mat"]
+[sub_resource type="ShaderMaterial" id="shock_mat"]
+render_priority = 2
+shader = ExtResource("5")
+
+[sub_resource type="QuadMesh" id="shock_quad"]
+material = SubResource("shock_mat")
+size = Vector2(2, 2)
+
+[sub_resource type="Gradient" id="spark_colors"]
+offsets = PackedFloat32Array(0, 0.2, 0.6, 1)
+colors = PackedColorArray(1, 1, 0.9, 1, 1, 0.75, 0.3, 1, 1, 0.3, 0.05, 0.8, 0.6, 0.05, 0.2, 0)
+
+[sub_resource type="GradientTexture1D" id="spark_ramp"]
+gradient = SubResource("spark_colors")
+
+[sub_resource type="Curve" id="spark_size"]
+_data = [Vector2(0, 1), 0.0, 0.0, 0, 0, Vector2(1, 0.15), 0.0, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="spark_size_tex"]
+curve = SubResource("spark_size")
+
+[sub_resource type="ParticleProcessMaterial" id="spark_process"]
+emission_shape = 1
+emission_sphere_radius = 0.6
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 8.0
+initial_velocity_max = 17.0
+gravity = Vector3(0, -12, 0)
+damping_min = 5.0
+damping_max = 9.0
+scale_min = 0.6
+scale_max = 1.3
+scale_curve = SubResource("spark_size_tex")
+color_ramp = SubResource("spark_ramp")
+
+[sub_resource type="Gradient" id="soft_falloff"]
+colors = PackedColorArray(1, 1, 1, 1, 1, 1, 1, 0)
+
+[sub_resource type="GradientTexture2D" id="soft_dot"]
+gradient = SubResource("soft_falloff")
+width = 16
+height = 32
+fill = 1
+fill_from = Vector2(0.5, 0.5)
+fill_to = Vector2(0.5, 0)
+
+[sub_resource type="StandardMaterial3D" id="spark_mat"]
+render_priority = 3
 transparency = 1
 blend_mode = 1
 shading_mode = 0
-albedo_color = Color(1, 0.95, 0.7, 1)
+vertex_color_use_as_albedo = true
+albedo_color = Color(5, 3.6, 2.2, 1)
+albedo_texture = SubResource("soft_dot")
+disable_receive_shadows = true
+
+[sub_resource type="QuadMesh" id="spark_quad"]
+material = SubResource("spark_mat")
+size = Vector2(0.09, 0.6)
+
+[sub_resource type="ParticleProcessMaterial" id="debris_process"]
+emission_shape = 1
+emission_sphere_radius = 0.5
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 6.0
+initial_velocity_max = 13.0
+gravity = Vector3(0, -20, 0)
+damping_min = 1.0
+damping_max = 2.0
+angle_min = -180.0
+angle_max = 180.0
+angular_velocity_min = -600.0
+angular_velocity_max = 600.0
+scale_min = 0.5
+scale_max = 1.3
+
+[sub_resource type="StandardMaterial3D" id="debris_mat"]
+albedo_color = Color(0.09, 0.08, 0.1, 1)
+metallic = 0.6
+roughness = 0.5
 emission_enabled = true
-emission = Color(1, 0.9, 0.6, 1)
-emission_energy_multiplier = 6.0
+emission = Color(1, 0.35, 0.08, 1)
+emission_energy_multiplier = 0.9
+
+[sub_resource type="BoxMesh" id="debris_box"]
+material = SubResource("debris_mat")
+size = Vector3(0.24, 0.15, 0.12)
+
+[sub_resource type="Gradient" id="smoke_colors"]
+offsets = PackedFloat32Array(0, 0.12, 0.35, 0.7, 1)
+colors = PackedColorArray(1, 0.55, 0.25, 0, 0.8, 0.38, 0.22, 0.7, 0.36, 0.24, 0.34, 0.62, 0.26, 0.22, 0.3, 0.35, 0.22, 0.2, 0.26, 0)
+
+[sub_resource type="GradientTexture1D" id="smoke_ramp"]
+gradient = SubResource("smoke_colors")
+
+[sub_resource type="Curve" id="smoke_size"]
+_data = [Vector2(0, 0.45), 0.0, 1.4, 0, 0, Vector2(1, 1), 0.2, 0.0, 0, 0]
+point_count = 2
+
+[sub_resource type="CurveTexture" id="smoke_size_tex"]
+curve = SubResource("smoke_size")
+
+[sub_resource type="ParticleProcessMaterial" id="smoke_process"]
+emission_shape = 1
+emission_sphere_radius = 1.4
+direction = Vector3(0, 1, 0)
+spread = 180.0
+initial_velocity_min = 1.5
+initial_velocity_max = 4.0
+gravity = Vector3(0, 1.6, 0)
+damping_min = 2.0
+damping_max = 3.0
+angle_min = -180.0
+angle_max = 180.0
+angular_velocity_min = -40.0
+angular_velocity_max = 40.0
+scale_min = 0.8
+scale_max = 1.4
+scale_curve = SubResource("smoke_size_tex")
+color_ramp = SubResource("smoke_ramp")
+
+[sub_resource type="FastNoiseLite" id="smoke_noise"]
+noise_type = 3
+frequency = 0.02
+fractal_octaves = 4
+
+[sub_resource type="NoiseTexture2D" id="smoke_noise_tex"]
+width = 128
+height = 128
+seamless = true
+noise = SubResource("smoke_noise")
+
+[sub_resource type="ShaderMaterial" id="smoke_mat"]
+render_priority = -1
+shader = ExtResource("6")
+shader_parameter/noise_tex = SubResource("smoke_noise_tex")
+
+[sub_resource type="QuadMesh" id="smoke_quad"]
+material = SubResource("smoke_mat")
+size = Vector2(3.2, 3.2)
 
 [node name="Explosion" type="Area3D"]
 collision_layer = 4
@@ -40,12 +184,18 @@ script = ExtResource("1")
 shape = SubResource("shape")
 
 [node name="Fireball" type="MeshInstance3D" parent="."]
+cast_shadow = 0
 mesh = SubResource("ball")
 surface_material_override/0 = SubResource("fire_mat")
 
 [node name="Core" type="MeshInstance3D" parent="."]
-mesh = SubResource("ball")
+cast_shadow = 0
+mesh = SubResource("core_ball")
 surface_material_override/0 = SubResource("core_mat")
+
+[node name="Shockwave" type="MeshInstance3D" parent="."]
+cast_shadow = 0
+mesh = SubResource("shock_quad")
 
 [node name="Light" type="OmniLight3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 2)
@@ -60,3 +210,43 @@ max_distance = 80.0
 bus = &"sfx"
 unit_size = 40.0
 max_db = 8.0
+
+[node name="Effects" type="Node3D" parent="."]
+
+[node name="Smoke" type="GPUParticles3D" parent="Effects"]
+cast_shadow = 0
+emitting = false
+amount = 10
+lifetime = 1.9
+one_shot = true
+explosiveness = 0.85
+local_coords = true
+visibility_aabb = AABB(-8, -8, -8, 16, 16, 16)
+process_material = SubResource("smoke_process")
+draw_pass_1 = SubResource("smoke_quad")
+
+[node name="Sparks" type="GPUParticles3D" parent="Effects"]
+cast_shadow = 0
+emitting = false
+amount = 26
+lifetime = 0.8
+one_shot = true
+explosiveness = 1.0
+randomness = 0.3
+local_coords = true
+visibility_aabb = AABB(-12, -12, -12, 24, 24, 24)
+transform_align = 3
+process_material = SubResource("spark_process")
+draw_pass_1 = SubResource("spark_quad")
+
+[node name="Debris" type="GPUParticles3D" parent="Effects"]
+emitting = false
+amount = 9
+lifetime = 1.1
+one_shot = true
+explosiveness = 1.0
+randomness = 0.3
+local_coords = true
+visibility_aabb = AABB(-12, -12, -12, 24, 24, 24)
+process_material = SubResource("debris_process")
+draw_pass_1 = SubResource("debris_box")

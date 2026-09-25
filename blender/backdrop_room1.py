@@ -23,7 +23,7 @@ WINDOWS = [(0.9, 2.1, 3.4, 2.6), (1.1, 7.4, 3.0, 1.5), (8.9, 7.4, 3.0, 1.5)]
 THEME = dict(wall=(0.12, 0.05, 0.23), trim=(0.7, 0.3, 1.0), floor=(0.09, 0.04, 0.16))
 
 # ------------------------------------------------------------ materials --
-WALNUT = M("wood", (0.24, 0.1, 0.045), color2=(0.16, 0.065, 0.03), rough=0.32)
+WALNUT = M("wood", (0.24, 0.1, 0.045), color2=(0.16, 0.065, 0.03), rough=0.45)
 WALNUT_DK = M("wood", (0.08, 0.035, 0.022), color2=(0.05, 0.022, 0.014), rough=0.4)
 BRASS = M("gold", (0.85, 0.58, 0.25), rough=0.25)
 SATIN = M("fabric", (0.42, 0.035, 0.17), color2=(0.3, 0.02, 0.12), rough=0.55)
@@ -39,7 +39,7 @@ MARBLE = M("marble", (0.75, 0.72, 0.78), color2=(0.3, 0.27, 0.34))
 LAMP_BASE = M("ceramic", (0.05, 0.35, 0.38))
 BLACK = M("plastic", (0.015, 0.014, 0.018), rough=0.3)
 IVORY = M("plastic", (0.62, 0.6, 0.56), rough=0.45)
-GREEN = M("plastic", (0.06, 0.3, 0.09), rough=0.5)
+GREEN = M("plastic", (0.06, 0.3, 0.09), rough=0.75)
 STEM = M("plastic", (0.05, 0.12, 0.04), rough=0.6)
 POT = M("ceramic", (0.05, 0.04, 0.06), rough=0.2)
 SUITCASE = M("plastic", (0.6, 0.3, 0.05), rough=0.3)

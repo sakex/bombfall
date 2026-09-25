@@ -22,13 +22,13 @@ WINDOWS = [(7.0, 3.2, 3.6, 1.6), (2.0, 7.9, 2.0, 1.0), (6.5, 7.9, 2.0, 1.0), (11
 THEME = dict(wall=(0.06, 0.09, 0.21), trim=(0.35, 0.9, 1.0), floor=(0.05, 0.08, 0.16))
 
 # ------------------------------------------------------------ materials --
-TILE = pattern("ceramic", (0.46, 0.45, 0.56), "tiles", size=(0.3, 0.3), line=0.022, line_col=(0.12, 0.12, 0.16), plane="XZ")
+TILE = pattern("ceramic", (0.3, 0.3, 0.4), "tiles", size=(0.3, 0.3), line=0.022, line_col=(0.12, 0.12, 0.16), plane="XZ")
 MOSAIC = pattern("ceramic", (0.5, 0.04, 0.32), "checker", size=(0.1, 0.1), line=0.012, line_col=(0.02, 0.35, 0.42), plane="XZ")
 FLOOR = pattern("ceramic", (0.62, 0.62, 0.66), "checker", size=(0.45, 0.45), line=0.015, line_col=(0.03, 0.03, 0.04), plane="XY")
 PORCELAIN = M("ceramic", (0.78, 0.8, 0.84))
 CHROME = M("chrome", (0.72, 0.74, 0.8))
 STEEL = M("metal", (0.5, 0.52, 0.56))
-LAMINATE = M("plastic", (0.3, 0.025, 0.2), rough=0.2, wear=0.35, grime=0.6)
+LAMINATE = M("plastic", (0.2, 0.02, 0.15), rough=0.35, wear=0.35, grime=0.6)
 MARBLE = M("marble", (0.08, 0.08, 0.1), color2=(0.5, 0.5, 0.55))
 COPPER = M("metal", (0.55, 0.25, 0.12), rough=0.35)
 IRON = M("paint", (0.03, 0.03, 0.035), wear=0.8)
@@ -44,7 +44,7 @@ OCC_RED = glow((1.0, 0.1, 0.1), 3.0)
 OCC_GREEN = glow((0.2, 1.0, 0.3), 3.0)
 NEON_C = glow((0.3, 0.9, 1.0), 4.0)
 NEON_P = glow((1.0, 0.25, 0.65), 4.0)
-SHEEN = glow((0.75, 0.85, 1.0), 0.6, base=(0.4, 0.45, 0.5))
+SHEEN = glow((0.75, 0.85, 1.0), 0.35, base=(0.3, 0.33, 0.38))
 WATER = glass((0.6, 0.85, 1.0), alpha=0.5)
 MIST = glass((0.85, 1.0, 0.9), alpha=0.3, rough=0.6)
 PUCK = M("plastic", (0.05, 0.3, 0.8), rough=0.5)
@@ -141,8 +141,7 @@ for i, bx in enumerate((11.75, 13.3)):
     box((1.35, 0.01, 2.05), (bx, WALL - 0.005, 3.95), MIRROR_HALO)
     box((1.25, 0.05, 1.95), (bx, WALL - 0.04, 3.95), BLACK, bev=0.03)
     box((1.2, 0.02, 1.9), (bx, WALL - 0.07, 3.95), MIRROR)
-    for k, (dx, ww) in enumerate(((-0.2, 0.14), (0.1, 0.05))):
-        box((ww, 0.01, 1.4), (bx + dx, WALL - 0.085, 3.95), SHEEN, rot=(0, 0.5, 0))
+    box((0.05, 0.01, 1.3), (bx - 0.2, WALL - 0.085, 4.0), SHEEN, rot=(0, 0.5, 0))
     # soap pump
     lathe([(0.09, 0.0), (0.09, 0.25), (0.03, 0.3)], (bx + 0.55, WALL - 0.45, 2.16), M("plastic", (0.6, 0.1, 0.35), rough=0.1), verts=10)
     rod((bx + 0.55, WALL - 0.45, 2.46), (bx + 0.55, WALL - 0.6, 2.5), 0.015, CHROME, verts=4)
@@ -228,5 +227,18 @@ for k in range(2):
     mp = pivot("mist_%d" % k, (AF[0], WALL - 0.3, AF[1] + 0.25))
     ball(0.1, (AF[0], WALL - 0.3, AF[1] + 0.25), MIST, seg=8, rings=6, parent=mp)
     puff(mp, rise=0.5, grow=3.0, start=10 + k * 8, life=40, drift=-0.3)
+
+# a no-smoking sign over the urinals and a CCTV camera panning from the corner
+box((0.9, 0.04, 0.9), (8.85, WALL - 0.02, 6.1), M("plastic", (0.8, 0.8, 0.8), rough=0.4), bev=0.02)
+torus(0.33, 0.04, (8.85, WALL - 0.05, 6.1), M("plastic", (0.7, 0.03, 0.03), rough=0.4), rot=(math.pi / 2, 0, 0), major_segments=20, minor_segments=4)
+box((0.5, 0.02, 0.1), (8.85, WALL - 0.05, 6.1), BLACK)
+box((0.66, 0.02, 0.07), (8.85, WALL - 0.06, 6.1), M("plastic", (0.7, 0.03, 0.03), rough=0.4), rot=(0, 0.785, 0))
+box((0.3, 0.3, 0.1), (14.6, WALL - 0.15, 6.95), BLACK)
+rod((14.6, WALL - 0.2, 6.95), (14.6, WALL - 0.45, 6.85), 0.04, BLACK, verts=6)
+cam = pivot("cctv", (14.6, WALL - 0.45, 6.85))
+box((0.25, 0.6, 0.25), (14.6, WALL - 0.7, 6.8), M("plastic", (0.7, 0.7, 0.72), rough=0.35), rot=(0.25, 0, 0), bev=0.04, parent=cam)
+ball(0.03, (14.55, WALL - 1.0, 6.9), SENSOR, seg=6, rings=4, parent=cam)
+cam.rotation_euler = (0, 0, -0.5)
+swing(cam, "Z", amp=0.5)
 
 finish("backdrop_toilet1", windows=WINDOWS, theme=THEME)

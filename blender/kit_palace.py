@@ -641,6 +641,15 @@ def finish(name, tex, budget, strip=99.0, windows=None, wall=(0.10, 0.04, 0.14))
                 if max(dims) < strip:
                     for md in [md for md in o.modifiers if md.type == "BEVEL"]:
                         o.modifiers.remove(md)
+    # join() keeps the first object's transform: a joined mesh would carry
+    # e.g. the floor slab's (15, 2, 0.02) scale, and the bake's smart UV
+    # project, which works in object space, then wastes most of the atlas.
+    # Apply rotation and scale everywhere first.
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in all_meshes():
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = all_meshes()[0]
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True, isolate_users=True)
     if os.environ.get("PALACE_TOP"):
         dg = bpy.context.evaluated_depsgraph_get()
         rows = []
@@ -659,6 +668,11 @@ def finish(name, tex, budget, strip=99.0, windows=None, wall=(0.10, 0.04, 0.14))
             agg[n.split(".")[0]] = agg.get(n.split(".")[0], 0) + t
         print("BYKIND", sorted(agg.items(), key=lambda kv: -kv[1])[:12])
     join_static("decor")
+    bpy.ops.object.select_all(action="DESELECT")
+    for o in all_meshes():
+        o.select_set(True)
+    bpy.context.view_layer.objects.active = all_meshes()[0]
+    bpy.ops.object.transform_apply(location=False, rotation=True, scale=True, isolate_users=True)
     tris = tri_count()
     pivots = [o.name for o in bpy.context.scene.objects if o.type == "EMPTY"]
     mats = {s.material.name for o in all_meshes() for s in o.material_slots if s.material}
@@ -671,14 +685,51 @@ def finish(name, tex, budget, strip=99.0, windows=None, wall=(0.10, 0.04, 0.14))
     tex = int(os.environ.get("PALACE_TEX", tex))
     dbg = os.environ.get("PALACE_UVDEBUG")
     if dbg:
-        bake_textures(name, tex=tex)
+        names = []
         for o in all_meshes():
-            o.select_set(True)
-        bpy.context.view_layer.objects.active = all_meshes()[0]
-        bpy.ops.object.mode_set(mode="EDIT")
-        bpy.ops.mesh.select_all(action="SELECT")
-        bpy.ops.uv.export_layout(filepath=dbg, size=(1024, 1024), opacity=0.5, export_all=True)
-        bpy.ops.object.mode_set(mode="OBJECT")
+            at = o.data.attributes.new("origmat", "INT", "FACE")
+            vals = []
+            for p in o.data.polygons:
+                mn = o.material_slots[p.material_index].material.name if o.material_slots else "-"
+                if mn not in names:
+                    names.append(mn)
+                vals.append(names.index(mn))
+            at.data.foreach_set("value", vals)
+        big = []
+        for o in all_meshes():
+            for p in o.data.polygons:
+                big.append((p.area, o.name, o.material_slots[p.material_index].material.name if o.material_slots else "-", tuple(round(v, 2) for v in o.matrix_world @ p.center), len(p.vertices)))
+        big.sort(reverse=True)
+        for r in big[:15]:
+            print("BIGFACE %.2f %s %s %s n=%d" % r)
+        if os.environ.get("PALACE_UVDEBUG") == "faces":
+            return
+        bake_textures(name, tex=tex)
+        img = [im for im in bpy.data.images if im.name.endswith("_albedo")][0]
+        w, h = img.size
+        px = list(img.pixels)
+        import collections
+        tot, blk = collections.Counter(), collections.Counter()
+        for o in all_meshes():
+            me = o.data
+            uvl = me.uv_layers.active
+            if uvl is None:
+                continue
+            at = me.attributes["origmat"].data
+            for p in me.polygons:
+                mn = names[at[p.index].value]
+                us = [uvl.data[li].uv for li in p.loop_indices]
+                cu = sum(u.x for u in us) / len(us)
+                cv = sum(u.y for u in us) / len(us)
+                x = min(max(int(cu * w), 0), w - 1)
+                y = min(max(int(cv * h), 0), h - 1)
+                c = px[(y * w + x) * 4:(y * w + x) * 4 + 3]
+                tot[mn] += p.area
+                if max(c) < 0.004:
+                    blk[mn] += p.area
+        for mn in sorted(tot, key=lambda k: -blk[k]):
+            if blk[mn] > 0:
+                print("UVDBG %-22s black %.2f of %.2f m2" % (mn, blk[mn], tot[mn]))
         return
     export(name, tex=tex)
 
@@ -1164,10 +1215,8 @@ def chandelier(name, x, y, drop=1.0, r=0.6, arms=8, tiers=2, m_metal=None, spin_
     lathe([(0.0, 0), (0.16, 0), (0.12, -0.05), (0.0, -0.06)], (x, y, 0), m_metal, segs=10, parent=p)
     top = -drop
     if chain:
-        n = max(int(drop * 6), 2)
-        for i in range(n):
-            z0 = -0.05 - i * (drop - 0.05) / n
-            torus(0.025, 0.006, (x, y, z0 - 0.03), m_metal, rot=(0 if i % 2 else math.pi / 2, math.pi / 2, 0), major_segments=6, minor_segments=3, parent=p)
+        tube([(x, y, -0.05), (x, y, top + 0.35)], 0.012, m_metal, verts=4, caps=False, parent=p)
+        tube([(x, y, -0.05), (x, y, top + 0.35)], 0.022, M.velvet_red, verts=3, caps=False, parent=p, twist=0.5)
     # body: urn column
     lathe([(0.03, 0.35), (0.07, 0.3), (0.05, 0.15), (0.11, 0.0), (0.08, -0.1), (0.03, -0.2), (0.06, -0.3), (0.0, -0.38)], (x, y, top), m_metal, segs=10, parent=p)
     for t in range(tiers):
@@ -1207,3 +1256,155 @@ def cornice(x0, x1, y, m, m_trim=None, h=0.3, d=0.25, light=None):
         box((x1 - x0, 0.03, 0.03), ((x0 + x1) / 2, y - 0.01, -h * 0.3), m_trim)
     if light is not None:
         tube([(x0 + 0.1, y + d * 0.7, -h - 0.02), (x1 - 0.1, y + d * 0.7, -h - 0.02)], 0.015, light, verts=4)
+
+
+# ------------------------------------------------------------ bar & lounge --
+def modern_sofa(x, y, w=2.2, m=None, d=0.85, h=0.72, legs=None, cushions=2):
+    """A low lounge sofa: plinth, loose seat and back cushions, slim arms,
+    brass legs. x = centre, y = front edge."""
+    m = m or M.velvet_teal
+    legs = legs or M.brass
+    x0, x1, yb = x - w / 2, x + w / 2, y + d
+    for fx in (x0 + 0.08, x1 - 0.08):
+        for fy in (y + 0.08, yb - 0.08):
+            tube([(fx, fy, 0.0), (fx, fy, 0.12)], 0.015, legs, verts=5)
+    slab_at(x0, x1, y, yb, 0.12, 0.36, m)
+    cw = (w - 0.3) / cushions
+    for i in range(cushions):
+        a = x0 + 0.15 + i * cw
+        pillow(a + 0.01, a + cw - 0.01, y + 0.02, yb - 0.25, 0.47, 0.11, m, nx=2, nz=2, facing="up", sag=0.02)
+        pillow(a + 0.02, a + cw - 0.02, 0.4, h, yb - 0.3, 0.14, m, nx=2, nz=2)
+    slab_at(x0 + 0.1, x1 - 0.1, yb - 0.16, yb, 0.36, h - 0.05, m)
+    for (a, b) in ((x0, x0 + 0.15), (x1 - 0.15, x1)):
+        slab_at(a, b, y, yb, 0.36, 0.58, m)
+        tube([((a + b) / 2, y + 0.02, 0.58), ((a + b) / 2, yb - 0.02, 0.58)], 0.075, m, verts=8)
+
+
+def bar_stool(x, y, h=0.78, m_seat=None, m_metal=None):
+    """A chrome pedestal stool with a leather seat; (x, y) centre."""
+    m_seat = m_seat or M.leather_black
+    m_metal = m_metal or M.chrome
+    lathe([(0.2, 0), (0.2, 0.015), (0.05, 0.04), (0.03, 0.06), (0.028, h - 0.08), (0.08, h - 0.04)], (x, y, 0), m_metal, segs=10, cap=False)
+    torus(0.16, 0.012, (x, y, 0.3), m_metal, major_segments=10, minor_segments=3)
+    lathe([(0.0, 0), (0.19, 0.0), (0.21, 0.04), (0.19, 0.08), (0.0, 0.09)], (x, y, h - 0.05), m_seat, segs=12)
+
+
+def cocktail(x, y, z, kind=0, m_drink=None):
+    """A glass: 0 martini, 1 coupe, 2 highball."""
+    g = M.glass_bottle_clear
+    if kind == 0:
+        lathe([(0.03, 0), (0.004, 0.005), (0.004, 0.08), (0.055, 0.14)], (x, y, z), g, segs=6, cap=False)
+        lathe([(0.0, 0.1), (0.045, 0.13)], (x, y, z), m_drink or M.n_pink, segs=6, cap=False)
+    elif kind == 1:
+        lathe([(0.03, 0), (0.004, 0.005), (0.004, 0.07), (0.03, 0.08), (0.045, 0.11)], (x, y, z), g, segs=6, cap=False)
+        lathe([(0.0, 0.085), (0.04, 0.1)], (x, y, z), m_drink or M.n_amber, segs=6, cap=False)
+    else:
+        lathe([(0.032, 0), (0.035, 0.14)], (x, y, z), g, segs=6, cap=False)
+        lathe([(0.0, 0.01), (0.03, 0.01), (0.032, 0.1), (0.0, 0.1)], (x, y, z), m_drink or M.n_cyan, segs=6)
+
+
+def speaker(x, y, w=0.55, h=1.2, d=0.45, name=None, beat_phase=0.0):
+    """A PA cabinet with a pulsing woofer (a keyed pivot) and a horn."""
+    slab_at(x - w / 2, x + w / 2, y, y + d, 0.0, h, M.black_metal)
+    box((w - 0.06, 0.012, h - 0.06), (x, y - 0.004, h / 2), M.acoustic)
+    for k, zz in enumerate((h * 0.3, h * 0.66) if h > 1.0 else (h * 0.4,)):
+        r = w * 0.36
+        lathe([(r * 1.08, 0), (r * 1.08, -0.01), (0.0, -0.012)], (x, y - 0.006, zz), M.plastic_grey, segs=12, rot=(math.pi / 2, 0, 0), cap=False)
+        p = pivot("%s_%d" % (name or "woofer", k), (x, y - 0.01, zz))
+        lathe([(0.0, 0.05), (r * 0.25, 0.04), (r, -0.005)], (x, y - 0.01, zz), M.rubber, segs=12, rot=(math.pi / 2, 0, 0), parent=p, cap=False)
+        lathe([(0.0, 0.07), (r * 0.22, 0.05)], (x, y - 0.01, zz), M.plastic_black, segs=8, rot=(math.pi / 2, 0, 0), parent=p, cap=False)
+        merge_children(p, p.name + "_mesh")
+        vals = []
+        for i in range(16):
+            s = 1.0 + (0.12 if i % 2 == 0 else 0.0) * (1.0 if (i // 2 + int(beat_phase)) % 4 else 0.5)
+            vals.append((s, 1.0 + (s - 1.0) * 3, s))
+        keys_loop(p, "scale", vals, interp="LINEAR")
+    box((w * 0.5, 0.02, 0.1), (x, y - 0.01, h - 0.1), M.plastic_grey)
+    box((0.06, 0.015, 0.02), (x + w / 2 - 0.08, y - 0.012, 0.08), M.n_cyan)
+
+
+RGB = {"pink": (1.0, 0.18, 0.62), "magenta": (0.9, 0.08, 0.85), "cyan": (0.2, 0.88, 1.0), "violet": (0.55, 0.22, 1.0),
+       "amber": (1.0, 0.62, 0.18), "gold": (1.0, 0.8, 0.35), "red": (1.0, 0.06, 0.08), "green": (0.25, 1.0, 0.45),
+       "white": (0.95, 0.92, 1.0), "blue": (0.15, 0.35, 1.0), "orange": (1.0, 0.4, 0.08), "mint": (0.3, 1.0, 0.78)}
+
+
+def anim_neon(rgb, kind="screen", strength=None):
+    """An emissive material the game animates (anim_screen scanlines or
+    anim_marquee chasing dots); `rgb` is a colour or an RGB key."""
+    if isinstance(rgb, str):
+        rgb = RGB[rgb]
+    s = strength if strength is not None else (1.6 if kind == "screen" else 3.0)
+    return pbr("screen", tuple(c * 0.3 for c in rgb), emit=rgb, strength=s, name="anim_" + kind)
+
+
+def quad_dots(pts, y, size, m, diamond=False, name="dots"):
+    """Many small camera-facing squares (2 triangles each) in one mesh: bulbs
+    and LEDs. `pts` are (x, z) at depth y."""
+    vs, fs = [], []
+    h = size / 2
+    for (px, pz) in pts:
+        k = len(vs)
+        if diamond:
+            vs += [(px, y, pz - h), (px + h, y, pz), (px, y, pz + h), (px - h, y, pz)]
+        else:
+            vs += [(px - h, y, pz - h), (px + h, y, pz - h), (px + h, y, pz + h), (px - h, y, pz + h)]
+        fs.append((k, k + 1, k + 2, k + 3))
+    return mesh_obj(vs, fs, m, name, False, closed=False)
+
+
+def rect_pts(x0, x1, z0, z1, pitch):
+    """Points around a rectangle's border every `pitch`."""
+    pts = []
+    for (a, b) in (((x0, z0), (x1, z0)), ((x1, z0), (x1, z1)), ((x1, z1), (x0, z1)), ((x0, z1), (x0, z0))):
+        L = math.hypot(b[0] - a[0], b[1] - a[1])
+        k = max(int(L / pitch), 1)
+        for i in range(k):
+            t = i / k
+            pts.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+    return pts
+
+
+def stanchions(points, m_post=None, m_rope=None, h=0.95, sag=0.14):
+    """Brass posts with velvet ropes sagging between consecutive points."""
+    m_post = m_post or M.brass
+    m_rope = m_rope or M.velvet_red
+    for (px, py) in points:
+        lathe([(0.15, 0), (0.15, 0.03), (0.05, 0.06), (0.025, 0.1), (0.022, h - 0.06), (0.04, h - 0.03), (0.0, h + 0.03)], (px, py, 0), m_post, segs=8)
+    for (a, b) in zip(points, points[1:]):
+        pts = []
+        for i in range(7):
+            t = i / 6
+            pts.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, h - 0.08 - sag * math.sin(t * math.pi)))
+        tube(pts, 0.022, m_rope, verts=5)
+
+
+def chip_stack(x, y, z, n, m, r=0.02):
+    lathe([(r, 0), (r, n * 0.0035), (0.0, n * 0.0035)], (x, y, z), m, segs=7)
+
+
+def flat_dots(pts, z, size, m, name="flat"):
+    """Small squares lying flat (facing up) at height z: board layouts."""
+    vs, fs = [], []
+    h = size / 2
+    for (px, py) in pts:
+        k = len(vs)
+        vs += [(px - h, py - h, z), (px + h, py - h, z), (px + h, py + h, z), (px - h, py + h, z)]
+        fs.append((k, k + 1, k + 2, k + 3))
+    return mesh_obj(vs, fs, m, name, False, closed=False)
+
+
+def ring_segments(cx, cy, z, r0, r1, n, mats, name="ring", parent=None, start=0.0, upright=False):
+    """A flat annulus split into n wedges cycling through `mats` (roulette
+    pockets, wheel segments). Facing up; with `upright`, it stands in the
+    wall plane facing the camera: (cx, cy) is then (x, z) and z is the depth."""
+    vs, fs, fm = [], [], []
+    P = (lambda u, v: (u, z, v)) if upright else (lambda u, v: (u, v, z))
+    for i in range(n):
+        a0 = start + TAU * i / n
+        a1 = start + TAU * (i + 1) / n
+        k = len(vs)
+        vs += [P(cx + math.cos(a0) * r0, cy + math.sin(a0) * r0), P(cx + math.cos(a0) * r1, cy + math.sin(a0) * r1),
+               P(cx + math.cos(a1) * r1, cy + math.sin(a1) * r1), P(cx + math.cos(a1) * r0, cy + math.sin(a1) * r0)]
+        fs.append((k, k + 1, k + 2, k + 3))
+        fm.append(i % len(mats))
+    return mesh_obj(vs, fs, list(mats), name, False, parent=parent, closed=False, face_mats=fm)

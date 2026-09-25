@@ -684,8 +684,8 @@ def wall_gun():
     cube((0.02, 0.03, 0.8), (0.465, -0.3, 1.0), amber, bevel=0)
     # cables from the bracket down into the wall, with a gland
     for k, (m, y) in enumerate(((P.rubber, -0.18), (pbr("rubber", (0.35, 0.12, 0.02), name="orange_cable"), 0.02), (P.rubber, 0.2))):
-        sweep([(0.2, y, 0.3), (0.2, y, 0.16), (0.14, y, 0.02), (0.05, y, -0.1 - k * 0.04), (0.0, y, -0.13 - k * 0.04)], 0.035, m, prof=6)
-        cyl(0.05, 0.05, (0.025, y, -0.13 - k * 0.04), P.dsteel, rot=(0, math.pi / 2, 0), verts=8, bevel=0)
+        sweep([(0.2, y, 0.3), (0.19, y, 0.2), (0.13, y, 0.1), (0.05, y, 0.06 + k * 0.03), (0.0, y, 0.06 + k * 0.03)], 0.03, m, prof=6)
+        cyl(0.045, 0.05, (0.025, y, 0.06 + k * 0.03), P.dsteel, rot=(0, math.pi / 2, 0), verts=8, bevel=0)
 
     # --- the gun (aimed in code) --------------------------------------------
     g = piv("gun", (GX, 0, GZ))
@@ -739,9 +739,16 @@ def wall_gun():
     fl.append(sphere(0.13, (3.56, 0, GZ), flare_m, segments=8, rings=6))
     for o in fl:
         hang(o, f)
-    merge_under(f, "flare_mesh")
-    f.scale = (0.01, 0.01, 0.01)
-    key(f, "fire", "scale", [(0, (0.01,) * 3), (1, (1.3, 1.1, 1.1)), (3, (0.9, 1.25, 1.25)), (5, (0.5, 0.6, 0.6)), (7, (0.01,) * 3), (12, (0.01,) * 3)], interp="LINEAR")
+    fm = merge_under(f, "flare_mesh")
+    # Hidden at rest: the mesh itself is shrunk 100x round the pivot (a glTF
+    # node's rest scale is not reliably the keyed one), the clip scales the
+    # pivot up to show it.
+    bpy.context.view_layer.update()
+    to_piv = fm.matrix_world.inverted() @ f.matrix_world
+    fm.data.transform(to_piv.inverted())
+    fm.data.transform(Matrix.Scale(0.01, 4))
+    fm.data.transform(to_piv)
+    key(f, "fire", "scale", [(0, (1,) * 3), (1, (130, 110, 110)), (3, (90, 125, 125)), (5, (50, 60, 60)), (7, (1,) * 3), (12, (1,) * 3)], interp="LINEAR")
     x0 = b.location.x
     key(b, "fire", "location", [(0, (x0, 0, 0)), (1, (x0 - 0.24, 0, 0)), (3, (x0 - 0.2, 0, 0)), (9, (x0 + 0.02, 0, 0)), (12, (x0, 0, 0))])
 
@@ -1001,31 +1008,31 @@ def button():
     text("PUSH", 0.055, (0, -0.668, 0.075), white, extrude=0.004, name="label")
 
     # collar: steel ring with a sloped warning-striped face
-    col = lathe([(0.66, 0.15), (0.66, 0.2), (0.62, 0.24), (0.52, 0.34), (0.5, 0.36), (0.44, 0.36), (0.44, 0.3)], P.steel,
-          segs=48, cap=False, band_mats=[0, 0, 3, 0, 0, 0], mats=(P.yellow, P.stripe_black, P.black), name="collar")
-    # the striped band: faces 2 get yellow/black by segment
-    for poly in col.data.polygons:
+    col = lathe([(0.72, 0.15), (0.72, 0.2), (0.68, 0.24), (0.58, 0.33), (0.56, 0.35), (0.51, 0.35), (0.51, 0.2)], P.steel,
+                segs=48, cap=False, band_mats=[0, 0, 3, 0, 0, 0], mats=(P.yellow, P.stripe_black, P.black), name="collar")
+    for poly in col.data.polygons:                  # the sloped band: 16 yellow/black blocks
         if poly.material_index == 3:
             a = math.atan2(poly.center.y, poly.center.x)
             poly.material_index = 1 if int((a + math.pi) / TAU * 16) % 2 == 0 else 2
-    torus(0.66, 0.018, (0, 0, 0.2), P.chrome, major_segments=40, minor_segments=4)
+    torus(0.72, 0.018, (0, 0, 0.2), P.chrome, major_segments=40, minor_segments=4)
     # chase LEDs round the collar
     for i in range(8):
         a = TAU * i / 8 + math.pi / 8
-        x, y = math.cos(a) * 0.64, math.sin(a) * 0.64
-        p = piv("led_%d" % (i + 1), (x, y, 0.2))
-        sphere(0.022, (x * 1.03, y * 1.03, 0.2), amber, segments=8, rings=5, parent=p)
+        x, y = math.cos(a) * 0.7, math.sin(a) * 0.7
+        p = piv("led_%d" % (i + 1), (x, y, 0.22))
+        sphere(0.024, (x * 1.03, y * 1.03, 0.22), amber, segments=8, rings=5, parent=p)
         blink(p, "idle", seconds=2.0, at=i * 0.25, length=0.2, lo=0.5, hi=1.4)
-    # bezel ring the cap travels in, with a red glow gasket
-    lathe([(0.44, 0.3), (0.5, 0.36), (0.48, 0.38), (0.43, 0.38), (0.42, 0.2)], P.chrome, segs=40, cap=False, name="bezel")
-    torus(0.43, 0.012, (0, 0, 0.365), red_glow, major_segments=40, minor_segments=3)
+    # chrome bezel the button travels in, with a red glow gasket
+    lathe([(0.51, 0.2), (0.51, 0.35), (0.535, 0.365), (0.52, 0.378), (0.495, 0.372), (0.495, 0.2)], P.chrome, segs=40, cap=False, name="bezel")
+    torus(0.497, 0.01, (0, 0, 0.372), red_glow, major_segments=40, minor_segments=3)
 
-    # the cap (pressed part)
-    t = piv("top", (0, 0, 0))                # button.gd sets its y to 0 or -0.15
-    lathe([(0.0, 0.2), (0.4, 0.2), (0.4, 0.41), (0.46, 0.43), (0.5, 0.47), (0.505, 0.5), (0.49, 0.54), (0.44, 0.59),
-           (0.34, 0.635), (0.2, 0.662), (0.0, 0.672)], red, segs=40, name="cap", parent=t,
-          band_mats=[0, 0, 0, 0, 0, 0, 0, 0, 0, 0])
-    torus(0.46, 0.01, (0, 0, 0.43), P.chrome, major_segments=40, minor_segments=3, parent=t)
+    # the button itself: a big domed arcade-style cap. button.gd moves the
+    # 'top' pivot between y = 0 and -0.15: pressed, its top sits flush with
+    # the bezel (and with the base collision box, 0.36 m).
+    t = piv("top", (0, 0, 0))
+    lathe([(0.0, 0.2), (0.488, 0.2), (0.488, 0.37), (0.482, 0.41), (0.46, 0.45), (0.41, 0.485), (0.3, 0.508), (0.16, 0.518), (0.0, 0.52)],
+          red, segs=40, name="cap", parent=t)
+    torus(0.33, 0.008, (0, 0, 0.505), red_glow, major_segments=32, minor_segments=3, parent=t)
     merge_under(t, "cap_mesh")
 
 
@@ -1175,7 +1182,7 @@ def air_fan():
     sphere(0.022, (0.53, -1.115, 0.53), green, segments=8, rings=5, parent=p)
     blink(p, "idle", seconds=2.0, at=0.0, length=1.0, lo=0.6, hi=1.2)
     rbox((0.07, 0.04, 0.12), (0.68, -1.12, 0.45), pbr("plastic", (0.7, 0.03, 0.03), name="switch_red"), r=0.012)
-    sweep([(0.9, 0.6, 0.35), (1.05, 0.62, 0.3), (1.12, 0.7, 0.1), (1.2, 0.95, 0.03), (1.3, 1.3, 0.03)], 0.035, P.rubber, prof=6)
+    sweep([(0.8, 1.0, 0.3), (0.82, 1.08, 0.24), (0.85, 1.12, 0.08), (0.88, 1.25, 0.035), (0.9, 1.5, 0.035)], 0.035, P.rubber, prof=6)
 
 
 def treadmill():
@@ -1301,8 +1308,8 @@ def rope_link():
         for i in range(n + 1):
             x = -L / 2 + L * i / n
             a = TAU * (x + 0.5) + TAU * s / 3
-            pts.append((x, math.cos(a) * 0.058, math.sin(a) * 0.058))
-        parts.append(sweep(pts, 0.066, pink if s == 0 else navy, prof=5, cap=False, angle=100, name="strand"))
+            pts.append((x, math.cos(a) * 0.064, math.sin(a) * 0.064))
+        parts.append(sweep(pts, 0.074, pink if s == 0 else navy, prof=5, cap=False, angle=100, name="strand"))
     join(parts, "rope")
 
 
@@ -1331,9 +1338,10 @@ def fire_zone():
     `idle`; their 'haz_flame_*' materials become an animated shader in
     fire_zone.gd) and embers rising on 'ember_*' pivots."""
     P = palette()
+    DZ = -0.17                     # the clump rests on the 0.86 m ball's bottom
     char = pbr("wood", (0.035, 0.022, 0.016), color2=(0.008, 0.006, 0.005), rough=0.85, bump=1.0, name="charcoal")
     burnt = pbr("paint", (0.06, 0.035, 0.03), wear=0.9, grime=1.0, name="burnt_paint")
-    ember_m = pbr("neon", (1.0, 0.32, 0.04), strength=5.0, name="ember_glow")
+    ember_m = pbr("neon", (1.0, 0.22, 0.03), strength=2.2, name="ember_glow")
     hot = pbr("neon", (1.0, 0.6, 0.15), strength=8.0, name="ember_hot")
     f_outer = pbr("neon", (1.0, 0.28, 0.04), strength=4.0, name="haz_flame_outer")
     f_mid = pbr("neon", (1.0, 0.55, 0.1), strength=5.0, name="haz_flame_mid")
@@ -1386,12 +1394,15 @@ def fire_zone():
         osc(p, "idle", "scale", 1, 0.1, seconds=2.0, cycles=2 + k % 2, phase=ph + 1.0, base=1.0)
         osc(p, "idle", "rotation_euler", 1, 0.12, seconds=2.0, cycles=2, phase=ph)
 
+    for o in list(bpy.context.scene.objects):
+        if o.parent is None:
+            o.location.z += DZ
     # embers rising and fading
     for k in range(9):
         a = TAU * k / 9
         x, y = math.cos(a) * 0.4, math.sin(a) * 0.25
-        p = piv("ember_%d" % (k + 1), (x, y, 0.1))
-        sphere(0.03, (x, y, 0.1), hot, segments=5, rings=3, parent=p)
+        p = piv("ember_%d" % (k + 1), (x, y, 0.1 + DZ))
+        sphere(0.03, (x, y, 0.1 + DZ), hot, segments=5, rings=3, parent=p)
         end = 60
         s = (k * 7) % end
         rise = 1.3 + 0.2 * (k % 3)
@@ -1399,7 +1410,7 @@ def fire_zone():
         keys_l, keys_s = [], []
         for f in range(0, end + 1, 6):
             t = ((f - s) % end) / end
-            keys_l.append((f, (x + drift * t, y, 0.1 + rise * t)))
+            keys_l.append((f, (x + drift * t, y, 0.1 + DZ + rise * t)))
             keys_s.append((f, (max(0.01, 1.0 - t),) * 3 if t > 0.05 else (0.01,) * 3))
         key(p, "idle", "location", keys_l, interp="LINEAR")
         key(p, "idle", "scale", keys_s, interp="LINEAR")
@@ -1588,16 +1599,16 @@ def boss_bat():
     and 'heart_glow' (the code flares/dims them). Clips: `idle` (2 s, two
     wing beats with the membrane folding on the upstroke, body bob, blink,
     ear twitch) and `fall_loop` (wings flailing as it drops). Centred."""
-    fur = pbr("carpet", (0.055, 0.028, 0.075), color2=(0.11, 0.05, 0.14), bump=0.8, name="bat_fur")
-    fur_light = pbr("carpet", (0.2, 0.09, 0.2), color2=(0.3, 0.14, 0.28), bump=0.8, name="bat_fur_light")
-    skin = pbr("skin", (0.17, 0.05, 0.14), rough=0.5, bump=0.3, name="bat_membrane")
-    skin_pink = pbr("skin", (0.5, 0.15, 0.26), rough=0.45, name="bat_skin_pink")
-    bone_skin = pbr("leather", (0.07, 0.03, 0.07), rough=0.45, name="bat_bone_skin")
-    armour = pbr("paint", (0.09, 0.05, 0.13), name="bat_armour")
+    fur = pbr("carpet", (0.1, 0.045, 0.15), color2=(0.2, 0.1, 0.27), bump=0.8, name="bat_fur")
+    fur_light = pbr("carpet", (0.36, 0.18, 0.36), color2=(0.46, 0.24, 0.42), bump=0.8, name="bat_fur_light")
+    skin = pbr("skin", (0.3, 0.06, 0.22), rough=0.68, bump=0.4, name="bat_membrane")
+    skin_pink = pbr("skin", (0.7, 0.26, 0.38), rough=0.5, name="bat_skin_pink")
+    bone_skin = pbr("leather", (0.12, 0.05, 0.13), rough=0.5, name="bat_bone_skin")
+    armour = pbr("paint", (0.16, 0.07, 0.25), name="bat_armour")
     chrome = pbr("chrome", (0.8, 0.82, 0.86), name="bat_chrome")
     ivory = pbr("ceramic", (0.86, 0.82, 0.72), rough=0.25, name="bat_ivory")
     mouth = pbr("plastic", (0.08, 0.0, 0.02), rough=0.5, name="bat_mouth")
-    eye_m = pbr("neon", (1.0, 0.72, 0.08), strength=6.0, name="bat_eyes")
+    eye_m = pbr("neon", (1.0, 0.78, 0.1), strength=7.0, name="bat_eyes")
     pupil = pbr("plastic", (0.01, 0.0, 0.01), rough=0.2, name="bat_pupil")
     heart_m = pbr("neon", (1.0, 0.1, 0.55), strength=5.0, name="bat_heart")
     edge_m = pbr("neon", (1.0, 0.12, 0.6), strength=2.0, name="bat_wing_edge")
