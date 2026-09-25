@@ -17,12 +17,35 @@ import sys
 ROOT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
 
+def size_limit(path):
+    """Largest size a baked map keeps in the game. The camera sees about
+    61 px per metre: a 1024 atlas already matches that over a whole room, and
+    256 still beats it on a 1-2 m prop. Normal and AO/roughness/metal maps
+    carry softer detail, so they go one step smaller. The bakes stay bigger
+    in the repository (and the APK stays under 100 MB)."""
+    name = os.path.basename(path)
+    kind = re.search(r"_(albedo|orm|normal)\.", name).group(1)
+    if name.startswith(("backdrop_", "skybridge")):
+        size = 1024
+    elif name.startswith("ceiling_"):
+        size = 512
+    elif name.startswith("player_"):
+        size = 1024
+    else:
+        size = 256     # still ~100 texels per metre on a 1-2 m prop
+    if kind != "albedo":
+        size //= 2
+    return size
+
+
 def fix(path):
     s = open(path).read()
-    normal = re.search(r"_normal\.(jpg|jpeg|png)\.import$", path) is not None
     wanted = {
         "compress/mode": "2",
-        "compress/normal_map": "1" if normal else "2",
+        # Normal maps as ordinary 4 bpp textures: Godot rebuilds the normal's
+        # Z from X and Y anyway, and the two-channel format costs twice as much.
+        "compress/normal_map": "2",
+        "process/size_limit": str(size_limit(path)),
         "mipmaps/generate": "true",
         "detect_3d/compress_to": "0",
         "roughness/mode": "0",

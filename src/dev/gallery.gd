@@ -5,6 +5,7 @@ extends Node3D
 ##     --rendering-method mobile --resolution 540x960 -- \
 ##     --items=res://src/spawnables/toilet.tscn,res://src/actors/bomb.tscn \
 ##     [--theme=room1] [--zoom=8] [--game-scale] [--turn=25] [--at=0.8] \
+##     [--mirror (every other item mirrored)] [--no-normal] \
 ##     --screenshot=/path/shot.png:2.5
 ## --zoom is the view width in metres (default fits the items); --game-scale
 ## uses the real in-game camera (17.6 m wide from 30 m); --turn yaws every
@@ -74,6 +75,44 @@ func _ready() -> void:
 		var floor_y := -float(FLOOR_ROW)
 		n.position = Vector3(x + widths[i] * 0.5 - aabb.get_center().x, floor_y - aabb.position.y if aabb.position.y < -0.05 or aabb.position.y > 0.05 else floor_y, 0.0)
 		n.rotation.y = turn
+		if args.has("mirror") and i % 2 == 1:
+			n.scale.x = -1.0
+		if args.has("plain"):
+			var white := StandardMaterial3D.new()
+			white.albedo_color = Color(0.9, 0.9, 0.9)
+			for m in n.find_children("*", "MeshInstance3D", true, false):
+				(m as MeshInstance3D).material_override = white
+		if args.has("albedo-only"):
+			for m in n.find_children("*", "MeshInstance3D", true, false):
+				var mi := m as MeshInstance3D
+				for si in mi.mesh.get_surface_count():
+					var mat := mi.get_active_material(si)
+					if mat is BaseMaterial3D and (mat as BaseMaterial3D).albedo_texture != null:
+						var bare := StandardMaterial3D.new()
+						bare.albedo_texture = (mat as BaseMaterial3D).albedo_texture
+						mi.set_surface_override_material(si, bare)
+		if args.has("no-orm"):
+			for m in n.find_children("*", "MeshInstance3D", true, false):
+				var mi := m as MeshInstance3D
+				for si in mi.mesh.get_surface_count():
+					var mat := mi.get_active_material(si)
+					if mat is BaseMaterial3D:
+						var copy := mat.duplicate() as BaseMaterial3D
+						copy.metallic_texture = null
+						copy.roughness_texture = null
+						copy.ao_enabled = false
+						copy.metallic = 0.0
+						copy.roughness = 0.4
+						mi.set_surface_override_material(si, copy)
+		if args.has("no-normal"):
+			for m in n.find_children("*", "MeshInstance3D", true, false):
+				var mi := m as MeshInstance3D
+				for si in mi.mesh.get_surface_count():
+					var mat := mi.get_active_material(si)
+					if mat is BaseMaterial3D and (mat as BaseMaterial3D).normal_enabled:
+						var copy := mat.duplicate() as BaseMaterial3D
+						copy.normal_enabled = false
+						mi.set_surface_override_material(si, copy)
 		x += widths[i]
 	await get_tree().process_frame
 	for i in _items.size():

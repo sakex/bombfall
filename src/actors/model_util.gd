@@ -131,6 +131,15 @@ static func animate_materials(root: Node) -> void:
 			var material := mi.get_active_material(i)
 			if material == null:
 				continue
+			# Blender exports every material double-sided. On a double-sided
+			# material the renderer flips the normal of faces it thinks point
+			# away, and on mirrored props (the random flip) it guessed wrong
+			# and lit the outside as if it were the inside: a white toilet went
+			# near black. The baked models are closed and face the camera, so
+			# single-sided is correct (and halves their shading work).
+			if material is BaseMaterial3D and material.resource_name.ends_with("_baked") \
+					and (material as BaseMaterial3D).cull_mode == BaseMaterial3D.CULL_DISABLED:
+				(material as BaseMaterial3D).cull_mode = BaseMaterial3D.CULL_BACK
 			for prefix in ANIM_SHADERS:
 				if material.resource_name.begins_with(prefix):
 					mi.set_surface_override_material(i, _anim_material(prefix, material))

@@ -13,8 +13,8 @@ hotel's windows, and a single-language GDScript code base.
 | | | |
 |---|---|---|
 | ![Menu](docs/screenshots/menu.png) | ![Gameplay](docs/screenshots/gameplay.png) | ![Casino](docs/screenshots/casino.png) |
-| ![Skybridge](docs/screenshots/skybridge.png) | ![Hacker den](docs/screenshots/hacker.png) | ![Gym](docs/screenshots/gym.png) |
-| ![Vault](docs/screenshots/vault.png) | ![City](docs/screenshots/city.png) | ![Player](docs/screenshots/player.png) |
+| ![Skybridge](docs/screenshots/skybridge.png) | ![Sky bar](docs/screenshots/rich2.png) | ![Arcade](docs/screenshots/arcade.png) |
+| ![Hacker den](docs/screenshots/hacker.png) | ![Vault](docs/screenshots/vault.png) | ![Player](docs/screenshots/player.png) |
 
 ## Play it
 
