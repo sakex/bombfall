@@ -205,9 +205,16 @@ def _noise(nt, vec, scale, detail=4.0, rough=0.55, stretch=None):
     n.inputs["Detail"].default_value = detail
     n.inputs["Roughness"].default_value = rough
     if stretch is not None:
+        # Rotate first, then stretch: the Mapping node scales before it
+        # rotates, and a stretch along an object axis turns into blotches on
+        # every face square to that axis. A diagonal stretch reads as streaks
+        # on all faces.
+        r = _node(nt, "ShaderNodeMapping")
+        r.inputs["Rotation"].default_value = (0.7, 0.45, 0.9)
+        nt.links.new(vec, r.inputs["Vector"])
         m = _node(nt, "ShaderNodeMapping")
         m.inputs["Scale"].default_value = stretch
-        nt.links.new(vec, m.inputs["Vector"])
+        nt.links.new(r.outputs[0], m.inputs["Vector"])
         vec = m.outputs[0]
     nt.links.new(vec, n.inputs["Vector"])
     return n.outputs["Fac"]
@@ -691,9 +698,9 @@ def export(name, out_dir=None, preview_dir=None, tex=None, ground=None, bake=Tru
         export_normals=True,
         export_texcoords=True,
     )
-    tris = sum(len(o.data.polygons) for o in all_meshes())
+    tris = sum(len(p.vertices) - 2 for o in all_meshes() for p in o.data.polygons)
     clips = sorted({t.name for o in bpy.context.scene.objects if o.animation_data for t in o.animation_data.nla_tracks})
-    print("EXPORTED %s (%d faces, %d bytes, clips=%s)" % (path, tris, os.path.getsize(path), ",".join(clips) or "-"))
+    print("EXPORTED %s (%d tris, %d bytes, clips=%s)" % (path, tris, os.path.getsize(path), ",".join(clips) or "-"))
     if preview_dir:
         render_preview(name, preview_dir)
 
@@ -974,9 +981,27 @@ def render_preview(name, preview_dir, size=384, samples=40):
         ld.shadow_soft_size = radius * 0.4
         lo_ = _link(bpy.data.objects.new("preview_light", ld))
         lo_.location = centre + mathutils.Vector(pos) * radius * 2.2
+    # A dusk gradient (like the game's neon sky) so chrome and gold reflect
+    # something instead of rendering black; the camera still sees plum.
     scn.world = scn.world or bpy.data.worlds.new("w")
     scn.world.use_nodes = True
-    scn.world.node_tree.nodes["Background"].inputs[0].default_value = (0.03, 0.015, 0.045, 1.0)
+    wt = scn.world.node_tree
+    bg = wt.nodes["Background"]
+    tc = wt.nodes.new("ShaderNodeTexCoord")
+    sep = wt.nodes.new("ShaderNodeSeparateXYZ")
+    ramp = wt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].color = (0.05, 0.1, 0.14, 1.0)
+    ramp.color_ramp.elements[1].color = (0.12, 0.04, 0.22, 1.0)
+    mid = ramp.color_ramp.elements.new(0.52)
+    mid.color = (0.6, 0.18, 0.4, 1.0)
+    wt.links.new(tc.outputs["Generated"], sep.inputs[0])
+    wt.links.new(sep.outputs["Z"], ramp.inputs[0])
+    lp = wt.nodes.new("ShaderNodeLightPath")
+    mix = wt.nodes.new("ShaderNodeMixRGB")
+    mix.inputs[2].default_value = (0.03, 0.015, 0.045, 1.0)
+    wt.links.new(lp.outputs["Is Camera Ray"], mix.inputs[0])
+    wt.links.new(ramp.outputs[0], mix.inputs[1])
+    wt.links.new(mix.outputs[0], bg.inputs[0])
     scn.render.filepath = os.path.join(preview_dir, name + ".png")
     bpy.ops.render.render(write_still=True)
     print("PREVIEW %s" % scn.render.filepath)

@@ -133,7 +133,12 @@ func set_cell(cx: int, row: int, kind: int) -> void:
 	cell.chunk = chunk
 	cell.instance = chunk.free_slots.pop_back()
 	chunk.used += 1
-	var xform := Transform3D(Basis(), Grid.cell_center(cx, row))
+	var basis := Basis()
+	if kind == Kind.JUNK and randi() % 2 == 0:
+		# Junk art is the same top and bottom: flipping half the cells about
+		# the camera axis hides the repetition on packed junk walls.
+		basis = Basis(Vector3.FORWARD, PI)
+	var xform := Transform3D(basis, Grid.cell_center(cx, row))
 	chunk.multimesh.set_instance_transform(cell.instance, xform)
 	cell.body = PhysicsServer3D.body_create()
 	PhysicsServer3D.body_set_mode(cell.body, PhysicsServer3D.BODY_MODE_STATIC)
