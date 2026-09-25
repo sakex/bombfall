@@ -25,7 +25,7 @@ static func build(theme: Dictionary, roof: int, height: int) -> Backdrop:
 	var mid := top - h * 0.5
 	var depth := DECOR_Z - WALL_Z
 	var zmid := (DECOR_Z + WALL_Z) * 0.5
-	var wall_material := _plain(theme["wall"])
+	var wall_material := _surface(theme["wall"], "wall")
 	# Back wall, with the theme's windows cut out (room coords: x from the
 	# left wall, y from the floor).
 	var windows: Array = []
@@ -39,11 +39,11 @@ static func build(theme: Dictionary, roof: int, height: int) -> Backdrop:
 	for r in windows:
 		b._window(r, bottom, theme)
 	# Floor and ceiling slabs behind the play plane.
-	b._box(Vector3(w, 0.3, depth), Vector3(cx, bottom - 0.15, zmid), _plain(theme["floor"]))
-	b._box(Vector3(w, 0.3, depth), Vector3(cx, top + 0.15, zmid), _plain(theme["wall"].darkened(0.3)))
+	b._box(Vector3(w, 0.3, depth), Vector3(cx, bottom - 0.15, zmid), _surface(theme["floor"], "floor"))
+	b._box(Vector3(w, 0.3, depth), Vector3(cx, top + 0.15, zmid), _surface(theme["wall"].darkened(0.3), "ceiling"))
 	# Side returns so the room reads as a box when seen at an angle.
-	b._box(Vector3(0.3, h, depth), Vector3(1.0 - 0.15, mid, zmid), _plain(theme["wall"].darkened(0.2)))
-	b._box(Vector3(0.3, h, depth), Vector3(16.0 + 0.15, mid, zmid), _plain(theme["wall"].darkened(0.2)))
+	b._box(Vector3(0.3, h, depth), Vector3(1.0 - 0.15, mid, zmid), _surface(theme["wall"].darkened(0.2), "wall"))
+	b._box(Vector3(0.3, h, depth), Vector3(16.0 + 0.15, mid, zmid), _surface(theme["wall"].darkened(0.2), "wall"))
 	# Neon trims where the wall meets floor and ceiling.
 	var trim := _glow(theme["trim"], 2.5)
 	b._box(Vector3(w, 0.06, 0.06), Vector3(cx, top - 0.05, WALL_Z + 0.03), trim)
@@ -97,7 +97,7 @@ func _window(r: Rect2, bottom: float, theme: Dictionary) -> void:
 	var y0 := bottom + r.position.y
 	var cx := x0 + r.size.x * 0.5
 	var cy := y0 + r.size.y * 0.5
-	var frame := _plain(theme["wall"].darkened(0.55).lerp(Color(0.5, 0.55, 0.6), 0.5))
+	var frame := _surface(theme["wall"].darkened(0.55).lerp(Color(0.5, 0.55, 0.6), 0.5), "metal")
 	# Frame around the opening, sitting proud of the wall.
 	_box(Vector3(r.size.x + FRAME * 2.0, FRAME, WALL_THICKNESS + 0.1), Vector3(cx, y0 - FRAME * 0.5, WALL_Z - WALL_THICKNESS * 0.5), frame)
 	_box(Vector3(r.size.x + FRAME * 2.0, FRAME, WALL_THICKNESS + 0.1), Vector3(cx, y0 + r.size.y + FRAME * 0.5, WALL_Z - WALL_THICKNESS * 0.5), frame)
@@ -152,6 +152,95 @@ func _process(delta: float) -> void:
 	for node in _swayers:
 		node.rotation.z = sin(t * 1.3 + node.position.x) * 0.12
 		node.rotation.x = cos(t * 0.9 + node.position.x) * 0.06
+
+
+## Physically based surfaces for the room shell, textured with small
+## seamless noise maps generated once at load (no files to ship) and mapped
+## in world space, so walls of any size get the same grain:
+## wall = matte painted plaster, floor = polished stone that reflects the
+## neon sky, ceiling = rough plaster, metal = brushed window frames.
+static func _surface(color: Color, kind: String) -> StandardMaterial3D:
+	var key := "s:%s:%s" % [kind, color.to_html()]
+	if _materials.has(key):
+		return _materials[key]
+	var m := StandardMaterial3D.new()
+	m.albedo_color = color
+	m.uv1_triplanar = true
+	m.uv1_world_triplanar = true
+	m.uv1_triplanar_sharpness = 4.0
+	match kind:
+		"wall":
+			m.albedo_texture = _noise_texture("wall_albedo")
+			m.roughness = 0.82
+			m.normal_enabled = true
+			m.normal_texture = _noise_texture("wall_normal")
+			m.normal_scale = 0.6
+			m.uv1_scale = Vector3.ONE * 0.35
+		"floor":
+			m.albedo_texture = _noise_texture("floor_albedo")
+			m.roughness = 0.2
+			m.roughness_texture = _noise_texture("floor_rough")
+			m.metallic_specular = 0.6
+			m.normal_enabled = true
+			m.normal_texture = _noise_texture("wall_normal")
+			m.normal_scale = 0.25
+			m.uv1_scale = Vector3.ONE * 0.5
+		"ceiling":
+			m.albedo_texture = _noise_texture("wall_albedo")
+			m.roughness = 0.92
+			m.uv1_scale = Vector3.ONE * 0.5
+		"metal":
+			m.metallic = 0.85
+			m.roughness = 0.34
+			m.roughness_texture = _noise_texture("brushed")
+			m.albedo_texture = _noise_texture("brushed")
+			m.uv1_scale = Vector3(0.3, 4.0, 0.3)
+	_materials[key] = m
+	return m
+
+
+static func _noise_texture(kind: String) -> Texture2D:
+	var key := "tex:" + kind
+	if _materials.has(key):
+		return _materials[key]
+	var noise := FastNoiseLite.new()
+	noise.noise_type = FastNoiseLite.TYPE_SIMPLEX_SMOOTH
+	noise.fractal_octaves = 5
+	var tex := NoiseTexture2D.new()
+	tex.width = 256
+	tex.height = 256
+	tex.seamless = true
+	tex.generate_mipmaps = true
+	var ramp := Gradient.new()
+	match kind:
+		"wall_albedo":
+			noise.frequency = 0.02
+			ramp.set_color(0, Color(0.78, 0.78, 0.8))
+			ramp.set_color(1, Color(1.05, 1.04, 1.06))
+			tex.color_ramp = ramp
+		"floor_albedo":
+			noise.frequency = 0.012
+			noise.fractal_octaves = 6
+			ramp.set_color(0, Color(0.7, 0.7, 0.72))
+			ramp.set_color(1, Color(1.1, 1.08, 1.1))
+			tex.color_ramp = ramp
+		"floor_rough":
+			noise.frequency = 0.03
+			ramp.set_color(0, Color(0.55, 0.55, 0.55))
+			ramp.set_color(1, Color(1.4, 1.4, 1.4))
+			tex.color_ramp = ramp
+		"wall_normal":
+			noise.frequency = 0.05
+			tex.as_normal_map = true
+			tex.bump_strength = 3.0
+		"brushed":
+			noise.frequency = 0.08
+			ramp.set_color(0, Color(0.8, 0.8, 0.82))
+			ramp.set_color(1, Color(1.1, 1.1, 1.12))
+			tex.color_ramp = ramp
+	tex.noise = noise
+	_materials[key] = tex
+	return tex
 
 
 static func _plain(color: Color) -> StandardMaterial3D:

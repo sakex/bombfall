@@ -185,6 +185,10 @@ size, `--turn=30` yaws the items, `--at=0.5` freezes animations halfway.
 Full game: `src/game/game.tscn -- --theme=casino --screenshot=…`, special
 rooms: `src/dev/special_test.tscn -- --special=vault`.
 
+After a first import of a new model, run `python3 tools/fix_texture_imports.py`
+and import again: it makes the baked textures GPU-compressed (the build
+scripts do this automatically).
+
 Regression (must stay green): `src/dev/physics_test.tscn`,
 `src/dev/hitbox_audit.tscn` (collision shapes vs. mesh), `src/dev/doable_test.tscn`,
 `src/dev/smoke_test.tscn`. If a model's size changes, update its collision

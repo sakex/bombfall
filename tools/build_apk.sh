@@ -14,6 +14,9 @@ cd "$(dirname "$0")/.."
 GODOT="${GODOT:-godot}"
 MODE="${1:-release}"
 mkdir -p dist
+# Baked model textures must be GPU-compressed on the phone (see the script).
+"$GODOT" --headless --path . --import >/dev/null 2>&1 || true
+python3 tools/fix_texture_imports.py
 if [[ "$MODE" == "release" ]]; then
   if [[ -z "${GODOT_ANDROID_KEYSTORE_RELEASE_PATH:-}" ]]; then
     KS="$HOME/.local/share/godot/keystores/bombfall-release.keystore"

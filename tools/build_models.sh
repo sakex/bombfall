@@ -13,9 +13,10 @@ if [[ $# -gt 0 ]]; then
   scripts=("$@")
 else
   scripts=()
+  # Model scripts are the ones that call export(); the rest are shared kits.
   for f in blender/*.py; do
     n=$(basename "$f" .py)
-    [[ "$n" == "common" ]] && continue
+    grep -qE '^\s*export\(' "$f" || continue
     scripts+=("$n")
   done
 fi
@@ -25,4 +26,11 @@ for n in "${scripts[@]}"; do
     echo "FAILED: $n"; fail=1
   fi
 done
+# Godot imports the extracted textures on its next --import; make them
+# GPU-compressed once they exist (a second import applies the change).
+if command -v godot >/dev/null 2>&1; then
+  godot --headless --path . --import >/dev/null 2>&1 || true
+  python3 tools/fix_texture_imports.py
+  godot --headless --path . --import >/dev/null 2>&1 || true
+fi
 exit $fail
