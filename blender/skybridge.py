@@ -174,7 +174,10 @@ box((1.6, 0.02, 0.05), (TX + 5.2, 1.29, 1.0), M.n_pink)
 chandelier("lobby_chandelier", TX + 3.3, 1.8, drop=0.9, r=0.55, arms=5, tiers=1, spin_ball=False, strands=10).location.z = 4.6
 potted_palm(TX + 1.8, 1.9, h=2.2, fronds=7, seed=5, m_pot=M.gold)
 # the facade: stone piers, a glass curtain wall with lit windows
-for (a, b) in ((TX, TX + 1.9), (TX + 4.3, TX + 9.0)):                            # glass storefront
+# a stone pilaster in front of the game's end wall cells (x 53..54)
+slab_at(TX + 4.3, TX + 5.7, -1.95, -1.1, 0.0, 4.6, FACADE)
+box((1.4, 0.03, 0.05), (TX + 5.0, -1.97, 4.3), M.gold)
+for (a, b) in ((TX, TX + 1.9), (TX + 5.7, TX + 9.0)):                            # glass storefront
     box((b - a, 0.03, 4.5), ((a + b) / 2, -1.2, 2.25), M.glass)
     n = max(int((b - a) / 1.2), 1)
     for i in range(n + 1):
@@ -210,7 +213,7 @@ spin(rp, "idle", "Z", seconds=4, turns=0.5)
 rnd = rng(21)
 WIN_PTS = {}
 for r in range(-12, 5):
-    if r in (-1, 0):
+    if -1.2 < 5.6 + r * 1.5 < 5.0:                  # no windows across the lobby
         continue
     for c in range(6):
         wx = TX + 0.9 + c * 1.35

@@ -100,9 +100,6 @@ for k, (base, direction) in enumerate(clusters):
         L = rnd.uniform(0.1, 0.2) if j else 0.22
         m = SHARD_HOT if (j == 0 and k % 2 == 0) else (SHARD if j == 0 else FROST)
         crystal(Vector(base) + off - dvec.normalized() * 0.05, dvec, L, rnd.uniform(0.03, 0.05) if j else 0.055, m)
-# Light inside: a glowing seam band inlaid round the middle of the front.
-for s in (-1, 1):
-    crystal((s * 0.12, -0.44, -0.02), (s * 0.3, -1, 0.1), 0.08, 0.025, SHARD_HOT)
 
 finish("block", keep=("shell", "heart"))
 tri_report("block")

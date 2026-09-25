@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://b2lvc3kgcyh8f"
-path="res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.ctex"
+path.s3tc="res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.s3tc.ctex"
+path.etc2="res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "7a75c5d99d52f6f73f78be43963b0215"
@@ -14,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/ceiling_rich1_ceiling_rich1_normal.jpg"
-dest_files=["res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.ctex"]
+dest_files=["res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.s3tc.ctex", "res://.godot/imported/ceiling_rich1_ceiling_rich1_normal.jpg-19e90aedbb3a1445be610659880fa56d.etc2.ctex"]
 
 [params]
 

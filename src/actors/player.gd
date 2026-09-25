@@ -26,6 +26,9 @@ const REVIVE_IMMUNITY := 10.0
 const RUN_CYCLE_HZ := 3.2            ## full strides per second at top speed
 const RUN_CLIP_STRIDES := 1.0         ## the run clip holds one full stride (two steps)
 const PUSH_CYCLE_HZ := 1.1
+## Self-illumination of the hero's baked surfaces (a fraction of their own
+## colour), so it never sinks into a dark room: a cheap "hero fill light".
+const HERO_FILL := 0.22
 ## How long each clip takes to crossfade in.
 const BLEND := {
 	"idle": 0.25, "run": 0.12, "push": 0.15, "jump": 0.05, "rise": 0.12,
@@ -240,6 +243,18 @@ func _setup_rig() -> void:
 	if _anim != null:
 		_anim.advance(0.0)
 	_apply_rig(0.0, 1.0)
+	for mesh in ModelUtil.all_meshes(model):
+		for i in mesh.mesh.get_surface_count():
+			var base := mesh.mesh.surface_get_material(i) as StandardMaterial3D
+			if base == null or base.albedo_texture == null or base.emission_enabled:
+				continue
+			var lit: StandardMaterial3D = base.duplicate()
+			lit.emission_enabled = true
+			lit.emission = Color.WHITE
+			lit.emission_texture = base.albedo_texture
+			lit.emission_operator = BaseMaterial3D.EMISSION_OP_MULTIPLY
+			lit.emission_energy_multiplier = HERO_FILL
+			mesh.set_surface_override_material(i, lit)
 
 
 ## The bone-local axis (0 = x, 1 = y, 2 = z) closest to a skeleton-space direction.

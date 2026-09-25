@@ -558,6 +558,10 @@ def pivot(name, loc=(0, 0, 0), parent=None):
 
 def attach(child, parent):
     """Parent `child` to `parent` keeping its world transform."""
+    # A pivot created a moment ago has a stale matrix_world until the scene
+    # updates; without this, children attached straight after pivot() were
+    # offset by the pivot's position.
+    bpy.context.view_layer.update()
     child.parent = parent
     child.matrix_parent_inverse = parent.matrix_world.inverted()
     return child

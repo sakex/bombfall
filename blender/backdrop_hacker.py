@@ -298,7 +298,7 @@ tube_path([(0.6, WALL - 0.06, 7.85), (0.8 + w + 0.2, WALL - 0.06, 7.85)], 0.02, 
 neon_text("<>", 0.8 + w + 0.4, 8.05, 0.58, NEON_P, aspect=0.5)
 # dot-matrix world map with blinking attack points
 MX0, MZ0 = 8.9, 7.85
-box((5.8, 0.05, 1.5), (MX0 + 2.9, WALL - 0.025, MZ0 + 0.7), PLASTIC, bev=0.02)
+box((5.8, 0.05, 1.5), (MX0 + 2.9, WALL - 0.025, MZ0 + 0.7), M("paint", (0.02, 0.025, 0.03), rough=0.8), bev=0.02)
 land = ["..XXX.....XX.XXXX..", ".XXXXX...XXXXXXXXX.", "..XXX....XXXXXXXX..", "...XX....XXX..XXX..", "....X.....X....X.XX", "..........X.....XX."]
 DOT = glow((0.2, 0.7, 0.4), 2.0)
 for r, row in enumerate(land):

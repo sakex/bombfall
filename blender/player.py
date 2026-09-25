@@ -189,9 +189,7 @@ def build_leg(s):
     part(tube(cuff, [0.02] * len(cuff), SUIT_PAD, segs=6, closed=True, fixed=True, ref=(0, 0, 1), name="boot_cuff"), ("rigid", foot))
     sole = rounded_box((0.215, 0.31, 0.05), (ax, -0.055, 0.025), SOLE, radius=0.02, segs=2, name="sole")
     part(sole, ("rigid", foot))
-    strip = [V((ax + 0.112 * math.sin(math.radians(a)) * 0.98, -0.055 - 0.16 * math.cos(math.radians(a)), 0.03))
-             for a in range(0, 360, 15)]
-    # Squarish loop just proud of the sole's side.
+    # A squarish neon loop just proud of the sole's side.
     strip = []
     for a in range(0, 360, 18):
         r = math.radians(a)
@@ -268,7 +266,7 @@ def build_head():
         cx = Wo * sp(math.cos(b), 2 / pw)
         cz = z0 + Ho * sp(math.sin(b), 2 / pw)
         if cz < z0:
-            cz = z0 + (cz - z0) * 1.08 + 0.05 * (1 - abs(cx / Wo)) ** 2 * 0   # flat chin line
+            cz = z0 + (cz - z0) * 1.08                 # a slightly deeper lower edge
         cy = -math.sqrt(max(0.0, 1 - cx * cx - cz * cz))
         edge.append(V((cx, cy, cz)).normalized())
     back = V((0, 1, 0))
@@ -405,6 +403,13 @@ def decorate_suit():
     seam = ex.band(abs(x), 0.205, 0.003, 0.002) * ex.smooth(0.46, 0.5, z) * ex.smooth(0.72, 0.68, z)
     ex.relief(-seam * 0.004, 1.0)
     ex.darken(seam, 0.5)
+    # Mittens: a stitched seam round the edge of each glove.
+    gl = Ex(GLOVE)
+    mid = abs(gl.x) - (0.49 - gl.z) * (0.025 / 0.14)          # the mitten's mid-plane
+    edge = gl.band(mid, 0.35, 0.0022, 0.0012) * gl.smooth(0.47, 0.455, gl.z)
+    dash = gl.band((gl.z * (1 / 0.011)).frac(), 0.5, 0.26, 0.06)
+    gl.relief(-edge * 0.0015, 1.0)
+    gl.darken(edge * (1.0 - dash * 0.6), 0.55)
     sole = Ex(SOLE)
     tread = sole.band((sole.y * (1 / 0.032)).frac(), 0.5, 0.22, 0.05) * sole.smooth(0.012, 0.004, sole.z)
     sole.relief(-tread * 0.004, 1.0)
@@ -526,9 +531,7 @@ def build_scarf():
             pts.append(p)
             w = w0 * (1.0 - 0.25 * t) * (1 + 0.12 * math.sin(t * 11))
             radii.append((0.009, w) if i < n else (0.006, w * 0.35))
-        tail = tube(pts, radii, SCARF, segs=8, ref=(0, 0, 1), name="scarf_tail", start=math.pi / 8,
-                    shape=lambda i, a: 1.0)
-        # Twist the ribbon a little along its length.
+        tail = tube(pts, radii, SCARF, segs=8, ref=(0, 0, 1), name="scarf_tail", start=math.pi / 8)
         part(tail, ("chain", ["chest", "scarf_1", "scarf_2", "scarf_3"], [SCARF_J[0] - V((0, 0.05, 0))] + SCARF_J,
                     [0.03, 0.05, 0.05]))
 
@@ -650,8 +653,6 @@ if os.environ.get("NO_BAKE") != "1":
 jets(1.0)
 hero_clips.author_all(arm)
 export("player", bake=False)
-if os.environ.get("HERO_DEBUG"):
-    exec(open(os.environ["HERO_DEBUG"]).read())
 
 if PREVIEW:
     jets(0.001)

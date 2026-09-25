@@ -271,7 +271,7 @@ blink(go, "1111111100110011")
 slab_at(0.4, 3.9, WALL - 0.06, WALL, 7.45, 9.05, M.black_metal)
 box((3.3, 0.02, 1.45), (2.15, WALL - 0.07, 8.25), anim_neon((0.05, 0.1, 0.25), "screen", 1.0))
 neon_text("HI SCORE", 2.15, 8.7, WALL - 0.09, 0.22, M.n_amber, r=0.011, align="center", verts=4)
-for r in range(4):
+for r in range(3):
     neon_text("%d" % (9990 - r * 1357), 1.3, 8.35 - r * 0.24, WALL - 0.09, 0.14, [M.n_cyan, M.n_pink, M.n_green, M.n_violet][r], r=0.008, verts=3)
     neon_text(["ACE", "ZAP", "NEO", "BOB"][r], 2.6, 8.35 - r * 0.24, WALL - 0.09, 0.14, M.n_white, r=0.008, verts=3)
 sprite(GHOST, 13.9, 8.6, WALL - 0.08, 0.07, M.n_cyan)

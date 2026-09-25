@@ -681,8 +681,8 @@ def wall_gun():
     g = piv("gun", (GX, 0, GZ))
     parts = []
     parts.append(cyl(0.27, 0.8, (GX, 0, GZ), body_m, rot=(math.pi / 2, 0, 0), verts=20, bevel=0.02))     # drum
-    shell = [(0.72, -0.2), (1.8, -0.24), (2.06, -0.13), (2.06, 0.13), (1.86, 0.25), (1.05, 0.29), (0.8, 0.2)]
-    parts.append(prism([(GX - 0.7 + x, GZ + z) for x, z in [(p[0] + 0.7 - GX + GX - 0.7, p[1]) for p in shell]], 0.56, body_m, bevel=0.035))
+    shell = [(0.72, -0.2), (1.8, -0.24), (2.06, -0.13), (2.06, 0.13), (1.86, 0.25), (1.05, 0.29), (0.8, 0.2)]   # (x, dz)
+    parts.append(prism([(x, GZ + z) for x, z in shell], 0.56, body_m, bevel=0.035))
     for s in (-1, 1):   # side armour plates with plum inlay and a neon slit
         parts.append(prism([(0.95, GZ - 0.17), (1.75, GZ - 0.19), (1.92, GZ - 0.1), (1.92, GZ + 0.1), (1.78, GZ + 0.19), (1.1, GZ + 0.22)], 0.03, panel_m, y=s * 0.29, bevel=0.008))
         parts.append(cube((0.6, 0.012, 0.035), (1.42, s * 0.31, GZ + 0.03), mag, bevel=0))
@@ -1591,11 +1591,12 @@ def _membrane(A, B, skin_m, edge_m, nu=8, vs=None, sag=0.2, billow=0.16):
 def boss_bat():
     """The bat boss: a 4 m furry, armour-plated robo-bat with a 9 m
     wingspan, rigged. Bones: root, head, jaw (driven by boss_bat.gd when it
-    shoots/screams), eyes, ear.L/R, upperarm/forearm/f2_1..f4_2 per wing,
+    shoots/screams), blink, ear.L/R, upperarm/forearm/f2_1..f4_2 per wing,
     leg.L/R. One skinned body mesh plus separate skinned meshes 'eyes'
     and 'heart_glow' (the code flares/dims them). Clips: `idle` (2 s, two
     wing beats with the membrane folding on the upstroke, body bob, blink,
-    ear twitch) and `fall_loop` (wings flailing as it drops). Centred."""
+    ear twitch) and `fall_loop` (wings flailing as it drops; Godot's importer drops the
+    _loop suffix and loops it, so the game plays "fall"). Centred."""
     fur = pbr("carpet", (0.1, 0.045, 0.15), color2=(0.2, 0.1, 0.27), bump=0.8, name="bat_fur")
     fur_light = pbr("carpet", (0.36, 0.18, 0.36), color2=(0.46, 0.24, 0.42), bump=0.8, name="bat_fur_light")
     skin = pbr("skin", (0.3, 0.06, 0.22), rough=0.68, bump=0.4, name="bat_membrane")
@@ -1616,7 +1617,7 @@ def boss_bat():
     J["root"] = ((0, 0.05, -0.4), (0, 0.05, 0.5))
     J["head"] = ((0, -0.05, 0.95), (0, -0.05, 1.75))
     J["jaw"] = ((0, -0.35, 1.3), (0, -0.78, 1.1))
-    J["eyes"] = ((0, -0.62, 1.52), (0, -0.62, 1.72))
+    J["blink"] = ((0, -0.62, 1.52), (0, -0.62, 1.72))
     wing = {}
     for s, side in ((1, "L"), (-1, "R")):
         sh = (s * 0.78, 0.12, 0.72)
@@ -1633,7 +1634,7 @@ def boss_bat():
             J["%s_2.%s" % (name, side)] = (a, b)
         J["ear." + side] = ((s * 0.36, -0.05, 1.85), (s * 0.66, 0.0, 2.75))
         J["leg." + side] = ((s * 0.38, 0.0, -0.95), (s * 0.46, -0.1, -1.6))
-    parents = {"head": "root", "jaw": "head", "eyes": "head"}
+    parents = {"head": "root", "jaw": "head", "blink": "head"}
     for side in ("L", "R"):
         parents.update({"upperarm." + side: "root", "forearm." + side: "upperarm." + side,
                         "ear." + side: "head", "leg." + side: "root"})
@@ -1724,14 +1725,14 @@ def boss_bat():
         # short chrome horns at the brow corners
         part(cone(0.075, 0.34, (sx * 0.52, -0.42, 1.93), chrome, rot=(-0.35, sx * 0.55, 0), verts=8), "head")
     part(sphere(0.035, (0, -0.6, 1.83), seam, segments=6, rings=4), "head")
-    # eyes (own mesh; blink on the 'eyes' bone) with slit pupils
+    # eyes (own mesh; they blink on the 'blink' bone) with slit pupils
     ev = []
     for sx in (-1, 1):
         ev.append(sphere(0.16, (sx * 0.3, -0.6, 1.55), eye_m, scale=(1.15, 0.55, 0.85), segments=14, rings=8))
     eyes = join(ev, "eyes")
-    _skin(eyes, "eyes")
+    _skin(eyes, "blink")
     for sx in (-1, 1):
-        part(sphere(0.03, (sx * 0.3, -0.69, 1.55), pupil, scale=(0.8, 0.5, 3.3), segments=8, rings=6), "eyes")
+        part(sphere(0.03, (sx * 0.3, -0.69, 1.55), pupil, scale=(0.8, 0.5, 3.3), segments=8, rings=6), "blink")
     # upper fangs on the head, jaw with lower fangs
     part(sphere(0.2, (0, -0.72, 1.17), mouth, scale=(1.3, 0.45, 0.35), segments=12, rings=6), "head")
     for sx in (-1, 1):
@@ -1859,6 +1860,6 @@ def _bat_clips(rig):
     # body bob (the beat lifts it), head counter-nod
     key(rig, "idle", 'pose.bones["root"].location', [(f, (0, wave(f, 0.12, 1.7), 0)) for f in frames])
     key(rig, "idle", 'pose.bones["head"].rotation_quaternion', [(f, tuple(Quaternion(X, wave(f, 0.06, 2.4)))) for f in frames])
-    key(rig, "idle", 'pose.bones["eyes"].scale', [(0, (1, 1, 1)), (46, (1, 1, 1)), (48, (1, 0.12, 1)), (50, (1, 0.12, 1)), (53, (1, 1, 1)), (T, (1, 1, 1))])
+    key(rig, "idle", 'pose.bones["blink"].scale', [(0, (1, 1, 1)), (46, (1, 1, 1)), (48, (1, 0.12, 1)), (50, (1, 0.12, 1)), (53, (1, 1, 1)), (T, (1, 1, 1))])
     key(rig, "fall_loop", 'pose.bones["root"].rotation_quaternion', [(f, tuple(Quaternion(Vector((0, 1, 0)), wave(f, 0.12, 0.0, 1, 30)))) for f in range(0, 31, 3)])
     key(rig, "fall_loop", 'pose.bones["head"].rotation_quaternion', [(f, tuple(Quaternion(X, wave(f, 0.2, 0.5, 2, 30)))) for f in range(0, 31, 3)])

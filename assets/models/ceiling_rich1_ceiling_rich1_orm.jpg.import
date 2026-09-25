@@ -3,9 +3,11 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cejbk7m0v6yrc"
-path="res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.ctex"
+path.s3tc="res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.s3tc.ctex"
+path.etc2="res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
 "md5": "c317ffcf7e2133472eb85f8dab042136"
@@ -14,7 +16,7 @@ generator_parameters={
 [deps]
 
 source_file="res://assets/models/ceiling_rich1_ceiling_rich1_orm.jpg"
-dest_files=["res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.ctex"]
+dest_files=["res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.s3tc.ctex", "res://.godot/imported/ceiling_rich1_ceiling_rich1_orm.jpg-e5192a4da02d9a6fa2771a5b9a5ebb9a.etc2.ctex"]
 
 [params]
 

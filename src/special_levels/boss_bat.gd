@@ -5,7 +5,7 @@ extends PlanarBody
 ## stone; when it hits the floor the arena opens.
 ##
 ## The model is rigged (see blender/hazards.py boss_bat): its "idle" clip
-## beats the wings (two beats per loop), "fall_loop" flails them while it
+## beats the wings (two beats per loop), "fall" flails them while it
 ## drops. The jaw bone is driven here: it snaps open on every shot and
 ## gapes while falling; the eyes flare when it fires and the chest heart
 ## goes dark once the heart has been taken.
@@ -84,7 +84,8 @@ func set_dying() -> void:
 	_jaw_target = 1.0
 	if _anim != null:
 		_anim.speed_scale = 1.0
-		ModelUtil.play(model, "fall_loop")
+		# Godot imports the "fall_loop" clip as "fall" (looping).
+		ModelUtil.play(model, "fall")
 	if _heart != null:
 		_heart.emission_energy_multiplier = 0.15
 

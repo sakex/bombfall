@@ -48,14 +48,16 @@ static func build(theme: Dictionary, roof: int, height: int) -> Backdrop:
 	var trim := _glow(theme["trim"], 2.5)
 	b._box(Vector3(w, 0.06, 0.06), Vector3(cx, top - 0.05, WALL_Z + 0.03), trim)
 	b._box(Vector3(w, 0.06, 0.06), Vector3(cx, bottom + 0.05, WALL_Z + 0.03), trim)
-	# A coloured room light so the set dressing is not lost in the dark.
-	var light := OmniLight3D.new()
-	light.light_color = theme["trim"].lerp(Color.WHITE, 0.5)
-	light.light_energy = 1.4
-	light.omni_range = maxf(h, w) * 0.9
-	light.omni_attenuation = 1.2
-	light.position = Vector3(cx, mid + h * 0.15, DECOR_Z + 0.5)
-	b.add_child(light)
+	# Coloured room lights where the set dressing is: one about 3 m above
+	# the floor (most furniture lives there), a second high up in tall rooms.
+	for level in ([3.2, h - 2.5] if h > 9.0 else [minf(3.2, h * 0.5)]):
+		var light := OmniLight3D.new()
+		light.light_color = theme["trim"].lerp(Color.WHITE, 0.55)
+		light.light_energy = 1.5 if level < 4.0 else 1.0
+		light.omni_range = 10.0
+		light.omni_attenuation = 1.0
+		light.position = Vector3(cx, bottom + level, DECOR_Z + 0.9)
+		b.add_child(light)
 	# Set dressing (skipped with --nodecor, a debugging aid).
 	if not OS.get_cmdline_user_args().has("--nodecor"):
 		b._decor("res://assets/models/backdrop_%s.glb" % theme["id"], Vector3(1.0, bottom, DECOR_Z))
