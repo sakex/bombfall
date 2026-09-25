@@ -121,11 +121,14 @@ wobble(p, "idle", "location", 2, 0.05, seconds=2)   # seamless sine on one chann
 key(p, "fire", "rotation_euler", [(0, (0,0,0)), (4, (0.3,0,0)), (12, (0,0,0))])
 ```
 
-- Frames are at 30 fps. Keys go on **pivots** (Empties) or armature bones.
+- Frames are at 30 fps. Start every clip from the rest pose at frame 0:
+  `export()` evaluates the scene at frame 0 for the rest pose.
+- `export(tex=N)` wins over the `BAKE_TEX` environment variable. Keys go on **pivots** (Empties) or armature bones.
 - A clip is named by its second argument; all objects' keys for the same name
   export as one glTF animation.
 - **`idle`** loops and auto-plays on every instance with a random phase (the
-  Game autoload does it). Clips ending in `_loop` also loop. Anything else is
+  Game autoload does it). Clips named `<name>_loop` also loop — Godot's
+  importer strips the suffix, so in the game the clip is called `<name>`. Anything else is
   a one-shot the game plays with `ModelUtil.play(model, "clip")`, which then
   returns to `idle`.
 - **Every part of one clip must share its period**: the clip lasts as long as
@@ -156,7 +159,7 @@ key(p, "fire", "rotation_euler", [(0, (0,0,0)), (4, (0.3,0,0)), (12, (0,0,0))])
 | arcade_cabinet | meshes `screen`, `marquee` |
 | desktop | `monitor` |
 | painting | `canvas` |
-| boss_bat | `wing_l wing_r` |
+| boss_bat | rigged: bone `jaw` (code-driven), meshes `eyes`, `heart_glow`; clips `idle`, `fall` |
 | vault_door | `wheel`, mesh `lock_light` |
 | backdrop/ceiling | any `spin_*` (rotates) / `sway_*` (swings) pivot |
 

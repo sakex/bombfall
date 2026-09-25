@@ -17,7 +17,7 @@ from core_kit import *  # noqa: F401,F403
 clean_scene()
 rnd = random.Random(4)
 
-SHELL = glow_glass((0.62, 0.32, 1.0), alpha=0.62, strength=0.55, base=(0.3, 0.12, 0.55), rough=0.3,
+SHELL = glow_glass((0.5, 0.2, 1.0), alpha=0.72, strength=0.45, base=(0.3, 0.08, 0.62), rough=0.08,
                    name="blk_shell")
 HEART = pbr("neon", (0.35, 0.1, 0.6), emit=(0.62, 0.25, 1.0), strength=2.2, name="blk_heart")
 FROST = pbr("ceramic", (0.6, 0.48, 0.85), rough=0.4, name="blk_frost", wear=0.0, grime=0.2)

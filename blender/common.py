@@ -15,9 +15,7 @@
 #     tumble (bombs, coins, drones) are centred on their origin.
 #   * Empties become Node3D pivots in Godot and keep their names, so scripts
 #     can find them with get_node("%leg_l") style paths. Names used by the
-#     game: leg_l/leg_r/arm_l/arm_r (player), rotor_1..4 (drone), gun
-#     (wall gun), wing_l/wing_r (boss bat), belt (treadmill), ring (light ring),
-#     top (button), screen (desktop monitor), lid (toilet).
+#     game: see the node-name table in blender/STYLE.md.
 #   * Materials are flat colours with optional emission: the game's look is
 #     dark metal + neon strips, and the mobile renderer adds glow on top.
 import math
@@ -671,6 +669,10 @@ def export(name, out_dir=None, preview_dir=None, tex=None, ground=None, bake=Tru
     bpy.ops.object.select_all(action="DESELECT")
     animated = any(o.animation_data and o.animation_data.nla_tracks for o in bpy.context.scene.objects)
     bpy.context.scene.render.fps = FPS
+    # The glTF rest pose is the scene as evaluated at the current frame with
+    # every clip live; at frame 1 a one-shot clip's first keys leaked into it
+    # (a muzzle flare that never went away). Clips start from rest at frame 0.
+    bpy.context.scene.frame_set(0)
     bpy.ops.export_scene.gltf(
         filepath=path,
         export_format="GLB",
