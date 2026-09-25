@@ -523,8 +523,12 @@ def fix_scratches():
                 for l in n.outputs[0].links:
                     for l2 in l.to_node.outputs["Fac"].links:
                         if l2.to_node.type == "MAP_RANGE":
-                            l2.to_node.inputs["From Min"].default_value = 0.68
-                            l2.to_node.inputs["From Max"].default_value = 0.7
+                            mr = l2.to_node
+                            mr.inputs["From Min"].default_value = 0.69
+                            mr.inputs["From Max"].default_value = 0.71
+                            for l3 in mr.outputs["Result"].links:     # fainter, too
+                                if l3.to_node.type == "MATH" and l3.to_node.operation == "MULTIPLY":
+                                    l3.to_node.inputs[1].default_value *= 0.45
 
 
 def finish(name, keep=(), body="body"):

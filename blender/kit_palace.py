@@ -668,6 +668,18 @@ def finish(name, tex, budget, strip=99.0, windows=None, wall=(0.10, 0.04, 0.14))
     if front:
         front_render(name, front, windows, wall)
         return
+    tex = int(os.environ.get("PALACE_TEX", tex))
+    dbg = os.environ.get("PALACE_UVDEBUG")
+    if dbg:
+        bake_textures(name, tex=tex)
+        for o in all_meshes():
+            o.select_set(True)
+        bpy.context.view_layer.objects.active = all_meshes()[0]
+        bpy.ops.object.mode_set(mode="EDIT")
+        bpy.ops.mesh.select_all(action="SELECT")
+        bpy.ops.uv.export_layout(filepath=dbg, size=(1024, 1024), opacity=0.5, export_all=True)
+        bpy.ops.object.mode_set(mode="OBJECT")
+        return
     export(name, tex=tex)
 
 
