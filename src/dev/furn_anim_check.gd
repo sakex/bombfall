@@ -5,6 +5,9 @@ extends SceneTree
 
 
 func _initialize() -> void:
+	# Let the Game autoload hook node_added (it starts every model's idle).
+	for i in 3:
+		await process_frame
 	var ok := true
 	for spec in [["res://src/spawnables/desktop.tscn", "fan_1", "rotation"], ["res://src/spawnables/statue.tscn", "core", "scale"]]:
 		var n: Node3D = load(spec[0]).instantiate()
