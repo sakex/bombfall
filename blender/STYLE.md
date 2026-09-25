@@ -134,7 +134,9 @@ key(p, "fire", "rotation_euler", [(0, (0,0,0)), (4, (0.3,0,0)), (12, (0,0,0))])
 - **Every part of one clip must share its period**: the clip lasts as long as
   its longest track, so a 1 s spin in a 2 s idle stops half the time. Pick
   one length (2 s or 4 s) per model and make spins whole turns over it.
-- Constant tracks are stripped at load, but never keyframe a node the game
+- The preview render shows the rest pose with only `idle` enabled.
+- Constant tracks are stripped at load (to hold a pose in a one-shot clip,
+  nudge the held channel by an invisible amount), but never keyframe a node the game
   script also moves (see the contracts below) — pick one owner per node.
 - glTF cannot animate materials here: blink an LED by scaling a small
   emissive mesh, use `anim()` screens, or let the game script drive it.
@@ -146,7 +148,7 @@ key(p, "fire", "rotation_euler", [(0, (0,0,0)), (4, (0.3,0,0)), (12, (0,0,0))])
 
 | model | names the scripts expect |
 |---|---|
-| player | `leg_l leg_r arm_l arm_r eye_l eye_r antenna scarf jet_l jet_r` (until the hero rework replaces the code) |
+| player | rigged (`blender/player.py`, `hero_kit.py`, `hero_clips.py`): bones `eye_l eye_r jet_l jet_r antenna_1..3 scarf_1..3` (driven in code); clips `idle run push rise fall jump land hurt death wave` |
 | bomb | meshes `ring`, `display`, `fuse` (their materials are recoloured) |
 | drone | `rotor_1` … `rotor_4` (spun in code) |
 | wall_gun | `gun` (aimed in code) |

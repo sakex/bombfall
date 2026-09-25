@@ -556,6 +556,7 @@ def pivot(name, loc=(0, 0, 0), parent=None):
     e.empty_display_size = 0.1
     e.location = loc
     _link(e)
+    bpy.context.view_layer.update()
     if parent is not None:
         attach(e, parent)
     return e
@@ -585,6 +586,13 @@ def join(objs, name):
     bpy.ops.object.join()
     o = bpy.context.object
     o.name = name
+    # The join keeps the first object's transform (often a big non-uniform
+    # scale); bake it into the vertices so the UV unwrap sees true sizes.
+    if not o.children and not o.animation_data and o.data.users == 1:
+        bpy.ops.object.select_all(action="DESELECT")
+        o.select_set(True)
+        bpy.context.view_layer.objects.active = o
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
     return o
 
 
@@ -779,7 +787,10 @@ def bake_textures(name, tex=None, ground=None, ao_distance=None):
                 bpy.ops.object.modifier_apply(modifier=md.name)
     for o in meshes:
         o.data.materials  # noqa
-        if o.matrix_world.determinant() < 0 and not o.children and not o.animation_data:
+        s = o.scale
+        odd = o.matrix_world.determinant() < 0 or max(abs(s.x - s.y), abs(s.y - s.z), abs(s.x - 1)) > 1e-4
+        skinned = any(md.type == "ARMATURE" for md in o.modifiers)
+        if odd and not o.children and not o.animation_data and not skinned and o.data.users == 1:
             bpy.ops.object.select_all(action="DESELECT")
             o.select_set(True)
             bpy.context.view_layer.objects.active = o
@@ -792,12 +803,24 @@ def bake_textures(name, tex=None, ground=None, ao_distance=None):
             me.uv_layers.remove(me.uv_layers[0])
         me.uv_layers.new(name="UVMap")
         flags = [_bakeable(o.material_slots[p.material_index].material) if o.material_slots else False for p in me.polygons]
+        # Vertex and edge flags too: entering edit mode re-derives the face
+        # selection from them, which would skip faces built from raw data.
+        for v in me.vertices:
+            v.select = False
+        for e in me.edges:
+            e.select = False
         for p, f in zip(me.polygons, flags):
             p.select = f
+            if f:
+                for vi in p.vertices:
+                    me.vertices[vi].select = True
+        for e in me.edges:
+            e.select = me.vertices[e.vertices[0]].select and me.vertices[e.vertices[1]].select
     bpy.ops.object.select_all(action="DESELECT")
     for o in meshes:
         o.select_set(True)
     bpy.context.view_layer.objects.active = meshes[0]
+    scn.tool_settings.mesh_select_mode = (False, False, True)
     bpy.ops.object.mode_set(mode="EDIT")
     scn.tool_settings.use_uv_select_sync = True
     bpy.ops.uv.smart_project(angle_limit=math.radians(60), island_margin=0.0, area_weight=0.0, correct_aspect=True, scale_to_bounds=False)
@@ -873,7 +896,7 @@ def bake_textures(name, tex=None, ground=None, ao_distance=None):
             return d["emis"].outputs[0]
         return wire
 
-    run("EMIT", albedo, 4, emission_of("base"))
+    run("EMIT", albedo, 12, emission_of("base"))
     run("EMIT", orm, 24, emission_of("comb"))
     run("NORMAL", normal, 8, lambda d: d["surface"])
     if floor is not None:
@@ -1002,6 +1025,12 @@ def render_preview(name, preview_dir, size=384, samples=40):
     wt.links.new(lp.outputs["Is Camera Ray"], mix.inputs[0])
     wt.links.new(ramp.outputs[0], mix.inputs[1])
     wt.links.new(mix.outputs[0], bg.inputs[0])
+    # Show the rest pose plus only the idle clip, not every clip stacked.
+    for o in bpy.data.objects:
+        if o.animation_data:
+            for tr in o.animation_data.nla_tracks:
+                tr.mute = tr.name != "idle"
+    scn.frame_set(0)
     scn.render.filepath = os.path.join(preview_dir, name + ".png")
     bpy.ops.render.render(write_still=True)
     print("PREVIEW %s" % scn.render.filepath)

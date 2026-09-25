@@ -1078,12 +1078,12 @@ def cake():
     z = 0.155
     rnd = random.Random(9)
     for ti, (r, h, m) in enumerate(tiers):
-        lathe([(0.0, z), (r, z), (r + 0.004, z + h * 0.5), (r, z + h - 0.015), (r - 0.015, z + h), (0.0, z + h)], m, segs=32)
+        lathe([(0.0, z), (r, z), (r + 0.004, z + h * 0.5), (r, z + h - 0.015), (r - 0.015, z + h), (0.0, z + h)], m, segs=24)
         torus(r + 0.004, 0.018, (0, 0, z + 0.015), icing, major_segments=32, minor_segments=4)      # piped border
         # icing cap with drips on the upper two tiers, gold leaf band on the bottom one
         if ti > 0:
             lathe([(0.0, z + h), (r - 0.01, z + h), (r + 0.008, z + h - 0.012), (r + 0.01, z + h - 0.03), (r - 0.01, z + h + 0.012), (0.0, z + h + 0.014)],
-                  icing, segs=32)
+                  icing, segs=24)
             n = 11 if ti == 1 else 9
             for k in range(n):
                 a = TAU * (k + rnd.uniform(-0.2, 0.2)) / n
@@ -1091,7 +1091,7 @@ def cake():
                 ca, sa = math.cos(a), math.sin(a)
                 rr = r + 0.012
                 tube([(ca * rr, sa * rr, z + h - 0.02), (ca * (rr + 0.004), sa * (rr + 0.004), z + h - 0.02 - L * 0.6), (ca * rr, sa * rr, z + h - 0.02 - L)],
-                     lambda t: 0.014 + 0.006 * t, icing, verts=6)
+                     lambda t: 0.014 + 0.006 * t, icing, verts=5)
                 sphere(0.019, (ca * rr, sa * rr, z + h - 0.02 - L), icing, segments=6, rings=4)
         else:
             lathe([(r + 0.005, z + 0.1), (r + 0.007, z + 0.1), (r + 0.007, z + 0.13), (r + 0.005, z + 0.13)], GOLD_M, segs=32, cap=False)
@@ -1099,9 +1099,9 @@ def cake():
                 a = TAU * k / 8 + 0.2
                 mx, my, mz = math.cos(a) * (r - 0.05), math.sin(a) * (r - 0.05), z + h
                 col = pbr("plastic", mac_cols[k % 5], rough=0.5, wear=0.0, name="macaron%d" % (k % 5))
-                lathe([(0.0, 0.0), (0.035, 0.0), (0.04, 0.012), (0.036, 0.02), (0.0, 0.02)], col, segs=10, loc=(mx, my, mz))
-                lathe([(0.0, 0.02), (0.032, 0.02), (0.032, 0.028), (0.0, 0.028)], cream, segs=10, loc=(mx, my, mz))
-                lathe([(0.0, 0.028), (0.036, 0.028), (0.04, 0.036), (0.035, 0.046), (0.0, 0.05)], col, segs=10, loc=(mx, my, mz))
+                lathe([(0.0, 0.0), (0.035, 0.0), (0.04, 0.012), (0.036, 0.02), (0.0, 0.02)], col, segs=8, loc=(mx, my, mz))
+                lathe([(0.0, 0.02), (0.032, 0.02), (0.032, 0.028), (0.0, 0.028)], cream, segs=8, loc=(mx, my, mz), cap=False)
+                lathe([(0.0, 0.028), (0.036, 0.028), (0.04, 0.036), (0.035, 0.046), (0.0, 0.05)], col, segs=8, loc=(mx, my, mz))
         z += h
     # Candles with flickering flames.
     stripes = [(1.0, 0.4, 0.7), (0.4, 0.9, 1.0), (1.0, 0.85, 0.3), (0.7, 0.5, 1.0), (0.5, 1.0, 0.6)]
@@ -1112,7 +1112,7 @@ def cake():
         lathe([(0.0, 0.0), (0.012, 0.0), (0.012, 0.12), (0.0, 0.125)], pbr("plastic", stripes[i], rough=0.5, wear=0.0, name="candle%d" % i),
               segs=8, loc=(cx, cy, cz))
         for k in range(3):
-            torus(0.0125, 0.003, (cx, cy, cz + 0.025 + k * 0.035), icing, rot=(0.35, 0, 0), major_segments=8, minor_segments=3)
+            torus(0.0125, 0.003, (cx, cy, cz + 0.025 + k * 0.035), icing, rot=(0.35, 0, 0), major_segments=6, minor_segments=3)
         f = pivot("flame_%d" % i, (cx, cy, cz + 0.13))
         lathe([(0.0, 0.0), (0.012, 0.012), (0.014, 0.028), (0.007, 0.052), (0.0, 0.07)], glow((1.0, 0.6, 0.15), 8.0), segs=8,
               loc=(cx, cy, cz + 0.13), parent=f)
@@ -1132,11 +1132,11 @@ def _plate(x, r, t, face_rgb, name="plate"):
     rub = pbr("rubber", (0.025, 0.025, 0.03), rough=0.75, edge=0.01, name="bumper_rubber")
     face = pbr("plastic", face_rgb, rough=0.45, wear=0.3, name="plate_%d%d%d" % tuple(int(c * 9) for c in face_rgb))
     prof = [(0.06, -t / 2), (r - 0.02, -t / 2), (r, -t / 2 + 0.02), (r, t / 2 - 0.02), (r - 0.02, t / 2), (0.06, t / 2)]
-    out = [lathe(prof, rub, segs=28, loc=(x, 0, 0), rot=(0, math.pi / 2, 0), cap=False, name=name)]
+    out = [lathe(prof, rub, segs=22, loc=(x, 0, 0), rot=(0, math.pi / 2, 0), cap=False, name=name)]
     for s in (-1, 1):
-        out.append(lathe([(r * 0.62, s * (t / 2 + 0.003)), (r * 0.9, s * (t / 2 + 0.003))], face, segs=28, loc=(x, 0, 0),
+        out.append(lathe([(r * 0.62, s * (t / 2 + 0.003)), (r * 0.9, s * (t / 2 + 0.003))], face, segs=22, loc=(x, 0, 0),
                          rot=(0, math.pi / 2, 0), cap=False))
-        out.append(lathe([(0.03, s * (t / 2 + 0.006)), (0.09, s * (t / 2 + 0.006))], CHROME_M, segs=16, loc=(x, 0, 0), rot=(0, math.pi / 2, 0), cap=False))
+        out.append(lathe([(0.03, s * (t / 2 + 0.006)), (0.09, s * (t / 2 + 0.006))], CHROME_M, segs=12, loc=(x, 0, 0), rot=(0, math.pi / 2, 0), cap=False))
     return out
 
 
@@ -1172,7 +1172,7 @@ def bench_press():
         cap = cube((0.15, 0.15, 0.03), (x, 0.95, 2.84), PLASTIC_BLACK, bevel=0.008)
     cube((2.0, 0.13, 0.13), (0, 0.95, 2.7), steel, bevel=0.012)     # top crossbar
     cube((2.0, 0.13, 0.12), (0, 1.3, 0.09), steel, bevel=0.012)
-    text("BOMBFALL GYM", 0.11, (0, 0.88, 2.7), glow((0.2, 1.0, 0.45), 3.0), extrude=0.0, res=1)
+    text("BF GYM", 0.12, (0, 0.88, 2.7), glow((0.2, 1.0, 0.45), 3.0), extrude=0.0, res=1)
     # Bench: T-feet, posts, frame rail and the padded top.
     for yy in (-0.95, 0.55):
         cube((0.75, 0.12, 0.1), (0, yy, 0.07), steel, bevel=0.01)
@@ -1192,7 +1192,7 @@ def bench_press():
             d = (Y0 + 0.05) - yy
             return (x + 0.02 * math.sin(u * 9), Y0 + 0.05 - 0.06 * math.sin(min(d, 0.1) * 15), zt - d * 1.2)
         return (x, yy, zt + 0.015 * math.sin(v * 8 + u * 3))
-    sheet(towel, 8, 10, towel_m, thick=0.025, name="towel")
+    sheet(towel, 6, 8, towel_m, thick=0.025, name="towel")
     # Barbell: shaft, sleeves, collars and plates.
     BZ, BY = 2.47, 0.84
     bar = pivot("_bar", (0, 0, 0))
@@ -1207,13 +1207,13 @@ def bench_press():
             xs += sx * (t + 0.01)
         # spring collar
         tube([(xs + sx * 0.03 + math.cos(k * 0.6) * 0.0, BY + math.cos(k * 1.2) * 0.07, BZ + math.sin(k * 1.2) * 0.07) for k in range(12)],
-             0.012, CHROME_M, verts=5)
-        tube([(xs + sx * 0.03, BY + 0.07, BZ), (xs + sx * 0.03, BY + 0.2, BZ + 0.08)], 0.012, CHROME_M, verts=5)
+             0.012, CHROME_M, verts=4)
+        tube([(xs + sx * 0.03, BY + 0.07, BZ), (xs + sx * 0.03, BY + 0.2, BZ + 0.08)], 0.012, CHROME_M, verts=4)
     bpy.data.objects.remove(bar)
     # Water bottle on the floor.
-    lathe([(0.0, 0.0), (0.09, 0.0), (0.1, 0.02), (0.1, 0.34), (0.07, 0.4), (0.04, 0.43), (0.0, 0.43)], bottle_m, segs=16, loc=(0.62, -0.9, 0))
+    lathe([(0.0, 0.0), (0.09, 0.0), (0.1, 0.02), (0.1, 0.34), (0.07, 0.4), (0.04, 0.43), (0.0, 0.43)], bottle_m, segs=10, loc=(0.62, -0.9, 0))
     lathe([(0.0, 0.43), (0.045, 0.43), (0.045, 0.5), (0.0, 0.5)], pbr("plastic", (1.0, 0.2, 0.6), rough=0.4, name="cap"), segs=12, loc=(0.62, -0.9, 0))
-    lathe([(0.1, 0.12), (0.102, 0.12), (0.102, 0.24), (0.1, 0.24)], pbr("plastic", (1.0, 0.2, 0.6), rough=0.4, name="cap"), segs=16, loc=(0.62, -0.9, 0), cap=False)
+    lathe([(0.1, 0.12), (0.102, 0.12), (0.102, 0.24), (0.1, 0.24)], pbr("plastic", (1.0, 0.2, 0.6), rough=0.4, name="cap"), segs=10, loc=(0.62, -0.9, 0), cap=False)
     place(1.0, 0.0)
 
 
