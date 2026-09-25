@@ -16,6 +16,7 @@ var _name := ""
 var _roof := 0
 var _bottom_y := 0.0
 var _t := 0.0
+var _probe := 0
 var _limit := 0.0
 var _results: Array[String] = []
 var _queue: Array[String] = []
@@ -145,6 +146,10 @@ func _bot_wander(player: Player) -> void:
 ## Climbs the crystal ladder: stand beside the next step, jump towards it.
 func _bot_climb(player: Player, target_x: float) -> void:
 	var arena := _game.world.find_child("BossBatArena", true, false)
+	_probe += 1
+	if _probe % 60 == 0 and arena != null and OS.get_environment("DOABLE_PROBE") != "":
+		var hp: Variant = arena.heart.heart_body.global_position if is_instance_valid(arena.heart.heart_body) else null
+		print("  PROBE t=%.1f p=%s heart=%s boss=%s dying=%s" % [_t, player.position, hp, arena.boss.global_position if is_instance_valid(arena.boss) else null, arena.boss.is_dying() if is_instance_valid(arena.boss) else "gone"])
 	if _cheat_heart and arena != null and _t > 12.0 and _t < 12.1 and is_instance_valid(arena.heart.heart_body):
 		print("  CHEAT: grabbing the heart")
 		arena.heart._on_body(player)
