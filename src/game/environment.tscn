@@ -1,11 +1,29 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=5 format=3]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0.12, 0.05, 0.24, 1)
+sky_horizon_color = Color(0.62, 0.2, 0.52, 1)
+sky_curve = 0.12
+ground_bottom_color = Color(0.04, 0.03, 0.08, 1)
+ground_horizon_color = Color(0.16, 0.42, 0.55, 1)
+ground_curve = 0.08
+sun_angle_max = 0.0
+sun_curve = 0.0
+use_debanding = true
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+radiance_size = 1
 
 [sub_resource type="Environment" id="env"]
 background_mode = 1
 background_color = Color(0.03, 0.015, 0.045, 1)
-ambient_light_source = 1
+sky = SubResource("sky")
+ambient_light_source = 3
 ambient_light_color = Color(0.55, 0.42, 0.75, 1)
-ambient_light_energy = 1.6
+ambient_light_sky_contribution = 1.0
+ambient_light_energy = 1.0
+reflected_light_source = 2
 tonemap_mode = 2
 tonemap_white = 6.0
 glow_enabled = true
@@ -29,12 +47,20 @@ fog_sky_affect = 0.0
 environment = SubResource("env")
 camera_attributes = SubResource("attrs")
 
+; One directional light only, without shadows: on the Mobile renderer (as
+; seen on the software Vulkan used for screenshots) a second directional
+; light, or a shadowed one next to the rooms' omni lights, made the key light
+; drop out entirely. The sky's ambient light does the fill's job and the baked
+; ambient occlusion in every model grounds props on the floor.
 [node name="KeyLight" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.866025, -0.321394, 0.383022, 0, 0.766044, 0.642788, -0.5, -0.55667, 0.663414, 0, 0, 0)
 light_color = Color(1, 0.92, 0.9, 1)
 light_energy = 1.6
-
-[node name="FillLight" type="DirectionalLight3D" parent="."]
-transform = Transform3D(0.766044, 0.321394, -0.55667, 0, 0.866025, 0.5, 0.642788, -0.383022, 0.663414, 0, 0, 0)
-light_color = Color(0.45, 0.6, 1, 1)
-light_energy = 0.7
+shadow_enabled = false
+shadow_bias = 0.04
+shadow_normal_bias = 1.2
+shadow_blur = 1.5
+directional_shadow_mode = 1
+directional_shadow_split_1 = 0.35
+directional_shadow_fade_start = 0.85
+directional_shadow_max_distance = 48.0

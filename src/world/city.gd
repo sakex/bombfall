@@ -77,6 +77,11 @@ func _ready() -> void:
 	_build_airship()
 	_build_searchlights()
 	_build_skybridges()
+	# The city is backdrop: it must never cast shadows into the hotel. (Its
+	# sky, haze and towers sit in the key light's path and would otherwise
+	# put every room in shade.)
+	for node in find_children("*", "GeometryInstance3D", true, false):
+		(node as GeometryInstance3D).cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 
 
 func _camera_pos() -> Vector3:

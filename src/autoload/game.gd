@@ -13,6 +13,7 @@ var _fade: ColorRect
 
 
 func _ready() -> void:
+	get_tree().node_added.connect(_on_node_added)
 	var layer := CanvasLayer.new()
 	layer.layer = 100
 	add_child(layer)
@@ -85,3 +86,23 @@ func start_game() -> void:
 
 func start_tutorial() -> void:
 	_switch(TUTORIAL_SCENE)
+
+
+## Every imported model's AnimationPlayer starts its "idle" clip on its own:
+## the Blender scripts author ambient motion (rotors, blinking, breathing) as
+## an "idle" clip, and this loops it with a random phase so identical props
+## do not move in lockstep. See ModelUtil.prepare_animations.
+func _on_node_added(node: Node) -> void:
+	if node is MeshInstance3D and node.owner != null and node.owner.scene_file_path.ends_with(".glb"):
+		ModelUtil.animate_materials(node)
+	elif node is AnimationPlayer and node.owner != null and node.owner.scene_file_path.ends_with(".glb"):
+		ModelUtil.prepare_animations(node as AnimationPlayer)
+		if (node as AnimationPlayer).has_animation("idle"):
+			_start_idle.call_deferred(node)
+
+
+func _start_idle(player: AnimationPlayer) -> void:
+	if not is_instance_valid(player) or not player.is_inside_tree() or player.is_playing():
+		return
+	player.play("idle")
+	player.seek(randf() * player.current_animation_length, true)
