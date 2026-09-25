@@ -10,4 +10,6 @@ import furniture
 
 clean_scene()
 furniture.painting_frame()
-furniture.finish("painting", keep=("canvas",))
+furniture.prepare(keep=("canvas",))
+export("painting")
+furniture.report("painting")

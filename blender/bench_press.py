@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.bench_press()
-furniture.finish("bench_press")
+furniture.prepare()
+export("bench_press")
+furniture.report("bench_press")

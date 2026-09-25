@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.champagne()
-furniture.finish("champagne")
+furniture.prepare()
+export("champagne")
+furniture.report("champagne")

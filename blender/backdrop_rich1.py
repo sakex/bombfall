@@ -19,7 +19,7 @@ reset()
 WINDOWS = [(1.7, 2.0, 4.6, 2.6), (1.5, 7.7, 2.2, 1.2), (11.3, 7.7, 2.2, 1.2)]
 MEZZ = 5.2           # underside of the mezzanine
 MZ = 5.55            # its floor
-SILK = pbr("fabric", (0.36, 0.15, 0.22), color2=(0.44, 0.2, 0.27), bump=0.3, name="silk")
+SILK = pbr("fabric", (0.62, 0.40, 0.42), color2=(0.70, 0.48, 0.48), bump=0.3, name="silk")
 BOOKS = [M.leather_ox, M.leather_tan, M.leather_black, M.velvet_teal, M.velvet_navy, M.mahogany, M.paper, M.velvet_red]
 LED_WARM = neon_mat((1.0, 0.62, 0.3), 1.6, "led_warm")
 

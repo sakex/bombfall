@@ -10,4 +10,6 @@ import furniture
 
 clean_scene()
 furniture.bathtub()
-furniture.finish("bathtub")
+furniture.prepare()
+export("bathtub")
+furniture.report("bathtub")

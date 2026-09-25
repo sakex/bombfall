@@ -40,8 +40,20 @@ F = int(T * FPS)   # ... in frames (120)
 
 # ------------------------------------------------------------ materials --
 # A few shared looks (all pbr kinds bake into the atlas).
+# The game lights rooms with a dim purple ambient and one high omni light,
+# which greys out dark or cool albedos; every surface colour is lifted so
+# the decor keeps its hue in game (the Cycles previews look a bit bright).
+LIFT = 1.35
+
+
+def _lift(c):
+    return tuple(min(0.92, v * LIFT) for v in c) if c else c
+
+
 def M(kind, colour, **kw):
-    return pbr(kind, colour, **kw)
+    if "color2" in kw:
+        kw["color2"] = _lift(kw["color2"])
+    return pbr(kind, _lift(colour), **kw)
 
 
 def glow(colour, strength=3.0, base=None):
@@ -51,7 +63,7 @@ def glow(colour, strength=3.0, base=None):
     return pbr("neon", base, emit=colour, strength=strength)
 
 
-def screen(colour, strength=1.6):
+def screen(colour, strength=1.1):
     """An animated screen material (rolling scanlines in the game)."""
     return anim(neon(colour, strength, tuple(c * 0.15 for c in colour)), "screen")
 
@@ -86,6 +98,10 @@ def pattern(kind, colour, pat, size=(0.3, 0.3), line=0.012, line_col=None, plane
           tuple(sorted((k, str(v)) for k, v in kw.items())))
     if ck in _PATTERNS and _PATTERNS[ck].name in bpy.data.materials:
         return _PATTERNS[ck]
+    colour = _lift(colour)
+    line_col = _lift(line_col)
+    if "color2" in kw:
+        kw["color2"] = _lift(kw["color2"])
     m = pbr(kind, colour, name=name or "%s_%s_%d" % (kind, pat, len(bpy.data.materials)), **kw)
     _PATTERNS[ck] = m
     nt = m.node_tree
@@ -917,7 +933,7 @@ def monstera(x, y, pot_m, leaf_m, stem_m, h=3.2, seed=3, n=11, sway_groups=2, na
         yaw = yaw - 0.25 * (1 if side > 0 else -1)
         size = 0.55 + 0.45 * rnd()
         leaf(tip[0], tip[1], tip[2], 0.9 * size * (h / 3.2), 0.75 * size * (h / 3.2), yaw, -0.2 - 0.5 * rnd(), leaf_m,
-             roll=(1.1 + (rnd() - 0.5) * 0.6) * (1 if side > 0 else -1), parent=g)
+             roll=(1.3 + (rnd() - 0.5) * 0.4) * (1 if side > 0 else -1), parent=g)
     for i, g in enumerate(groups):
         swing(g, "Y", amp=0.025, phase=i * 2.1)
     return groups

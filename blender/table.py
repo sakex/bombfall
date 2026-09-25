@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.table()
-furniture.finish("table")
+furniture.prepare()
+export("table")
+furniture.report("table")

@@ -4,7 +4,7 @@
 [ext_resource type="PackedScene" path="res://assets/models/bed_rich.glb" id="2"]
 
 [sub_resource type="BoxShape3D" id="shape"]
-size = Vector3(5.8, 2.8, 2.6)
+size = Vector3(5.75, 2.8, 2.8)
 
 [node name="BedRich" type="RigidBody3D"]
 collision_layer = 32

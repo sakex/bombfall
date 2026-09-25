@@ -57,7 +57,7 @@ GREEN_LED = glow((0.2, 1.0, 0.35), 4.0)
 FAIRY_A = glow((1.0, 0.75, 0.35), 5.0)
 FAIRY_B = glow((1.0, 0.35, 0.7), 5.0)
 CLIP_LAMP = glow((1.0, 0.85, 0.6), 2.5)
-TV = screen((0.45, 0.55, 1.0), 1.6)
+TV = screen((0.25, 0.4, 1.0), 1.1)
 GLASS = glass((0.6, 0.75, 0.9), alpha=0.25)
 STEAM = glass((0.9, 0.92, 1.0), alpha=0.35, rough=0.6)
 POSTER_A = glow((1.0, 0.3, 0.6), 0.6, base=(0.5, 0.1, 0.3))
@@ -299,7 +299,7 @@ for k in range(2):
     box((0.86, 0.04, 1.45), (KX0 + 0.46 + k * 0.92, WALL - 0.72, 4.47), LAMINATE, bev=0.015)
 lathe([(0.18, 0.0), (0.24, 0.35)], (14.3, 1.5, 5.25), TERRACOTTA, verts=12)
 for k in range(7):
-    leaf(14.3, 1.45, 5.55, 0.55, 0.15, (k / 7) * math.tau, 0.3 + 0.15 * (k % 3), PLANT_G, roll=1.2 if math.cos(k / 7 * math.tau) > 0 else -1.2)
+    leaf(14.3, 1.45, 5.55, 0.55, 0.15, (k / 7) * math.tau, 0.3 + 0.15 * (k % 3), PLANT_G, roll=1.3 if math.cos(k / 7 * math.tau) > 0 else -1.3)
 
 # ------------------------------------------------------------ upper wall --
 for (rx, rz, rw, rh) in WINDOWS[1:]:

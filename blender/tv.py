@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.tv()
-furniture.finish("tv")
+furniture.prepare()
+export("tv")
+furniture.report("tv")

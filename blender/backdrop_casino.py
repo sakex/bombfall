@@ -214,14 +214,14 @@ for i, (kind, m) in enumerate((("spade", M.n_white), ("heart", M.n_pink), ("club
 # clicks to a stop against a leather flapper.
 BX, BZ, BR = 2.6, 7.95, 0.88
 lathe([(BR + 0.12, 0.0), (BR + 0.12, 0.08), (0.0, 0.08)], (BX, WALL - 0.02, BZ), M.mahogany, segs=24, rot=(math.pi / 2, 0, 0))
-bp = pivot("bigsix", (BX, WALL - 0.12, BZ))
-seg = ring_segments(BX, BZ, WALL - 0.1, 0.18, BR, 24, [M.lacquer_red, M.lacquer_white, pbr("plastic", (0.05, 0.1, 0.45), rough=0.2, name="big6_blue"),
+bp = pivot("bigsix", (BX, WALL - 0.13, BZ))
+seg = ring_segments(BX, BZ, WALL - 0.12, 0.18, BR, 24, [M.lacquer_red, M.lacquer_white, pbr("plastic", (0.05, 0.1, 0.45), rough=0.2, name="big6_blue"),
                                                           M.lacquer_white, pbr("plastic", (0.9, 0.6, 0.05), rough=0.2, name="big6_gold"), M.lacquer_white],
                     "bigsix_face", parent=bp, upright=True)
 for k in range(24):
     a = TAU * k / 24
-    tube([(BX + math.cos(a) * 0.18, WALL - 0.12, BZ + math.sin(a) * 0.18), (BX + math.cos(a) * BR, WALL - 0.12, BZ + math.sin(a) * BR)], 0.008, M.gold, verts=3, caps=False, parent=bp)
-lathe([(0.2, 0), (0.2, 0.04), (0.08, 0.07), (0.0, 0.07)], (BX, WALL - 0.12, BZ), M.gold, segs=12, rot=(math.pi / 2, 0, 0), parent=bp)
+    tube([(BX + math.cos(a) * 0.18, WALL - 0.13, BZ + math.sin(a) * 0.18), (BX + math.cos(a) * BR, WALL - 0.13, BZ + math.sin(a) * BR)], 0.008, M.gold, verts=3, caps=False, parent=bp)
+lathe([(0.2, 0), (0.2, 0.04), (0.08, 0.07), (0.0, 0.07)], (BX, WALL - 0.13, BZ), M.gold, segs=12, rot=(math.pi / 2, 0, 0), parent=bp)
 merge_children(bp, "bigsix_mesh")
 key(bp, "idle", "rotation_euler", [(0, (0, 0, 0)), (30, (0, -TAU * 1.2, 0)), (60, (0, -TAU * 1.85, 0)), (80, (0, -TAU * 2.0, 0)), (LOOP, (0, -TAU * 2.0, 0))], interp="LINEAR")
 quad_dots([(BX + math.cos(TAU * i / 32) * (BR + 0.07), BZ + math.sin(TAU * i / 32) * (BR + 0.07)) for i in range(32)], WALL - 0.1, 0.05, BULBS)

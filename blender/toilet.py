@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.toilet()
-furniture.finish("toilet", keep=("display",))
+furniture.prepare(keep=("display",))
+export("toilet")
+furniture.report("toilet")

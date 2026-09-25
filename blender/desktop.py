@@ -14,4 +14,6 @@ parts, fans = furniture.desktop_parts()
 joined = {name: join(objs, name) for name, objs in parts.items()}
 for p in fans:
     furniture.attach(p, joined["tower"])
-furniture.finish("desktop", keep=tuple(parts), offsets={"monitor": (0, 0, 2.0), "tower": (2.7, 0, 0)})
+furniture.prepare(keep=tuple(parts))
+export("desktop")
+furniture.report("desktop", offsets={"monitor": (0, 0, 2.0), "tower": (2.7, 0, 0)})

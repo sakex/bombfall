@@ -11,4 +11,6 @@ import furniture
 
 clean_scene()
 furniture.arcade_cabinet()
-furniture.finish("arcade_cabinet", keep=("screen", "marquee"))
+furniture.prepare(keep=("screen", "marquee"))
+export("arcade_cabinet")
+furniture.report("arcade_cabinet")

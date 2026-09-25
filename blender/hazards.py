@@ -620,23 +620,13 @@ def trampoline():
     for k in range(len(rings) - 1):
         # each entry's print colour runs out to the next radius
         _bridge(bm, verts[k], verts[k + 1], mat=rings[k][1])
-    # Underside: a coarser bowl 12 mm below.
-    under = []
-    for r in (0.0, 0.25, 0.5, MR):
-        z = MZ - SAG * (1.0 - (r / MR) ** 2) - 0.012
-        if r == 0.0:
-            v = bm.verts.new((0, 0, z))
-            under.append([v] * segs)
-        else:
-            under.append([bm.verts.new((math.cos(TAU * j / segs) * r, math.sin(TAU * j / segs) * r, z)) for j in range(segs)])
-    for k in range(len(under) - 1):
-        _bridge(bm, under[k + 1], under[k], mat=0)
-    _bridge(bm, verts[-1], under[-1], mat=0)
+    # (single surface: materials are double-sided, so the print shows from
+    # both sides and the inverted rebound pose still reads)
     bm.normal_update()
     top = _obj("mat_surface", bm, mat_m, smooth=True, angle=80, mats=(pink_m, cyan_m))
     # Faces point where they were built (top up, underside down).
     hang(top, mp)
-    key(mp, "bounce", "scale", [(0, (1, 1, 1)), (3, (1, 1, 5.2)), (6, (1, 1, 4.0)), (9, (1, 1, -1.6)),
+    key(mp, "bounce", "scale", [(0, (1, 1, 1)), (3, (1, 1, 5.2)), (6, (1, 1, 4.0)), (9, (1, 1, -1.3)),
                                  (13, (1, 1, 2.4)), (17, (1, 1, 0.4)), (21, (1, 1, 1.3)), (25, (1, 1, 1))])
 
 
@@ -786,8 +776,8 @@ def drone():
     ('gimbal', 'cam_tilt') and blinking nav lights ('nav_*', 'beacon') in
     `idle`."""
     P = palette()
-    shell = pbr("plastic", (0.55, 0.57, 0.63), rough=0.2, wear=0.15, name="pearl_shell")
-    carbon = pbr("plastic", (0.035, 0.03, 0.05), rough=0.3, bump=0.5, scale=0.2, name="carbon")
+    shell = pbr("plastic", (0.72, 0.74, 0.8), rough=0.22, wear=0.15, name="pearl_shell")
+    carbon = pbr("plastic", (0.05, 0.055, 0.11), rough=0.32, bump=0.5, scale=0.2, name="carbon")
     trim = pbr("paint", (0.20, 0.04, 0.26), name="drone_plum")
     visor = pbr("plastic", (0.01, 0.012, 0.02), rough=0.05, wear=0.0, grime=0.05, name="visor_black")
     cyan = pbr("neon", (0.05, 0.85, 0.95), strength=4.0, name="neon_cyan")
@@ -1291,6 +1281,13 @@ def treadmill():
     rbox((0.06, 0.09, 0.06), on_face(0.1, -0.3, 0.02), key_red, r=0.015, rot=tilt)
     k0 = Vector(on_face(0.1, -0.3, 0.03))
     sweep([tuple(k0), tuple(k0 + Vector((-0.05, -0.02, -0.12))), tuple(k0 + Vector((-0.06, 0.02, -0.25))), tuple(k0 + Vector((-0.03, 0.05, -0.3)))], 0.008, key_red, prof=4)
+    # status LEDs over the screen (the only `idle` motion: rollers and belt
+    # are driven by treadmill.gd)
+    for j in range(3):
+        loc = on_face(0.9, -0.2 + j * 0.2, 0.035)
+        p = piv("led_%d" % (j + 1), loc)
+        sphere(0.022, loc, (cyan, pink, cyan)[j], segments=6, rings=4, parent=p)
+        blink(p, "idle", seconds=2.0, at=j * 0.6, length=0.3, lo=0.5, hi=1.3)
 
 
 def rope_link():
@@ -1604,7 +1601,7 @@ def boss_bat():
     skin = pbr("skin", (0.3, 0.06, 0.22), rough=0.68, bump=0.4, name="bat_membrane")
     skin_pink = pbr("skin", (0.7, 0.26, 0.38), rough=0.5, name="bat_skin_pink")
     bone_skin = pbr("leather", (0.12, 0.05, 0.13), rough=0.5, name="bat_bone_skin")
-    armour = pbr("paint", (0.16, 0.07, 0.25), name="bat_armour")
+    armour = pbr("paint", (0.075, 0.07, 0.11), name="bat_armour")
     chrome = pbr("chrome", (0.8, 0.82, 0.86), name="bat_chrome")
     ivory = pbr("ceramic", (0.86, 0.82, 0.72), rough=0.25, name="bat_ivory")
     mouth = pbr("plastic", (0.08, 0.0, 0.02), rough=0.5, name="bat_mouth")

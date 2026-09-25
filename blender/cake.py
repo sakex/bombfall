@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.cake()
-furniture.finish("cake")
+furniture.prepare()
+export("cake")
+furniture.report("cake")

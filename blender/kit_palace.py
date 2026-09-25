@@ -163,6 +163,15 @@ def reset():
     M.reset()
 
 
+def pivot(name, loc=(0, 0, 0), parent=None):
+    """common.pivot plus a view-layer update: a fresh Empty's matrix_world
+    is stale until then, and children attached to it would end up offset
+    by its location a second time."""
+    e = common.pivot(name, loc, parent=parent)
+    bpy.context.view_layer.update()
+    return e
+
+
 def neon_mat(rgb, strength=4.0, name=None):
     return _neon(rgb, strength, name)
 
@@ -561,6 +570,9 @@ _S = {
     ":": [[(1, 4), (1, 4.4)], [(1, 1), (1, 1.4)]],
     "&": [[(4, 0), (0.8, 4.2), (0.8, 5.2), (1.6, 6), (2.6, 6), (3.2, 5.2), (3, 4.4), (0, 2.2), (0, 0.9), (0.9, 0), (2.4, 0), (4, 2)]],
     "*": [[(2, 1), (2, 5)], [(0.3, 2), (3.7, 4)], [(0.3, 4), (3.7, 2)]],
+    "@": [[(3, 2.2), (3, 4), (2.2, 4.4), (1.2, 4), (1, 2.6), (1.8, 2), (3, 2.4), (3.6, 1.9), (4, 3), (4, 4.5), (3.1, 5.8), (0.9, 5.8), (0, 4.5), (0, 1.4),
+           (0.9, 0.2), (3.3, 0.2)]],
+    "#": [[(1.2, 0), (1.6, 6)], [(2.6, 0), (3, 6)], [(0.2, 2), (4, 2)], [(0.4, 4), (4.2, 4)]],
     " ": [],
 }
 _WIDTH = {"I": 2, "1": 4, "!": 2, "'": 2, ".": 2, ":": 2, "M": 5, "W": 5, " ": 2.5}
@@ -1195,7 +1207,7 @@ def mark(label):
 
 # ------------------------------------------------------------- ceilings --
 def crystal_mat():
-    return pbr("neon", (0.55, 0.6, 0.7), emit=(0.85, 0.92, 1.0), strength=1.6, name="crystal")
+    return pbr("neon", (0.6, 0.62, 0.7), emit=(1.0, 0.9, 0.8), strength=2.2, name="crystal")
 
 
 def drop_crystal(p, r, m, parent=None):
@@ -1206,43 +1218,49 @@ def drop_crystal(p, r, m, parent=None):
     return mesh_obj(v, f, m, "crystal", False, parent=parent)
 
 
-def chandelier(name, x, y, drop=1.0, r=0.6, arms=8, tiers=2, m_metal=None, spin_ball=True, chain=True):
-    """A crystal chandelier hanging from the ceiling (z = 0) on a `sway_*`
-    pivot the game swings; a cut crystal ball under it spins (`spin_*`)."""
+def chandelier(name, x, y, drop=1.0, r=0.6, arms=8, tiers=2, m_metal=None, spin_ball=True, chain=True, strands=14):
+    """A tiered crystal chandelier hanging from the ceiling (z = 0) on a
+    `sway_*` pivot the game swings: gilt rings with curtains of glowing
+    crystal strands and candle bulbs; a cut crystal ball under it turns
+    (`spin_*`). Built to read as a sparkling mass at game distance."""
     m_metal = m_metal or M.gold
     cry = crystal_mat()
     p = pivot(name, (x, y, 0.0))
-    lathe([(0.0, 0), (0.16, 0), (0.12, -0.05), (0.0, -0.06)], (x, y, 0), m_metal, segs=10, parent=p)
+    lathe([(0.0, -0.06), (0.12, -0.05), (0.16, 0)], (x, y, 0), m_metal, segs=10, cap=False, parent=p)
     top = -drop
     if chain:
-        tube([(x, y, -0.05), (x, y, top + 0.35)], 0.012, m_metal, verts=4, caps=False, parent=p)
-        tube([(x, y, -0.05), (x, y, top + 0.35)], 0.022, M.velvet_red, verts=3, caps=False, parent=p, twist=0.5)
-    # body: urn column
-    lathe([(0.03, 0.35), (0.07, 0.3), (0.05, 0.15), (0.11, 0.0), (0.08, -0.1), (0.03, -0.2), (0.06, -0.3), (0.0, -0.38)], (x, y, top), m_metal, segs=10, parent=p)
+        tube([(x, y, -0.05), (x, y, top + 0.3)], 0.014, m_metal, verts=4, caps=False, parent=p)
+        tube([(x, y, -0.05), (x, y, top + 0.3)], 0.03, M.velvet_red, verts=3, caps=False, parent=p, twist=0.5)
+    # the crown: a small ring of strands above
+    lathe([(0.0, 0.4), (0.06, 0.35), (0.05, 0.25), (0.12, 0.1), (0.1, 0.0), (0.05, -0.12), (0.08, -0.22), (0.0, -0.3)], (x, y, top), m_metal, segs=10, parent=p)
     for t in range(tiers):
-        rt = r * (1.0 - 0.38 * t)
-        zt = top + 0.02 + t * 0.32
+        rt = r * (1.0 - 0.42 * t)
+        zt = top + t * 0.36
         na = arms if t == 0 else max(arms - 3, 4)
-        torus(rt * 0.72, 0.012, (x, y, zt - 0.06), m_metal, major_segments=16, minor_segments=4, parent=p)
+        torus(rt, 0.022, (x, y, zt), m_metal, major_segments=18, minor_segments=4, parent=p)
+        ns = strands if t == 0 else max(strands - 5, 6)
+        for k in range(ns):
+            a = TAU * (k + 0.5) / ns
+            px, py = x + math.cos(a) * rt, y + math.sin(a) * rt
+            L = 0.26 + 0.08 * ((k % 3) == 1) - 0.06 * t
+            tube([(px, py, zt - 0.02), (px, py, zt - L)], 0.012, cry, verts=3, caps=False, parent=p)
+            drop_crystal((px, py, zt - L), 0.022, cry, parent=p)
         for k in range(na):
             a = TAU * (k + 0.5 * t) / na
             ex, ey = x + math.cos(a) * rt, y + math.sin(a) * rt
-            tube([(x + math.cos(a) * 0.06, y + math.sin(a) * 0.06, zt), (x + math.cos(a) * rt * 0.55, y + math.sin(a) * rt * 0.55, zt - 0.12),
-                  (ex, ey, zt - 0.02), (ex, ey, zt + 0.06)], 0.011, m_metal, verts=5, caps=False, parent=p)
-            lathe([(0.035, 0), (0.045, 0.02), (0.02, 0.035)], (ex, ey, zt + 0.06), m_metal, segs=6, cap=False, parent=p)
-            lathe([(0.014, 0), (0.014, 0.09)], (ex, ey, zt + 0.08), M.ceramic, segs=5, cap=False, parent=p)
-            lathe([(0.0, 0), (0.028, 0.03), (0.0, 0.08)], (ex, ey, zt + 0.17), M.bulb, segs=5, parent=p)
-            drop_crystal((ex, ey, zt - 0.03), 0.018, cry, parent=p)
-            if t == 0:
-                mx, my = x + math.cos(a + math.pi / na) * rt * 0.75, y + math.sin(a + math.pi / na) * rt * 0.75
-                tube([(ex, ey, zt - 0.02), (mx, my, zt - 0.12), (x + math.cos(a + TAU / na) * rt, y + math.sin(a + TAU / na) * rt, zt - 0.02)],
-                     0.006, cry, verts=3, caps=False, parent=p)
-                drop_crystal((mx, my, zt - 0.12), 0.022, cry, parent=p)
+            tube([(x + math.cos(a) * 0.08, y + math.sin(a) * 0.08, zt + 0.1), (x + math.cos(a) * rt * 0.6, y + math.sin(a) * rt * 0.6, zt - 0.02),
+                  (ex, ey, zt + 0.02), (ex, ey, zt + 0.08)], 0.016, m_metal, verts=4, caps=False, parent=p)
+            lathe([(0.04, 0), (0.05, 0.03), (0.02, 0.04)], (ex, ey, zt + 0.07), m_metal, segs=6, cap=False, parent=p)
+            lathe([(0.0, 0), (0.04, 0.04), (0.0, 0.11)], (ex, ey, zt + 0.1), M.bulb, segs=6, parent=p)
+    # a cone of strands closing the bottom
+    for k in range(8):
+        a = TAU * k / 8
+        tube([(x + math.cos(a) * r * 0.5, y + math.sin(a) * r * 0.5, top - 0.05), (x, y, top - 0.42)], 0.01, cry, verts=3, caps=False, parent=p)
     merge_children(p, name + "_mesh")
     if spin_ball:
-        sp = pivot("spin_" + name[5:] if name.startswith("sway_") else "spin_" + name, (x, y, top - 0.38), parent=p)
-        ico(0.07, (x, y, top - 0.46), cry, subdiv=1, parent=sp)
-        drop_crystal((x, y, top - 0.53), 0.03, cry, parent=sp)
+        sp = pivot("spin_" + name[5:] if name.startswith("sway_") else "spin_" + name, (x, y, top - 0.42), parent=p)
+        ico(0.08, (x, y, top - 0.5), cry, subdiv=1, parent=sp)
+        drop_crystal((x, y, top - 0.57), 0.035, cry, parent=sp)
         merge_children(sp, sp.name + "_mesh")
     return p
 
@@ -1408,3 +1426,128 @@ def ring_segments(cx, cy, z, r0, r1, n, mats, name="ring", parent=None, start=0.
         fs.append((k, k + 1, k + 2, k + 3))
         fm.append(i % len(mats))
     return mesh_obj(vs, fs, list(mats), name, False, parent=parent, closed=False, face_mats=fm)
+
+
+def ceiling_fan(name, x, y, drop=0.45, r=0.75, blades=5, m_metal=None, m_blade=None, light=True):
+    """A ceiling fan: downrod, motor housing, leaf-shaped blades on a
+    `spin_*` pivot the game turns, and a glowing bowl."""
+    m_metal = m_metal or M.brass
+    m_blade = m_blade or M.walnut
+    lathe([(0.0, -0.04), (0.1, -0.03), (0.1, 0.0)], (x, y, 0.0), m_metal, segs=10, cap=False)
+    tube([(x, y, -0.03), (x, y, -drop + 0.1)], 0.02, m_metal, verts=5, caps=False)
+    lathe([(0.0, 0.14), (0.09, 0.12), (0.13, 0.06), (0.13, 0.0), (0.1, -0.04), (0.0, -0.05)], (x, y, -drop), m_metal, segs=12)
+    p = pivot(name, (x, y, -drop - 0.02))
+    for k in range(blades):
+        a = TAU * k / blades
+        c, s_ = math.cos(a), math.sin(a)
+        tube([(x + c * 0.1, y + s_ * 0.1, -drop - 0.02), (x + c * 0.24, y + s_ * 0.24, -drop - 0.03)], 0.012, m_metal, verts=4, parent=p)
+        outline = []
+        for i in range(9):
+            t = i / 8
+            w = 0.09 * math.sin(math.pi * min(t * 1.1, 1.0)) + 0.02
+            outline.append((0.22 + t * (r - 0.22), w))
+        outline += [(u, -v) for (u, v) in reversed(outline)]
+        pts = [(x + c * u - s_ * v, y + s_ * u + c * v) for (u, v) in outline]
+        o = prism(pts, -drop - 0.045, -drop - 0.03, m_blade, plane="xy", parent=p)
+    if light:
+        lathe([(0.0, -0.12), (0.1, -0.1), (0.13, -0.04), (0.12, 0.0)], (x, y, -drop - 0.04), M.shade, segs=10, cap=False, parent=p)
+    merge_children(p, name + "_mesh")
+    return p
+
+
+def plush(x, y, z, s, m, kind=0):
+    """A soft toy: 0 teddy, 1 bunny, 2 blob with a bow."""
+    sphere(0.16 * s, (x, y, z + 0.16 * s), m, scale=(1.0, 0.85, 1.05), segments=8, rings=5)
+    sphere(0.12 * s, (x, y - 0.02 * s, z + 0.38 * s), m, segments=8, rings=5)
+    if kind == 0:
+        for sx in (-1, 1):
+            ico(0.045 * s, (x + sx * 0.09 * s, y, z + 0.48 * s), m, subdiv=1)
+    elif kind == 1:
+        for sx in (-1, 1):
+            ico(0.035 * s, (x + sx * 0.05 * s, y, z + 0.55 * s), m, subdiv=1).scale = (1, 0.7, 3.0)
+    else:
+        ico(0.04 * s, (x, y - 0.1 * s, z + 0.5 * s), M.plastic_red, subdiv=1)
+    ico(0.035 * s, (x, y - 0.13 * s, z + 0.36 * s), M.plush_white, subdiv=1)
+    quad_dots([(x - 0.04 * s, z + 0.42 * s), (x + 0.04 * s, z + 0.42 * s)], y - 0.13 * s, 0.028 * s, M.plastic_black)
+    for sx in (-1, 1):
+        ico(0.05 * s, (x + sx * 0.14 * s, y - 0.05 * s, z + 0.2 * s), m, subdiv=1)
+
+
+def disco_ball(name, x, y, drop=0.8, r=0.3, sparkle=None):
+    """A mirror ball on a chain, on a `spin_*` pivot the game turns; glints
+    (small glowing squares on its skin) orbit with it."""
+    tube([(x, y, 0.0), (x, y, -drop + r)], 0.01, M.chrome, verts=4, caps=False)
+    lathe([(0.0, -0.03), (0.06, -0.02), (0.06, 0.0)], (x, y, 0.0), M.chrome, segs=8, cap=False)
+    p = pivot(name, (x, y, -drop))
+    o = sphere(r, (x, y, -drop), pbr("chrome", (0.8, 0.82, 0.9), rough=0.12, name="mirrorball"), segments=14, rings=9, smooth=False, parent=p)
+    rnd = rng(int(x * 10))
+    vs, fs = [], []
+    for i in range(26):
+        a = rnd() * TAU
+        e = (rnd() - 0.5) * 2.4
+        n = Vector((math.cos(a) * math.cos(e), math.sin(a) * math.cos(e), math.sin(e)))
+        c = Vector((x, y, -drop)) + n * (r + 0.004)
+        t1 = n.cross(Vector((0, 0, 1))).normalized() if abs(n.z) < 0.99 else Vector((1, 0, 0))
+        t2 = n.cross(t1)
+        h = 0.022
+        k = len(vs)
+        vs += [c - t1 * h - t2 * h, c + t1 * h - t2 * h, c + t1 * h + t2 * h, c - t1 * h + t2 * h]
+        fs.append((k, k + 1, k + 2, k + 3))
+    mesh_obj(vs, fs, sparkle or neon_mat((1.0, 0.95, 1.0), 4.0, "glint"), "glints", False, parent=p, closed=False)
+    merge_children(p, name + "_mesh")
+    return p
+
+
+def moving_head(name, x, y, colour, beam=2.6, aim=0.0, sweep=0.45, phase=0.0, sway=False):
+    """A stage moving-head light under the ceiling with a translucent beam;
+    it sweeps side to side (keyed idle) or, with `sway`, is left to the
+    game's sway_* swing."""
+    slab_at(x - 0.12, x + 0.12, y - 0.1, y + 0.1, -0.06, 0.0, M.black_metal)
+    tube([(x - 0.1, y, -0.06), (x - 0.1, y, -0.2)], 0.015, M.black_metal, verts=4)
+    tube([(x + 0.1, y, -0.06), (x + 0.1, y, -0.2)], 0.015, M.black_metal, verts=4)
+    p = pivot(name, (x, y, -0.2))
+    lathe([(0.0, 0.1), (0.08, 0.09), (0.09, 0.0), (0.075, -0.12), (0.0, -0.13)], (x, y, -0.2), M.black_metal, segs=10, parent=p)
+    lathe([(0.0, 0.0), (0.065, 0.0)], (x, y, -0.33), neon_mat(colour, 5.0, "lens"), segs=10, rot=(math.pi, 0, 0), parent=p, cap=False)
+    lathe([(0.06, 0.0), (beam * 0.18, -beam)], (x, y, -0.33), beam_mat(colour, 0.1, 1.2), segs=12, parent=p, cap=False)
+    merge_children(p, name + "_mesh")
+    p.rotation_euler = (0, aim, 0)
+    if not sway:
+        key(p, "idle", "rotation_euler", [(LOOP * k / 8, (0.08 * math.sin(k * math.pi / 2 + phase), aim + sweep * math.sin(k * math.pi / 4 + phase), 0)) for k in range(9)],
+            interp="BEZIER")
+    return p
+
+
+def pendant(name, x, y, drop, m_shade=None, m_metal=None, kind="globe", r=0.14):
+    """A hanging lamp on a `sway_*` pivot: globe, dome or lantern."""
+    m_metal = m_metal or M.brass
+    p = pivot(name, (x, y, 0.0))
+    lathe([(0.0, -0.02), (0.07, -0.015), (0.07, 0.0)], (x, y, 0.0), m_metal, segs=8, parent=p, cap=False)
+    tube([(x, y, -0.02), (x, y, -drop + r)], 0.006, M.plastic_black, verts=3, caps=False, parent=p)
+    if kind == "globe":
+        lathe([(0.03, r * 1.05), (0.035, r * 0.95)], (x, y, -drop), m_metal, segs=8, parent=p, cap=False)
+        sphere(r, (x, y, -drop), m_shade or M.shade, segments=10, rings=7, parent=p)
+    elif kind == "dome":
+        lathe([(0.0, r * 0.9), (r * 0.5, r * 0.75), (r * 1.2, 0.0), (r * 1.25, -0.02)], (x, y, -drop), m_metal, segs=12, parent=p, cap=False)
+        lathe([(0.0, 0.0), (r * 1.15, 0.0)], (x, y, -drop + 0.01), m_shade or M.bulb, segs=12, parent=p, cap=False, rot=(math.pi, 0, 0))
+    else:
+        lathe([(0.0, r * 1.2), (r * 0.7, r * 0.9), (r, 0.0), (r * 0.7, -r * 0.9), (0.0, -r * 1.2)], (x, y, -drop), m_shade or M.shade, segs=10, parent=p)
+        for k in range(4):
+            a = TAU * k / 4
+            tube([(x + math.cos(a) * r * 0.72, y + math.sin(a) * r * 0.72, -drop + r * 0.88), (x + math.cos(a) * r * 1.01, y + math.sin(a) * r * 1.01, -drop),
+                  (x + math.cos(a) * r * 0.72, y + math.sin(a) * r * 0.72, -drop - r * 0.88)], 0.006, m_metal, verts=3, caps=False, parent=p)
+    merge_children(p, name + "_mesh")
+    return p
+
+
+def beacon(name, x, y, colour=(1.0, 0.1, 0.1)):
+    """A rotating warning beacon: a clear dome over a spinning mirror and
+    lamp on a `spin_*` pivot."""
+    lathe([(0.1, 0.0), (0.1, -0.08), (0.0, -0.08)], (x, y, 0.0), M.black_metal, segs=10)
+    p = pivot(name, (x, y, -0.2))
+    lathe([(0.0, 0.0), (0.075, 0.0), (0.075, 0.1), (0.0, 0.1)], (x, y, -0.2), M.chrome, segs=8, parent=p, arc=math.pi)
+    lathe([(0.0, 0.0), (0.075, 0.0), (0.075, 0.1), (0.0, 0.1)], (x, y, -0.2), neon_mat(colour, 5.0, "beacon"), segs=8, parent=p,
+          arc=math.pi, rot=(0, 0, math.pi))
+    lathe([(0.08, 0.0), (0.4, -1.8)], (x, y, -0.15), beam_mat(colour, 0.1, 1.5), segs=10, arc=math.pi * 0.35, parent=p, rot=(math.pi / 2, 0, 0))
+    merge_children(p, name + "_mesh")
+    lathe([(0.1, -0.08), (0.1, -0.2), (0.07, -0.26), (0.0, -0.28)], (x, y, 0.0), pbr("glass", colour, alpha=0.35, name="beacon_dome"), segs=10, cap=False)
+    return p

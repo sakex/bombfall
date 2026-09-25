@@ -9,4 +9,6 @@ import furniture
 
 clean_scene()
 furniture.bed2()
-furniture.finish("bed2")
+furniture.prepare()
+export("bed2")
+furniture.report("bed2")

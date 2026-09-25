@@ -1,7 +1,8 @@
-[gd_scene load_steps=8 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="Script" path="res://src/spawnables/light_ring.gd" id="1"]
 [ext_resource type="PackedScene" path="res://assets/models/light_ring.glb" id="2"]
+[ext_resource type="Shader" path="res://assets/shaders/haz_laser.gdshader" id="3"]
 
 [sub_resource type="BoxShape3D" id="base"]
 size = Vector3(2.6, 0.8, 1.6)
@@ -15,13 +16,9 @@ size = Vector3(0.05, 0.5, 0.5)
 [sub_resource type="BoxMesh" id="beam"]
 size = Vector3(1, 0.28, 0.28)
 
-[sub_resource type="StandardMaterial3D" id="beam_mat"]
-transparency = 1
-shading_mode = 0
-albedo_color = Color(1, 0.4, 0.7, 0.85)
-emission_enabled = true
-emission = Color(1, 0.3, 0.6, 1)
-emission_energy_multiplier = 5.0
+[sub_resource type="ShaderMaterial" id="beam_mat"]
+render_priority = 0
+shader = ExtResource("3")
 
 [node name="LightRing" type="RigidBody3D"]
 collision_layer = 32
@@ -55,6 +52,7 @@ disabled = true
 
 [node name="Beam" type="MeshInstance3D" parent="Laser"]
 visible = false
+cast_shadow = 0
 mesh = SubResource("beam")
 surface_material_override/0 = SubResource("beam_mat")
 

@@ -130,7 +130,7 @@ def smooth_path(points, n=4, closed=False):
 
 
 def tube(points, radius, m, sides=8, name=None, parent=None, caps=True, closed=False, smooth=True,
-         up=(0, 0, 1), twist=0.0):
+         up=(0, 0, 1), twist=0.0, phase=0.0):
     """A tube swept along a polyline (parallel-transport frames).
     `radius` is a number or a per-point list (tapers)."""
     P = [Vector(p) for p in points]
@@ -159,7 +159,7 @@ def tube(points, radius, m, sides=8, name=None, parent=None, caps=True, closed=F
         b = t.cross(nn)
         ring = []
         for s in range(sides):
-            a = math.tau * s / sides + twist * i
+            a = math.tau * s / sides + twist * i + phase
             ring.append(bm.verts.new(p + radii[i] * (math.cos(a) * nn + math.sin(a) * b)))
         rings.append(ring)
     pairs = list(zip(rings, rings[1:]))
@@ -173,7 +173,7 @@ def tube(points, radius, m, sides=8, name=None, parent=None, caps=True, closed=F
         bm.faces.new(list(reversed(rings[0])))
         bm.faces.new(rings[-1])
     o = _mesh_object(bm, name)
-    return _finish(o, m, 0, smooth, name, parent, smooth_angle=60.0)
+    return _finish(o, m, 0, True, name, parent, smooth_angle=60.0 if smooth else 30.0)
 
 
 def text_mesh(text, size, loc, m, rot=(math.pi / 2, 0, 0), depth=0.01, kind="bold", name=None,
@@ -615,10 +615,27 @@ def sheet(name, out_dir=None, views=None, size=360, samples=24, zoom=1.0, frame=
         ld.shadow_soft_size = radius * 0.4
         lo_ = _link(bpy.data.objects.new("sheet_light", ld))
         lo_.location = c + Vector(pos) * radius * 2.2
+    # A dim synthwave sky (like the game's) so metals have something to reflect.
     scn.world = scn.world or bpy.data.worlds.new("w")
     scn.world.use_nodes = True
-    bg = scn.world.node_tree.nodes["Background"]
-    bg.inputs[0].default_value = (0.05, 0.03, 0.07, 1.0)
+    wnt = scn.world.node_tree
+    bg = wnt.nodes["Background"]
+    tcw = wnt.nodes.new("ShaderNodeTexCoord")
+    sep = wnt.nodes.new("ShaderNodeSeparateXYZ")
+    wnt.links.new(tcw.outputs["Generated"], sep.inputs[0])
+    ramp = wnt.nodes.new("ShaderNodeValToRGB")
+    ramp.color_ramp.elements[0].position = 0.35
+    ramp.color_ramp.elements[0].color = (0.03, 0.05, 0.08, 1)
+    ramp.color_ramp.elements[1].position = 0.75
+    ramp.color_ramp.elements[1].color = (0.1, 0.04, 0.2, 1)
+    mid = ramp.color_ramp.elements.new(0.5)
+    mid.color = (0.45, 0.15, 0.4, 1)
+    rng = wnt.nodes.new("ShaderNodeMapRange")
+    rng.inputs["From Min"].default_value = -1.0
+    rng.inputs["From Max"].default_value = 1.0
+    wnt.links.new(sep.outputs["Z"], rng.inputs["Value"])
+    wnt.links.new(rng.outputs["Result"], ramp.inputs["Fac"])
+    wnt.links.new(ramp.outputs["Color"], bg.inputs[0])
     bg.inputs[1].default_value = 1.0
     tiles = []
     for i, (az, el) in enumerate(views):

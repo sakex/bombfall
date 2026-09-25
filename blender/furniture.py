@@ -506,8 +506,9 @@ def shots(name, out_dir=None, size=440, samples=36, offsets=None):
     print("SHOTS %s -> %s" % (name, out_dir))
 
 
-def finish(name, keep=(), tex=None, offsets=None, ao_distance=None):
-    """Join the static parts, bake, export and render the product shots."""
+def prepare(keep=()):
+    """Run the queued animation calls, lighten small bevels and join the
+    static parts into one mesh; the script then calls export(name)."""
     run_later()
     # Small parts do not need two-segment bevels (a 108-triangle cube).
     for o in all_meshes():
@@ -523,7 +524,11 @@ def finish(name, keep=(), tex=None, offsets=None, ao_distance=None):
         for n, on in sorted(rows, reverse=True)[:12]:
             print("OBJTRIS %6d %s" % (n, on))
     join_static("body", keep=keep)
-    export(name, tex=tex, ao_distance=ao_distance)
+
+
+def report(name, offsets=None):
+    """After export(): optional product shots (FURN_SHOTS), then the
+    triangle count and per-mesh bounds, for sizing collision shapes."""
     shots(name, offsets=offsets)
     tris = 0
     for o in all_meshes():
@@ -538,6 +543,13 @@ def finish(name, keep=(), tex=None, offsets=None, ao_distance=None):
         ws = [o.matrix_world @ V(c) for c in o.bound_box]
         print("BOUNDS %s %-12s x %.2f..%.2f  y %.2f..%.2f  z %.2f..%.2f" % (name, o.name, min(w.x for w in ws), max(w.x for w in ws),
               min(w.y for w in ws), max(w.y for w in ws), min(w.z for w in ws), max(w.z for w in ws)))
+
+
+def finish(name, keep=(), tex=None, offsets=None, ao_distance=None):
+    """prepare() + export() + report() in one call."""
+    prepare(keep)
+    export(name, tex=tex, ao_distance=ao_distance)
+    report(name, offsets)
 
 
 # ================================================================= toilet ==
@@ -755,12 +767,12 @@ def _caster(x, y, a, m_body, m_wheel):
 
 
 def chair():
-    """An executive office chair at 2.5x life size: oxblood leather with
+    """An executive office chair at 2.3x life size: crimson leather with
     channel-tufted back and a plump seat, chrome armrests and five-star base,
     twin-wheel casters. ~1.65 x 1.85 x 3.0 m, front facing -Y."""
     mats_reset()
-    leather = pbr("leather", (0.26, 0.035, 0.06), rough=0.42, wear=0.35, grime=0.35, edge=0.03, name="oxblood")
-    leather_dk = pbr("leather", (0.10, 0.02, 0.03), rough=0.5, edge=0.02, name="oxblood_dark")
+    leather = pbr("leather", (0.46, 0.05, 0.09), rough=0.4, wear=0.35, grime=0.3, edge=0.03, name="crimson")
+    leather_dk = pbr("leather", (0.2, 0.03, 0.05), rough=0.45, edge=0.02, name="crimson_dark")
     plastic = pbr("plastic", (0.02, 0.02, 0.025), rough=0.35, edge=0.015, name="black_abs")
     # Five-star base.
     lathe([(0.0, 0.22), (0.17, 0.22), (0.2, 0.28), (0.17, 0.36), (0.0, 0.38)], CHROME_M, segs=20)

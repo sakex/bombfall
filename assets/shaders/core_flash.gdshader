@@ -9,5 +9,5 @@ uniform vec3 color : source_color = vec3(1.0, 0.82, 0.55);
 void fragment() {
 	float facing = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
 	float glow = pow(facing, 2.5);
-	ALBEDO = color * glow * heat * 4.0;
+	ALBEDO = color * glow * heat * 2.6;
 }

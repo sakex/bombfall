@@ -4,14 +4,14 @@
 [ext_resource type="PackedScene" path="res://assets/models/arcade_cabinet.glb" id="2"]
 
 [sub_resource type="BoxShape3D" id="shape"]
-size = Vector3(1.3, 2.8, 1.2)
+size = Vector3(1.34, 2.8, 1.2)
 
 [node name="ArcadeCabinet" type="RigidBody3D"]
 collision_layer = 32
 collision_mask = 2875
 mass = 45
 center_of_mass_mode = 1
-center_of_mass = Vector3(0, 0.52, 0)
+center_of_mass = Vector3(0, 0.54, 0)
 angular_damp = 2.0
 can_sleep = false
 script = ExtResource("1")

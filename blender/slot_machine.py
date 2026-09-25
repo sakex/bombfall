@@ -11,4 +11,6 @@ import furniture
 
 clean_scene()
 furniture.slot_machine()
-furniture.finish("slot_machine", keep=("marquee",))
+furniture.prepare(keep=("marquee",))
+export("slot_machine")
+furniture.report("slot_machine")

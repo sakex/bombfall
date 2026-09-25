@@ -9,7 +9,7 @@ render_mode unshaded, blend_mix, depth_draw_never, cull_back, shadows_disabled, 
 instance uniform float heat = 1.0;
 instance uniform float age = 0.0;
 instance uniform float seed = 0.0;
-uniform float billow = 0.32;
+uniform float billow = 0.42;
 
 varying vec3 p_obj;
 
@@ -41,19 +41,20 @@ float fbm(vec3 p) {
 }
 
 void vertex() {
-	vec3 q = VERTEX * 2.1 + vec3(seed, -TIME * 0.9 + seed * 0.37, seed * 0.61);
-	float n = fbm(q);
+	vec3 q = VERTEX * 2.3 + vec3(seed, -TIME * 0.9 + seed * 0.37, seed * 0.61);
+	float n = fbm(q) * 0.7 + vnoise(q * 2.3) * 0.3;
 	// Billows push out more as the ball grows old and turns to smoke.
 	VERTEX += NORMAL * (n - 0.45) * (billow + 0.25 * age);
 	p_obj = VERTEX;
 }
 
 vec3 fire_ramp(float t) {
-	vec3 smoke = vec3(0.09, 0.07, 0.11);
-	vec3 ember = vec3(0.55, 0.12, 0.12);
-	vec3 red = vec3(2.2, 0.42, 0.06);
-	vec3 orange = vec3(4.2, 1.7, 0.35);
-	vec3 white = vec3(6.5, 5.2, 3.4);
+	// Linear HDR colours: sooty smoke, glowing embers, flame, white heat.
+	vec3 smoke = vec3(0.016, 0.012, 0.02);
+	vec3 ember = vec3(0.3, 0.035, 0.025);
+	vec3 red = vec3(1.7, 0.26, 0.04);
+	vec3 orange = vec3(3.4, 1.25, 0.2);
+	vec3 white = vec3(4.6, 3.6, 2.3);
 	vec3 c = mix(smoke, ember, smoothstep(0.08, 0.3, t));
 	c = mix(c, red, smoothstep(0.3, 0.48, t));
 	c = mix(c, orange, smoothstep(0.48, 0.7, t));
@@ -63,14 +64,15 @@ vec3 fire_ramp(float t) {
 
 void fragment() {
 	float facing = clamp(dot(normalize(NORMAL), normalize(VIEW)), 0.0, 1.0);
-	vec3 q = p_obj * 2.6 + vec3(seed * 1.3, -TIME * 1.6, seed);
+	vec3 q = p_obj * 3.0 + vec3(seed * 1.3, -TIME * 1.6, seed);
 	float n = fbm(q);
-	float fine = vnoise(p_obj * 7.0 + vec3(0.0, -TIME * 3.0, seed));
-	float t = facing * 0.95 + (n - 0.5) * 0.9 + (fine - 0.5) * 0.25;
+	float fine = vnoise(p_obj * 8.0 + vec3(0.0, -TIME * 3.0, seed));
+	float t = facing * 0.95 + (n - 0.5) * 1.25 + (fine - 0.5) * 0.35;
 	t = t * (0.35 + 0.75 * heat) - age * 0.55;
 	ALBEDO = fire_ramp(t);
 	// Soft rim, then erosion by the noise as the blast dies away.
-	float a = smoothstep(0.0, 0.35, facing + (n - 0.5) * 0.5);
-	float erode = smoothstep(age * 1.05 - 0.05, age * 1.05 + 0.2, n + facing * 0.35);
-	ALPHA = clamp(a * erode * min(heat * 1.6, 1.0), 0.0, 1.0);
+	float a = smoothstep(0.0, 0.45, facing + (n - 0.5) * 0.6);
+	float cut = age * age * 1.25;
+	float erode = smoothstep(cut - 0.08, cut + 0.18, n + facing * 0.3);
+	ALPHA = clamp(a * erode * min(heat * 2.2 + 0.15, 1.0), 0.0, 1.0);
 }
