@@ -14,7 +14,9 @@ OUT = os.path.join(ROOT, "src", "spawnables")
 # never above 40% of the width: a sliding box on a floor with friction 1
 # tips over as soon as its centre of mass is higher than half its width.
 PROPS = {
-    "toilet": ("toilet", "box", (1.9, 2.75, 1.2), 1.375, 40),
+    # The toilet is turned 30 degrees towards the camera: its box sits a
+    # little right of the origin.
+    "toilet": ("toilet", "boxes", [((1.6, 2.75, 1.2), (0.08, 1.375))], 1.375, 40),
     "bathtub": ("bathtub", "box", (5.7, 2.2, 2.2), 1.1, 120),
     "chair": ("chair", "box", (1.65, 3.0, 1.6), 1.5, 28),
     # The top and the place settings; the candelabra rises above it.

@@ -1,4 +1,4 @@
-# magnet: a horseshoe electromagnet 1.1 m wide, 1.25 m tall, poles up,
+# magnet: a horseshoe electromagnet 0.8 m wide, 1.1 m tall, poles up,
 # centred (it floats and spins above the pedestal; pickup.gd owns that
 # motion). A square-section red lacquered horseshoe with ground chrome pole
 # shoes stamped N and S, copper field coils wound round both legs with brass
@@ -90,6 +90,7 @@ key(field, "idle", "scale", [(0, (1, 1, 1)), (10, (1.06, 1, 1.25)), (20, (0.96, 
                              (45, (1, 1, 1)), (60, (1, 1, 1))])
 
 finish("magnet")
+scale_all(0.88)      # fits the float height over the pedestal
 tri_report("magnet")
 export("magnet", tex=512)
 sheet("magnet", views=[(0, 0), (35, 20), (80, 10)])

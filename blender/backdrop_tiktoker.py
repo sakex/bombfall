@@ -25,7 +25,7 @@ FAIRY = anim_neon((1.0, 0.75, 0.45), "marquee", 2.5)
 
 # ------------------------------------------------------------ architecture --
 slab_at(0.0, 15.0, 0.0, WALL, 0.0, 0.02, M.oak)
-slab_at(0.0, 15.0, WALL - 0.02, WALL, 0.0, 3.95, PASTEL)
+wall_cover(WINDOWS, 0.0, 9.3, PASTEL)
 tube([(0.05, WALL - 0.04, 0.1), (14.95, WALL - 0.04, 0.1)], 0.018, M.n_pink, verts=4)
 box((15.0, 0.04, 0.12), (7.5, WALL - 0.03, 0.06), M.lacquer_white)
 # shaggy round rug and a pink runner

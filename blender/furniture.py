@@ -392,18 +392,23 @@ def rise(p, dz, clip="idle", seconds=2.0, phase=0.0, size=1.0, drift=0.0):
     size *= p.scale.x
     x0 = p.location.x
     pts = []
+    # The small offset keeps every sample off u = 0, so the wrap from the
+    # top back to the bottom always falls strictly inside the clip (a key
+    # past its end makes Godot's looping interpolation fly off).
     for s in range(13):
-        u = (phase + s / 12.0) % 1.0
+        u = (phase + 0.013 + s / 12.0) % 1.0
         pts.append((s / 12.0 * end, u))
     loc_keys, scl_keys = [], []
     for i, (f, u) in enumerate(pts):
-        # insert a wrap point so the jump from top to bottom takes one frame
+        # insert a wrap point so the jump from top to bottom is instant
         if i > 0 and u < pts[i - 1][1]:
-            fw = pts[i - 1][0] + (1.0 - pts[i - 1][1]) / (u + 1.0 - pts[i - 1][1]) * (f - pts[i - 1][0])
-            loc_keys.append((fw - 0.01, (x0, p.location.y, z1)))
-            scl_keys.append((fw - 0.01, (0.0, 0.0, 0.0)))
-            loc_keys.append((fw + 0.01, (x0, p.location.y, z0)))
-            scl_keys.append((fw + 0.01, (0.0, 0.0, 0.0)))
+            f0 = pts[i - 1][0]
+            fw = f0 + (1.0 - pts[i - 1][1]) / (u + 1.0 - pts[i - 1][1]) * (f - f0)
+            fw = min(max(fw, f0 + 0.05), f - 0.05)
+            loc_keys.append((fw - 0.02, (x0, p.location.y, z1)))
+            scl_keys.append((fw - 0.02, (0.0, 0.0, 0.0)))
+            loc_keys.append((fw + 0.02, (x0, p.location.y, z0)))
+            scl_keys.append((fw + 0.02, (0.0, 0.0, 0.0)))
         z = z0 + (z1 - z0) * u
         sc = size * min(1.0, u * 6.0) * min(1.0, (1.0 - u) * 5.0)
         loc_keys.append((f, (x0 + drift * math.sin(u * TAU * 1.5), p.location.y, z)))
@@ -1353,8 +1358,8 @@ def bed_rich():
     bedding with gold trim and a heap of pillows. 5.8 x 2.6 x 2.8 m."""
     mats_reset()
     gilt = pbr("gold", (0.95, 0.68, 0.28), rough=0.28, grime=0.5, bump=0.2, edge=0.012, name="gilt")
-    wine = pbr("fabric", (0.32, 0.02, 0.07), color2=(0.22, 0.01, 0.05), bump=0.35, edge=0.03, name="wine_velvet")
-    satin = pbr("fabric", (0.45, 0.03, 0.1), color2=(0.6, 0.08, 0.15), rough=0.45, bump=0.1, edge=0.03, name="satin")
+    wine = pbr("fabric", (0.55, 0.05, 0.16), color2=(0.45, 0.04, 0.13), bump=0.35, edge=0.03, name="wine_velvet")
+    satin = pbr("fabric", (0.72, 0.1, 0.26), color2=(0.8, 0.16, 0.32), rough=0.45, bump=0.1, edge=0.03, name="satin")
     ivory = pbr("fabric", (0.88, 0.82, 0.7), color2=(0.8, 0.73, 0.6), bump=0.3, edge=0.03, name="ivory_velvet")
     white = pbr("fabric", (0.92, 0.9, 0.86), edge=0.03, name="linen")
     goldcloth = pbr("fabric", (0.85, 0.6, 0.2), color2=(0.6, 0.4, 0.1), rough=0.5, bump=0.3, name="gold_brocade")
@@ -1672,7 +1677,7 @@ def slot_machine():
     tray and a side "lever" with a red ball (pulled by the game).
     1.35 (1.6 with the lever) x 1.2 x 2.6 m."""
     mats_reset()
-    candy = pbr("paint", (0.5, 0.01, 0.04), rough=0.18, metal=0.45, wear=0.15, grime=0.25, edge=0.015, name="candy_red")
+    candy = pbr("paint", (0.72, 0.03, 0.07), rough=0.2, wear=0.15, grime=0.2, edge=0.015, name="candy_red")
     dark = pbr("paint", (0.03, 0.02, 0.04), rough=0.35, wear=0.3, grime=0.3, edge=0.012, name="slot_dark")
     reel_m = pbr("plastic", (0.95, 0.93, 0.88), rough=0.35, wear=0.1, grime=0.2, name="reel_face")
     m7 = pbr("plastic", (0.85, 0.02, 0.05), rough=0.3, wear=0.0, name="sym_red")
@@ -2010,18 +2015,21 @@ def _limb(pts, r0, r1, step=0.55):
 
 
 def statue_parts():
-    """The Disco Droid: a chrome android striking a disco point on a black
-    marble plinth, in three pieces the game makes separate bodies:
+    """The Disco Droid: a white marble android striking a disco point on a
+    black marble plinth, in three pieces the game makes separate bodies:
       base - nero marble plinth with gilt mouldings, a brass plaque and a
              cyan neon under the cornice (0..1.95 m)
-      body - the metaball-sculpted chrome figure with neon joint rings and a
-             glowing chest core that pulses (1.95..~8 m)
-      head - a crested helmet head with a black visor and a cyan eye line
+      body - the metaball-sculpted marble figure with neon joint rings, a
+             gilt disc underfoot and a glowing chest core that pulses
+             (1.95..~8 m)
+      head - a crested helmet head with a black visor, a cyan eye line and
+             gilt ear pods
     All authored in place (every body sits at the origin in statue.tscn)."""
     mats_reset()
     marble = pbr("marble", (0.03, 0.026, 0.036), color2=(0.22, 0.2, 0.24), rough=0.12, edge=0.012, scale=2.5, name="nero_marble")
     gilt = pbr("gold", (0.95, 0.68, 0.28), rough=0.25, grime=0.5, edge=0.01, name="gilt")
-    chrome = pbr("chrome", (0.86, 0.87, 0.92), rough=0.06, grime=0.1, edge=0.01, name="android_chrome")
+    # White marble reads in the dim neon rooms; chrome only mirrors the dark.
+    chrome = pbr("marble", (0.86, 0.85, 0.88), color2=(0.55, 0.53, 0.6), rough=0.14, grime=0.25, edge=0.01, scale=1.5, name="carrara")
     visor_m = pbr("plastic", (0.01, 0.01, 0.015), rough=0.04, wear=0.0, grime=0.0, bump=0.0, name="visor")
     parts = {}
     # ---- base
@@ -2066,7 +2074,7 @@ def statue_parts():
     for c, r, rot in (((1.47, -0.14, Z + 5.52), 0.14, (0.35, -0.5, 0)), ((-0.84, -0.14, Z + 3.35), 0.14, (0.4, 1.1, 0)),
                       ((-0.4, 0.0, Z + 0.45), 0.2, (0, 0, 0)), ((0.68, 0.0, Z + 0.52), 0.2, (0.1, 0.2, 0))):
         bb.append(torus(r, 0.022, c, glow(CYAN, 5.0), rot=rot, major_segments=16, minor_segments=4))
-    bb.append(lathe([(0.0, Z - 0.0), (1.0, Z), (1.02, Z + 0.03), (0.98, Z + 0.06), (0.0, Z + 0.06)], CHROME_M, segs=32))
+    bb.append(lathe([(0.0, Z - 0.0), (1.0, Z), (1.02, Z + 0.03), (0.98, Z + 0.06), (0.0, Z + 0.06)], gilt, segs=32))
     parts["body"] = bb
     core = pivot("core", (0, -0.5, Z + 4.02))
     cyl(0.14, 0.06, (0, -0.52, Z + 4.02), glow((1.0, 0.3, 0.7), 6.0), rot=(math.pi / 2, 0, 0), verts=6, bevel=0.0, parent=core)
@@ -2078,7 +2086,7 @@ def statue_parts():
     h.append(sphere(0.4, (0, -0.2, HZ + 0.02), visor_m, scale=(0.95, 0.6, 0.42), segments=18, rings=10))
     h.append(torus(0.36, 0.014, (0, -0.215, HZ + 0.03), glow(CYAN, 6.0), scale=(1.0, 0.62, 0.3), major_segments=24, minor_segments=4))
     for sx in (-1, 1):
-        h.append(cyl(0.12, 0.08, (sx * 0.4, 0, HZ), chrome, rot=(0, math.pi / 2, 0), verts=16))
+        h.append(cyl(0.12, 0.08, (sx * 0.4, 0, HZ), gilt, rot=(0, math.pi / 2, 0), verts=16))
         h.append(torus(0.1, 0.016, (sx * 0.445, 0, HZ), glow(PINK, 5.0), rot=(0, math.pi / 2, 0), major_segments=14, minor_segments=4))
     crest = sweep([(0.0, 0.0), (0.035, 0.0), (0.0, 0.0)], [(0, -0.28 + 0.56 * k / 8, HZ + 0.44 + 0.12 * math.sin(math.pi * k / 8)) for k in range(9)],
                   chrome, closed=False, plane_normal=(1, 0, 0), closed_profile=False, name="crest")

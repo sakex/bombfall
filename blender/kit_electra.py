@@ -56,11 +56,22 @@ def M(kind, colour, **kw):
     return pbr(kind, _lift(colour), **kw)
 
 
+NEON_SCALE = 0.65   # keeps emissive hues from clipping to white under the game's glow
+
+
 def glow(colour, strength=3.0, base=None):
     """Emissive (not baked)."""
+    strength *= NEON_SCALE
     if base is None:
         return pbr("neon", colour, strength=strength)
     return pbr("neon", base, emit=colour, strength=strength)
+
+
+def flat(colour, rough=0.6):
+    """A plain, unbaked material (no normal map): for thin cards such as
+    leaves, whose tiny UV islands give broken tangents once baked."""
+    m = pbr("neon", _lift(colour), emit=(0.0, 0.0, 0.0), strength=0.0, rough=rough, name="flat")
+    return m
 
 
 def screen(colour, strength=1.1):

@@ -81,7 +81,10 @@ func _apply_radius(radius: float, intensity: float) -> void:
 	var age := clampf(_elapsed / (GROW_TIME + FADE_TIME), 0.0, 1.0)
 	fireball.set_instance_shader_parameter("heat", heat)
 	fireball.set_instance_shader_parameter("age", age)
-	core.set_instance_shader_parameter("heat", (1.0 - 0.35 * intensity) if growing else intensity * intensity)
+	var flash := 1.0 - 0.35 * intensity
+	if not growing:     # the flash is spent early in the fade, before the fire cools
+		flash = pow(maxf(0.0, 1.0 - (1.0 - intensity) * 2.5), 2.0) * 0.65
+	core.set_instance_shader_parameter("heat", flash)
 	light.light_energy = 6.0 * intensity
 	light.omni_range = 4.0 + radius * 2.5
 

@@ -36,7 +36,7 @@ RUBBER = pbr("rubber", (0.03, 0.03, 0.035), name="ped_rubber")
 DARKM = pbr("metal", (0.14, 0.15, 0.18), rough=0.4, name="ped_dark")
 NEON = pbr("neon", (0.02, 0.2, 0.25), emit=CYAN, strength=3.0, name="ped_neon")
 LENS = pbr("neon", (0.3, 0.8, 0.9), emit=(0.5, 0.95, 1.0), strength=5.0, name="ped_lens")
-BEAM = glow_glass((0.25, 0.85, 1.0), alpha=0.16, strength=1.4, name="ped_beam")
+BEAM = glow_glass((0.25, 0.85, 1.0), alpha=0.07, strength=1.2, name="ped_beam")
 HALO = pbr("neon", (0.1, 0.4, 0.5), emit=(0.4, 0.95, 1.0), strength=3.5, name="ped_halo")
 
 # Stepped base: a wide chamfered plinth, a second step, chrome kick plates.
@@ -69,9 +69,9 @@ collar = pivot("collar", (0, 0, 1.34))
 for i in range(3):
     a = i / 3 * math.tau + math.pi / 2
     x, y = math.cos(a), math.sin(a)
-    tube(smooth_path([(x * 0.44, y * 0.44, 1.33), (x * 0.47, y * 0.47, 1.45), (x * 0.4, y * 0.4, 1.56)], 2),
-         [0.045, 0.04, 0.03, 0.03, 0.025], DARKM, sides=6, name="prong%d" % i, parent=collar)
-    sphere(0.035, (x * 0.4, y * 0.4, 1.58), LENS, segments=8, rings=5, parent=collar)
+    tube(smooth_path([(x * 0.44, y * 0.44, 1.33), (x * 0.5, y * 0.5, 1.42), (x * 0.47, y * 0.47, 1.49)], 2),
+         [0.045, 0.04, 0.034, 0.03, 0.026], DARKM, sides=6, name="prong%d" % i, parent=collar)
+    sphere(0.035, (x * 0.465, y * 0.465, 1.51), LENS, segments=8, rings=5, parent=collar)
 spin(collar, "idle", "Z", seconds=4.0, turns=1.0 / 3.0)
 
 # The tractor beam (a faint glowing cone), and two light rings climbing it.

@@ -514,6 +514,10 @@ def rng(seed):
 
 
 def merge_children(p, name):
+    # the game animates every node named spin_*/sway_*: a merged child must
+    # not inherit that prefix or it would turn a second time
+    if name.startswith(("spin_", "sway_")):
+        name = "mesh_" + name
     objs = [o for o in p.children if o.type == "MESH"]
     if len(objs) < 2:
         if objs:
@@ -773,7 +777,11 @@ def front_render(name, out_dir, windows=None, wall=(0.10, 0.04, 0.14), samples=1
     scn.render.resolution_y = int(scn.render.resolution_x * span_z / 16.5)
     cam_data = bpy.data.cameras.new("front_cam")
     cam_data.type = "ORTHO"
-    cam_data.ortho_scale = 16.5
+    width = 16.5 if name.startswith(("backdrop", "ceiling")) else (hi.x - lo.x) + 1.0
+    if not name.startswith(("backdrop", "ceiling")):
+        cx = (lo.x + hi.x) / 2
+        scn.render.resolution_y = int(scn.render.resolution_x * span_z / width)
+    cam_data.ortho_scale = width
     cam_data.sensor_fit = "HORIZONTAL"
     cam = bpy.data.objects.new("front_cam", cam_data)
     bpy.context.collection.objects.link(cam)
@@ -1551,3 +1559,12 @@ def beacon(name, x, y, colour=(1.0, 0.1, 0.1)):
     merge_children(p, name + "_mesh")
     lathe([(0.1, -0.08), (0.1, -0.2), (0.07, -0.26), (0.0, -0.28)], (x, y, 0.0), pbr("glass", colour, alpha=0.35, name="beacon_dome"), segs=10, cap=False)
     return p
+
+
+def wall_cover(windows, z0, z1, m, y=WALL - 0.02, d=0.02, x0=0.0, x1=15.0):
+    """A finish (paint, lacquer, wallpaper) over the back wall from z0 to z1,
+    cut around the window openings."""
+    for (a, b0, c, e) in _wall_pieces(x1 - x0, z1, [(wx - x0, wz, ww, wh) for (wx, wz, ww, wh) in windows]):
+        lo, hi = max(b0, z0), e
+        if hi - lo > 0.01:
+            slab_at(x0 + a, x0 + c, y, y + d, lo, hi, m)

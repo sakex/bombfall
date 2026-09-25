@@ -16,7 +16,7 @@ from kit_palace import *  # noqa: F401,F403
 
 reset()
 WINDOWS = [(0.4, 5.2, 2.6, 1.6), (12.2, 5.2, 2.6, 1.6), (3.6, 5.2, 7.8, 1.5)]
-LACQUER = pbr("plastic", (0.02, 0.03, 0.09), rough=0.2, name="navy_lacquer")
+LACQUER = pbr("plastic", (0.05, 0.09, 0.2), rough=0.2, name="navy_lacquer")
 FISH_MATS = [neon_mat(c, s, n) for c, s, n in (((1.0, 0.35, 0.05), 1.3, "fish_orange"), ((0.1, 0.35, 1.0), 1.4, "fish_blue"),
                                                  ((1.0, 0.85, 0.1), 1.2, "fish_yellow"), ((0.9, 0.9, 1.0), 1.0, "fish_white"),
                                                  ((1.0, 0.2, 0.55), 1.3, "fish_pink"))]
@@ -30,12 +30,12 @@ for bx in (0.2, 5.6, 11.6, 14.8):
     box((0.03, WALL, 0.004), (bx, WALL / 2, 0.021), M.brass)
 box((15.0, 0.03, 0.004), (7.5, 0.05, 0.021), M.brass)
 # navy lacquer wall panels with brass pinstripes on the lower wall
-slab_at(0.0, 15.0, WALL - 0.02, WALL, 0.0, 5.05, LACQUER)
+wall_cover(WINDOWS, 0.0, 9.3, LACQUER)
 for i in range(26):
     px = 0.3 + i * 0.58
     if 0.2 < px < 5.5 or 6.1 < px < 11.1 or 11.9 < px < 14.8:
         continue
-    box((0.02, 0.02, 4.9), (px, WALL - 0.03, 2.55), M.brass)
+    box((0.035, 0.02, 4.9), (px, WALL - 0.03, 2.55), M.brass)
 box((15.0, 0.05, 0.05), (7.5, WALL - 0.03, 5.08), M.brass)
 tube([(0.05, WALL - 0.06, 5.12), (14.95, WALL - 0.06, 5.12)], 0.015, M.n_cyan, verts=4)
 

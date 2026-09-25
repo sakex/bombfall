@@ -47,7 +47,7 @@ VEND = M("paint", (0.02, 0.02, 0.03), rough=0.25, wear=0.5)
 RUBBER = M("rubber", (0.02, 0.02, 0.025))
 WICKER = pattern("plastic", (0.35, 0.25, 0.12), "tiles", size=(0.12, 0.08), line=0.02, plane="XZ", offset=0.5)
 CLOTH = [M("fabric", c) for c in ((0.5, 0.05, 0.2), (0.05, 0.25, 0.45), (0.7, 0.7, 0.7), (0.1, 0.4, 0.2), (0.6, 0.35, 0.05))]
-PLANT_G = M("plastic", (0.05, 0.25, 0.08), rough=0.75)
+PLANT_G = flat((0.05, 0.28, 0.08), rough=0.7)
 TERRACOTTA = M("ceramic", (0.35, 0.1, 0.04), rough=0.6)
 
 VEND_LIGHT = glow((0.75, 0.9, 1.0), 2.6, base=(0.6, 0.7, 0.8))

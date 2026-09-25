@@ -45,7 +45,7 @@ conf = [neon_mat(c, 1.4, "confetti") for c in ((1.0, 0.2, 0.7), (0.2, 0.9, 1.0),
 for k in range(4):
     pts = [(0.2 + rnd() * 14.6, 0.1 + rnd() * 1.75) for _ in range(40)]
     flat_dots(pts, 0.022, 0.07, conf[k])
-slab_at(0.0, 15.0, WALL - 0.03, WALL, 0.0, 5.5, WALLPAINT)
+wall_cover(WINDOWS, 0.0, 9.3, WALLPAINT)
 # a chevron dado and a neon skirting
 tube([(0.05, WALL - 0.05, 0.06), (14.95, WALL - 0.05, 0.06)], 0.02, M.n_violet, verts=4)
 tube([(0.05, WALL - 0.05, 5.5), (14.95, WALL - 0.05, 5.5)], 0.02, M.n_pink, verts=4)
@@ -275,6 +275,5 @@ for r in range(4):
     neon_text("%d" % (9990 - r * 1357), 1.3, 8.35 - r * 0.24, WALL - 0.09, 0.14, [M.n_cyan, M.n_pink, M.n_green, M.n_violet][r], r=0.008, verts=3)
     neon_text(["ACE", "ZAP", "NEO", "BOB"][r], 2.6, 8.35 - r * 0.24, WALL - 0.09, 0.14, M.n_white, r=0.008, verts=3)
 sprite(GHOST, 13.9, 8.6, WALL - 0.08, 0.07, M.n_cyan)
-sprite(INVADER, 14.2, 7.5, WALL - 0.08, 0.05, M.n_green)
 
 finish("backdrop_arcade", 2048, 14000, windows=WINDOWS, wall=(0.10, 0.04, 0.23))

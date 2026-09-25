@@ -1,4 +1,4 @@
-# doubler: a casino "2X" token 1.25 m across, centred, its faces towards the
+# doubler: a casino "2X" token 1.1 m across, centred, its faces towards the
 # camera (it floats and spins above the pedestal; pickup.gd owns that
 # motion). A thick gold medallion with a stepped rim, a smoked-glass face
 # carrying a glowing neon "2X" on both sides, and a chrome gear ring studded
@@ -91,6 +91,7 @@ key(grp_a, "idle", "scale", chase_a, interp="LINEAR")
 key(grp_b, "idle", "scale", chase_b, interp="LINEAR")
 
 finish("doubler")
+scale_all(0.88)      # fits the float height over the pedestal
 tri_breakdown()
 tri_report("doubler")
 export("doubler", tex=512)

@@ -106,7 +106,7 @@ SCRAP = decal_pbr("paint", (0.2, 0.12, 0.08), [
     dict(image=side_h, origin=(-0.5, 0, 0), size=(2.0, 1.0), u=(0, -1, 0), v=(0, 0, 1), depth=0.02, facing=0.9,
          mode="none", emboss=1.0),
 ], name="junk_scrap", wear=0.9, grime=0.9, bump=0.8, scale=0.4, emboss_distance=0.01)
-WOOD_M = pbr("wood", (0.36, 0.2, 0.09), color2=(0.2, 0.1, 0.04), name="junk_wood", grime=0.8)
+WOOD_M = pbr("wood", (0.24, 0.13, 0.06), color2=(0.13, 0.07, 0.03), name="junk_wood", grime=0.9)
 PIPE = pbr("metal", (0.5, 0.5, 0.52), name="junk_pipe", grime=0.8, rough=0.45)
 COPPER = pbr("gold", (0.55, 0.26, 0.14), rough=0.5, name="junk_copper", grime=0.8)
 TEAL = pbr("paint", (0.05, 0.3, 0.32), name="junk_teal", wear=1.0, grime=0.8)
@@ -119,14 +119,14 @@ TUBE = pbr("neon", (0.3, 0.1, 0.02), emit=ORANGE, strength=3.0, name="junk_neon"
 tile_block(SCRAP, chamfer=0.05, name="bale")
 
 # Split wooden crate end, top left.
-bm_box((0.4, 0.14, 0.3), (-0.26, F + 0.0, 0.26), WOOD_M, rot=(0, 0.1, 0.06))
+bm_box((0.32, 0.12, 0.2), (-0.27, F + 0.0, 0.3), WOOD_M, rot=(0, 0.14, 0.06))
 # Pipe ends poking out (open, dark inside).
 for (x, z, r, m) in ((0.3, 0.3, 0.085, PIPE), (0.12, -0.3, 0.065, COPPER), (0.36, -0.14, 0.05, PIPE)):
     lathe([(r * 0.72, -0.04), (r, 0.0), (r, 0.06), (r * 0.72, 0.06)], m, segments=7, loc=(x, F, z),
           rot=(math.pi / 2, 0, 0))
     lathe([(r * 0.72, 0.03), (0.0, 0.03)], DARK, segments=7, loc=(x, F, z), rot=(math.pi / 2, 0, 0))
 # A hubcap half buried in the bale.
-lathe([(0.2, -0.02), (0.2, 0.02), (0.13, 0.05), (0.0, 0.065)], CHROME_M, segments=11,
+lathe([(0.16, -0.02), (0.16, 0.02), (0.1, 0.045), (0.0, 0.058)], CHROME_M, segments=11,
       loc=(-0.24, F + 0.02, -0.22), rot=(math.pi / 2 + 0.25, 0.0, 0.3))
 # Bent plates.
 bm_box((0.34, 0.02, 0.16), (0.08, F - 0.01, 0.06), TEAL, rot=(0.25, -0.35, 0.1))

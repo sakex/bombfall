@@ -3,28 +3,30 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://de6nandq0b7o0"
-path="res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.ctex"
+path.s3tc="res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.s3tc.ctex"
+path.etc2="res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "af66a9e643577b9339d0bf6f7d7d0c7e"
+"md5": "4a4fcb96f75cc6e0f5e7f8ef901484f1"
 }
 
 [deps]
 
 source_file="res://assets/models/backdrop_rich2_backdrop_rich2_normal.jpg"
-dest_files=["res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.ctex"]
+dest_files=["res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.s3tc.ctex", "res://.godot/imported/backdrop_rich2_backdrop_rich2_normal.jpg-632a4d6a3610591aac433b94927d538d.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=1
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

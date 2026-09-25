@@ -302,7 +302,6 @@ func _animate(delta: float) -> void:
 
 	# Pick the clip for the gameplay state.
 	var clip := "idle"
-	var speed := 1.0
 	if _hurt_time > 0.0:
 		clip = "hurt"
 	elif not _at_floor:
@@ -314,15 +313,19 @@ func _animate(delta: float) -> void:
 			clip = _clip if _clip != "" else "idle"   # a short drop keeps the stride going
 	elif shoving:
 		clip = "push"
-		speed = PUSH_CYCLE_HZ * _clip_length(clip) * (0.75 + 0.5 * clampf(absf(_intent_x) / SPEED.x, 0.0, 1.0))
 	elif running:
 		clip = "run"
-		speed = RUN_CYCLE_HZ * (0.6 + 0.4 * speed_t) * _clip_length(clip) / RUN_CLIP_STRIDES
 	elif _land_time > 0.0:
 		clip = "land"
 	_play(clip)
+	# The stepping clips play at the stride rate the speed calls for.
+	var speed := 1.0
+	if _clip == "run":
+		speed = RUN_CYCLE_HZ * (0.6 + 0.4 * speed_t) * _clip_length("run") / RUN_CLIP_STRIDES
+	elif _clip == "push":
+		speed = PUSH_CYCLE_HZ * _clip_length("push") * (0.75 + 0.5 * clampf(absf(_intent_x) / SPEED.x, 0.0, 1.0))
 	if _anim != null:
-		_anim.speed_scale = speed if (_clip == "run" or _clip == "push") else 1.0
+		_anim.speed_scale = speed
 		_anim.advance(delta)
 	_footsteps(speed_t)
 	_animate_extras(delta)

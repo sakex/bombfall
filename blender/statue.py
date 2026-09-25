@@ -1,4 +1,4 @@
-# statue: "The Disco Droid", a chrome android on a marble plinth, in three
+# statue: "The Disco Droid", a marble android on a black marble plinth, in three
 # separate pieces (base, body, head) so the game can knock the head off.
 # The chest core pulses in the idle clip. 3.6 m wide, 7.9 m tall.
 #   blender -b --python blender/statue.py -- --preview blender/previews

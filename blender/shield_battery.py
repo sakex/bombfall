@@ -1,4 +1,4 @@
-# shield_battery: an energy cell, 0.8 m wide and 1.4 m tall, centred (it
+# shield_battery: an energy cell, 0.6 m wide and 1.1 m tall, centred (it
 # floats and spins above the pedestal; pickup.gd owns that motion). Chrome
 # terminal caps with cooling ribs, a glass tube showing a glowing cyan core
 # wrapped in a coil, a printed label band with a shield mark and a charge
@@ -88,6 +88,7 @@ key(core, "idle", "scale", [(0, (1, 1, 1)), (15, (1.25, 1.25, 1.0)), (30, (1, 1,
                             (60, (1, 1, 1))])
 
 finish("shield_battery")
+scale_all(0.8)      # fits the float height over the pedestal
 tri_report("shield_battery")
 export("shield_battery", tex=512)
 sheet("shield_battery", views=[(0, 0), (35, 20), (0, 70)])

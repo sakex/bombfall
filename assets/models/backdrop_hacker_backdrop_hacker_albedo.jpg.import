@@ -3,28 +3,30 @@
 importer="texture"
 type="CompressedTexture2D"
 uid="uid://cjfn6ocmxotem"
-path="res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.ctex"
+path.s3tc="res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.s3tc.ctex"
+path.etc2="res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.etc2.ctex"
 metadata={
-"vram_texture": false
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
+"vram_texture": true
 }
 generator_parameters={
-"md5": "c619a05c364b5d56df98ce41c062aec4"
+"md5": "a49df81263ed1ca8c66224ab350ab73f"
 }
 
 [deps]
 
 source_file="res://assets/models/backdrop_hacker_backdrop_hacker_albedo.jpg"
-dest_files=["res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.ctex"]
+dest_files=["res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.s3tc.ctex", "res://.godot/imported/backdrop_hacker_backdrop_hacker_albedo.jpg-1360c0eb6a6246b53b5cebc358be89ac.etc2.ctex"]
 
 [params]
 
-compress/mode=0
+compress/mode=2
 compress/high_quality=false
 compress/lossy_quality=0.7
 compress/uastc_level=0
 compress/rdo_quality_loss=0.0
 compress/hdr_compression=1
-compress/normal_map=0
+compress/normal_map=2
 compress/channel_pack=0
 mipmaps/generate=true
 mipmaps/limit=-1
@@ -40,4 +42,4 @@ process/normal_map_invert_y=false
 process/hdr_as_srgb=false
 process/hdr_clamp_exposure=false
 process/size_limit=0
-detect_3d/compress_to=1
+detect_3d/compress_to=0

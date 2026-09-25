@@ -538,6 +538,21 @@ def finish(name, keep=(), body="body"):
     return join_static(body, keep=keep)
 
 
+def scale_all(f, name="scaled"):
+    """Scale the finished model about its origin by parenting every top-level
+    object to one scaled Empty (animated pivots keep their own keys, so
+    their clips still play at the new size). Call after finish()."""
+    root = pivot(name, (0, 0, 0))
+    root.scale = (f, f, f)
+    bpy.context.view_layer.update()
+    for o in list(bpy.context.scene.objects):
+        if o.parent is None and o is not root:
+            o.parent = root
+            o.matrix_parent_inverse = mathutils.Matrix.Identity(4)
+    bpy.context.view_layer.update()
+    return root
+
+
 def tri_breakdown():
     dg = bpy.context.evaluated_depsgraph_get()
     for o in all_meshes():

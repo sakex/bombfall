@@ -1,4 +1,4 @@
-# crate: a casino loot crate 1.4 m wide, 1.2 m tall, 1 m deep, centred (it
+# crate: a casino loot crate 1.2 m wide, 1 m tall, 0.85 m deep, centred (it
 # floats and spins above the pedestal; pickup.gd owns that motion, and the
 # game bursts it into coins). A lacquered plum case with gold corner guards,
 # chrome latches and handles, a lid on a hinge with a glowing seam, and a
@@ -102,6 +102,7 @@ rattle = [(0, (0, 0, 0)), (3, (math.radians(-6), 0, math.radians(1.5))), (6, (0,
 key(lid, "idle", "rotation_euler", rattle, interp="LINEAR")
 
 finish("crate", keep=("port_glass",))
+scale_all(0.85)      # fits the float height over the pedestal
 tri_report("crate")
 export("crate", tex=512)
 sheet("crate", views=[(0, 0), (35, 20), (80, 10)])

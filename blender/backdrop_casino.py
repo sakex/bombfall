@@ -139,6 +139,13 @@ bp = pivot("roulette_ball", (WX, RY, 0.95))
 ico(0.017, (WX + 0.37, RY, 0.95), WHITE_P, subdiv=1, parent=bp)
 spin(bp, "idle", "Z", seconds=4, turns=-4)
 
+# the results board on a pole at the table's end
+tube([(RX + 1.35, RY + 0.3, 0.86), (RX + 1.35, RY + 0.3, 1.9)], 0.025, M.chrome, verts=6)
+slab_at(RX + 1.1, RX + 1.6, RY + 0.25, RY + 0.35, 1.9, 2.65, M.black_metal)
+box((0.44, 0.01, 0.68), (RX + 1.35, RY + 0.245, 2.27), anim_neon((0.25, 0.05, 0.08), "screen", 1.0))
+for i, (num, m) in enumerate((("17", M.n_red), ("32", M.n_white), ("5", M.n_red), ("0", M.n_green))):
+    neon_text(num, RX + 1.35, 2.47 - i * 0.16, RY + 0.24, 0.1, m, r=0.006, align="center", verts=3)
+
 # ------------------------------------------------------------- blackjack --
 JX, JY = 10.1, 1.35
 half = circle_pts(JX, JY, 1.1, 14, math.pi, TAU)
@@ -161,6 +168,12 @@ for i in range(3):
     a = math.pi * (1.25 + 0.25 * i)
     lathe([(0.12, 0), (0.03, 0.05), (0.025, 0.6)], (JX + math.cos(a) * 1.35, JY + math.sin(a) * 1.0, 0), M.brass, segs=8, cap=False)
     lathe([(0.0, 0), (0.17, 0.0), (0.18, 0.05), (0.0, 0.1)], (JX + math.cos(a) * 1.35, JY + math.sin(a) * 1.0, 0.6), M.velvet_red, segs=10)
+
+# a table sign: "BLACKJACK" on a brass stand at the dealer's side
+tube([(JX, JY - 0.02, 0.86), (JX, JY - 0.02, 1.45)], 0.02, M.brass, verts=5)
+slab_at(JX - 0.55, JX + 0.55, JY - 0.06, JY + 0.02, 1.45, 1.8, M.black_metal)
+neon_text("BLACKJACK", JX, 1.55, JY - 0.07, 0.16, M.n_gold, r=0.009, align="center", verts=3)
+quad_dots(rect_pts(JX - 0.53, JX + 0.53, 1.47, 1.78, 0.08), JY - 0.07, 0.025, BULBS)
 
 # ---------------------------------------------------------- cashier cage --
 CX0, CX1 = 12.0, 14.85

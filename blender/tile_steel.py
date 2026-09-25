@@ -67,8 +67,8 @@ STEEL_BODY = decal_pbr("metal", (0.34, 0.36, 0.42), [
     dict(image=tread, origin=(0, 0, 0.5), size=(1.0, 2.0), u=(1, 0, 0), v=(0, 1, 0), depth=0.02, facing=0.9,
          mode="none", emboss=1.0, rough=0.25),
 ], name="steel_body", rough=0.4, grime=0.3, scale=0.6, emboss_distance=0.008)
-ARMOR = decal_pbr("metal", (0.46, 0.48, 0.54), [
-    dict(image=hazard, origin=(0, F - 0.07, 0.0), size=(0.84, 0.16), depth=0.03, rough=0.55),
+ARMOR = decal_pbr("metal", (0.48, 0.51, 0.58), [
+    dict(image=hazard, origin=(0, F - 0.07, 0.0), size=(0.84, 0.2), depth=0.03, rough=0.55),
     dict(image=plate_art, origin=(0, F - 0.07, 0.0), size=(0.84, 0.84), depth=0.03, mode="multiply", rough=0.5),
 ], name="steel_armor", rough=0.3, grime=0.15, scale=0.6)
 RIVET = pbr("chrome", (0.62, 0.63, 0.68), rough=0.18, name="steel_rivet")

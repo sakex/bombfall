@@ -30,9 +30,9 @@ if "--preview" in sys.argv:
 clean_scene()
 
 # ------------------------------------------------------------- materials --
-SUIT = pbr("fabric", (0.78, 0.13, 0.14), rough=0.62, bump=0.30, grime=0.30, name="suit")
+SUIT = pbr("fabric", (0.92, 0.22, 0.17), rough=0.62, bump=0.30, grime=0.30, name="suit")
 SUIT_PAD = pbr("rubber", (0.16, 0.04, 0.08), rough=0.55, name="suit_pad")
-HELMET = pbr("plastic", (0.90, 0.16, 0.14), rough=0.12, wear=0.10, grime=0.10, bump=0.0, name="helmet")
+HELMET = pbr("plastic", (1.0, 0.30, 0.20), rough=0.12, wear=0.10, grime=0.10, bump=0.0, name="helmet")
 FACE = pbr("plastic", (0.006, 0.006, 0.010), rough=0.06, wear=0.0, grime=0.0, bump=0.0, name="face")
 VISOR = pbr("plastic", (0.03, 0.02, 0.06), rough=0.04, wear=0.0, grime=0.08, bump=0.0, name="visor")
 CHROME_M = pbr("chrome", CHROME, name="chrome")
@@ -291,7 +291,7 @@ def build_head():
     shell = mesh_object("helmet", verts, faces, HELMET)
     fix_normals(shell, outward_from=HC)
     cut_below(shell, NECK_CUT)
-    solidify(shell, 0.036, offset=-1.0, rim_mat=RUBBER, bevel=0.007)
+    solidify(shell, 0.036, offset=-1.0, rim_mat=CYAN_L, bevel=0.007)     # a neon gasket round the face
     part(shell, ("rigid", "head"))
     decorate_helmet()
 
