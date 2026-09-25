@@ -22,6 +22,10 @@ func _initialize() -> void:
 		var b: Variant = target.get(spec[2]) if target != null else null
 		var playing: bool = player != null and player.is_playing() and player.current_animation == "idle"
 		var moved: bool = a != null and a != b
+		if player != null:
+			var an := player.get_animation("idle")
+			print("  assigned=%s current=%s root=%s tracks=%s" % [player.assigned_animation, player.current_animation, player.root_node,
+				[] if an == null else range(an.get_track_count()).map(func(t): return String(an.track_get_path(t)))])
 		print("FURN_ANIM %s player=%s playing=%s node=%s moved=%s (%s -> %s)" % [spec[0].get_file(), player != null, playing, target != null, moved, a, b])
 		ok = ok and playing and moved
 		n.queue_free()
