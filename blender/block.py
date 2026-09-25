@@ -17,24 +17,49 @@ from core_kit import *  # noqa: F401,F403
 clean_scene()
 rnd = random.Random(4)
 
-AMETHYST = pbr("marble", (0.24, 0.08, 0.42), color2=(0.62, 0.42, 0.9), rough=0.12, wear=0.9, grime=0.15,
-               name="blk_amethyst", scale=0.6, edge=0.02)
-FROST = pbr("ceramic", (0.62, 0.5, 0.85), rough=0.45, name="blk_frost", wear=0.0, grime=0.2)
+SHELL = glow_glass((0.62, 0.32, 1.0), alpha=0.62, strength=0.55, base=(0.3, 0.12, 0.55), rough=0.3,
+                   name="blk_shell")
+HEART = pbr("neon", (0.35, 0.1, 0.6), emit=(0.62, 0.25, 1.0), strength=2.2, name="blk_heart")
+FROST = pbr("ceramic", (0.6, 0.48, 0.85), rough=0.4, name="blk_frost", wear=0.0, grime=0.2)
 SHARD = pbr("neon", (0.5, 0.2, 0.8), emit=(0.8, 0.35, 1.0), strength=3.5, name="blk_shard")
 SHARD_HOT = pbr("neon", (0.8, 0.5, 1.0), emit=(1.0, 0.7, 1.0), strength=6.0, name="blk_shard_hot")
 
-# The main chunk: chamfered cube, facets nudged so it looks hand cut.
-bm = bmesh.new()
-bmesh.ops.create_cube(bm, size=0.9)
-bmesh.ops.bevel(bm, geom=list(bm.edges), offset=0.13, segments=1, profile=0.5, affect="EDGES", clamp_overlap=True)
-for v in bm.verts:
-    v.co += Vector((rnd.uniform(-0.025, 0.025), rnd.uniform(-0.025, 0.025), rnd.uniform(-0.025, 0.025)))
-me = bpy.data.meshes.new("chunk")
-bm.to_mesh(me)
-bm.free()
-chunk = bpy.data.objects.new("chunk", me)
-bpy.context.collection.objects.link(chunk)
-me.materials.append(AMETHYST)
+
+def hull(points, m, name):
+    bm = bmesh.new()
+    for p in points:
+        bm.verts.new(p)
+    bmesh.ops.convex_hull(bm, input=bm.verts)
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    me = bpy.data.meshes.new(name)
+    bm.to_mesh(me)
+    bm.free()
+    o = bpy.data.objects.new(name, me)
+    bpy.context.collection.objects.link(o)
+    me.materials.append(m)
+    return o
+
+
+# The chunk: the convex hull of points scattered over a chamfered cube, so
+# it has many flat facets at odd angles (the glints make it read as cut
+# crystal). A frosted, translucent shell over a glowing heart.
+pts = []
+for i in range(46):
+    v = Vector((rnd.uniform(-1, 1), rnd.uniform(-1, 1), rnd.uniform(-1, 1)))
+    # push to the surface of a rounded cube of half-size 0.45
+    m_ = max(abs(v.x), abs(v.y), abs(v.z))
+    v = v / m_
+    v = Vector((v.x * 0.45, v.y * 0.45, v.z * 0.45))
+    k = (abs(v.x) > 0.4) + (abs(v.y) > 0.4) + (abs(v.z) > 0.4)
+    if k >= 2:
+        v *= 0.86      # chamfer the edges and corners
+    pts.append(v)
+for sx in (-1, 1):
+    for sy in (-1, 1):
+        for sz in (-1, 1):
+            pts.append(Vector((sx * 0.36, sy * 0.36, sz * 0.36)))
+hull(pts, SHELL, "shell")
+hull([p * 0.55 + Vector((rnd.uniform(-0.04, 0.04), 0, rnd.uniform(-0.04, 0.04))) for p in pts[::2]], HEART, "heart")
 
 
 def crystal(base, direction, length, radius, m, sides=6, name=None):
@@ -79,7 +104,7 @@ for k, (base, direction) in enumerate(clusters):
 for s in (-1, 1):
     crystal((s * 0.12, -0.44, -0.02), (s * 0.3, -1, 0.1), 0.08, 0.025, SHARD_HOT)
 
-finish("block")
+finish("block", keep=("shell", "heart"))
 tri_report("block")
 export("block", tex=256)
 sheet("block", views=[(0, 0), (35, 25), (-50, 30)])
