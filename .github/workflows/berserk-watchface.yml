@@ -1,0 +1,89 @@
+name: Build Berserk watch face
+
+on:
+  push:
+    paths:
+      - "berserk-watchface/**"
+      - ".github/workflows/berserk-watchface.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: berserk-watchface
+    env:
+      GARMIN_USERNAME: ${{ secrets.GARMIN_USERNAME }}
+      GARMIN_PASSWORD: ${{ secrets.GARMIN_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Check secrets
+        run: |
+          if [ -z "$GARMIN_USERNAME" ] || [ -z "$GARMIN_PASSWORD" ]; then
+            echo "::error::Add GARMIN_USERNAME and GARMIN_PASSWORD under Settings > Secrets and variables > Actions"
+            exit 1
+          fi
+
+      - name: Install Connect IQ SDK manager
+        run: |
+          curl -sSf https://raw.githubusercontent.com/lindell/connect-iq-sdk-manager-cli/master/install.sh | sh -s -- -b "$HOME/bin"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Download SDK and devices
+        run: |
+          connect-iq-sdk-manager agreement accept
+          connect-iq-sdk-manager login
+          connect-iq-sdk-manager sdk set ">=7.0.0"
+          echo "$(connect-iq-sdk-manager sdk current-path --bin)" >> "$GITHUB_PATH"
+          connect-iq-sdk-manager device list > devices.txt
+          echo "Targets:"
+          python3 tools/pick_devices.py devices.txt manifest.xml | tee targets.txt
+          connect-iq-sdk-manager device download --manifest=manifest.xml
+
+      - name: Developer key
+        env:
+          CIQ_DEVELOPER_KEY: ${{ secrets.CIQ_DEVELOPER_KEY }}
+        run: |
+          if [ -n "$CIQ_DEVELOPER_KEY" ]; then
+            echo "$CIQ_DEVELOPER_KEY" | base64 -d > developer_key.der
+          else
+            echo "::warning::No CIQ_DEVELOPER_KEY secret - using a throwaway key (fine for sideloading)"
+            openssl genrsa -out key.pem 4096
+            openssl pkcs8 -topk8 -inform PEM -outform DER -in key.pem -out developer_key.der -nocrypt
+          fi
+
+      - name: Build
+        run: |
+          mkdir -p dist
+          while read -r dev; do
+            monkeyc -d "$dev" -f monkey.jungle -y developer_key.der -w -o "dist/BerserkBrand-$dev.prg"
+          done < targets.txt
+          monkeyc -e -r -w -f monkey.jungle -y developer_key.der -o dist/BerserkBrand.iq
+          rm -f dist/*.prg.debug.xml dist/*-settings.json
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: berserk-watchface
+          path: berserk-watchface/dist/
+
+      - name: Publish download links
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG=berserk-watchface-latest
+          gh release delete "$TAG" --cleanup-tag --yes || true
+          gh release create "$TAG" dist/*.prg dist/*.iq \
+            --target "$GITHUB_SHA" --prerelease \
+            --title "Berserk watch face (latest build)" \
+            --notes "Sideload: copy the .prg for your watch into GARMIN/Apps. Store beta: upload BerserkBrand.iq."

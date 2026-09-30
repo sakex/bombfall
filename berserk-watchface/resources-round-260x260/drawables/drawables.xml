@@ -1,0 +1,4 @@
+<drawables>
+    <bitmap id="BgCalm" filename="bg_calm.png"/>
+    <bitmap id="BgBleed" filename="bg_bleed.png"/>
+</drawables>

@@ -27,7 +27,7 @@ from PIL import Image, ImageChops, ImageDraw, ImageFilter
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SS = 4  # supersampling factor
-SIZES = [454, 416]
+SIZES = [454, 416, 390, 360, 280, 260]
 
 # ---------------------------------------------------------------------------
 # Brand of Sacrifice geometry, in a 454px design space.
