@@ -1,0 +1,12 @@
+<settings>
+    <setting propertyKey="@Properties.BrandMode" title="@Strings.BrandModeTitle">
+        <settingConfig type="list">
+            <listEntry value="0">@Strings.BrandAuto</listEntry>
+            <listEntry value="1">@Strings.BrandCalm</listEntry>
+            <listEntry value="2">@Strings.BrandBleed</listEntry>
+        </settingConfig>
+    </setting>
+    <setting propertyKey="@Properties.ShowSeconds" title="@Strings.ShowSecondsTitle">
+        <settingConfig type="boolean"/>
+    </setting>
+</settings>

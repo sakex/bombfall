@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<iq:manifest version="3" xmlns:iq="http://www.garmin.com/xml/connectiq">
+    <iq:application id="7a7f963a82fd4882b4bf35847ddb6257" type="watchface" name="@Strings.AppName" entry="BerserkApp" launcherIcon="@Drawables.LauncherIcon" minApiLevel="3.3.0">
+        <!--
+            Add your watch's device id here if it is missing (SDK Manager -> Devices).
+            Any round AMOLED/MIP screen works: the layout scales to the display size.
+        -->
+        <iq:products>
+            <iq:product id="fenix8pro47mm"/>
+            <iq:product id="fenix8pro51mm"/>
+            <iq:product id="fenix847mm"/>
+            <iq:product id="fenix851mm"/>
+        </iq:products>
+        <iq:permissions>
+            <iq:uses-permission id="SensorHistory"/>
+            <iq:uses-permission id="UserProfile"/>
+        </iq:permissions>
+        <iq:languages>
+            <iq:language>eng</iq:language>
+        </iq:languages>
+        <iq:barrels/>
+    </iq:application>
+</iq:manifest>

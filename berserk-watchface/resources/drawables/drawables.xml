@@ -1,0 +1,27 @@
+<drawables>
+    <bitmap id="LauncherIcon" filename="launcher_icon.png"/>
+    <bitmap id="BgCalm" filename="bg_calm.png"/>
+    <bitmap id="BgBleed" filename="bg_bleed.png"/>
+    <bitmap id="AodBrand" filename="aod_brand.png"/>
+    <bitmap id="IconHeart" filename="icon_heart.png"/>
+    <bitmap id="IconSteps" filename="icon_steps.png"/>
+    <bitmap id="IconFlame" filename="icon_flame.png"/>
+    <bitmap id="IconStairs" filename="icon_stairs.png"/>
+    <bitmap id="IconBolt" filename="icon_bolt.png"/>
+    <bitmap id="IconStress" filename="icon_stress.png"/>
+    <bitmap id="IconSword" filename="icon_sword.png"/>
+    <bitmap id="IconDrop" filename="icon_drop.png"/>
+    <bitmap id="IconMountain" filename="icon_mountain.png"/>
+    <bitmap id="IconHourglass" filename="icon_hourglass.png"/>
+    <bitmap id="IconSun" filename="icon_sun.png"/>
+    <bitmap id="IconSunrise" filename="icon_sunrise.png"/>
+    <bitmap id="IconSunset" filename="icon_sunset.png"/>
+    <bitmap id="IconMoon" filename="icon_moon.png"/>
+    <bitmap id="IconBell" filename="icon_bell.png"/>
+    <bitmap id="IconBt" filename="icon_bt.png"/>
+    <bitmap id="IconAlarm" filename="icon_alarm.png"/>
+    <bitmap id="IconDnd" filename="icon_dnd.png"/>
+    <bitmap id="IconBattery" filename="icon_battery.png"/>
+    <bitmap id="IconDistance" filename="icon_distance.png"/>
+    <bitmap id="IconTemp" filename="icon_temp.png"/>
+</drawables>
